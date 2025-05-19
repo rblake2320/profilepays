@@ -1,1 +1,28 @@
-name: Bug report\ndescription: Create a report to help us improve\ntitle: \"[Bug]: <short description>\"\nlabels: [\"bug\"]\nbody:\n  - type: textarea\n    id: what-happened\n    attributes:\n      label: What happened?\n      description: Describe the bug in detail.\n      placeholder: A clear and concise description...\n  - type: textarea\n    id: steps\n    attributes:\n      label: Steps to reproduce\n      value: |\n        1. Go to '...'\n        2. Click on '....'\n        3. See error\n  - type: dropdown\n    id: area\n    attributes:\n      label: Affected area\n      options:\n        - Front-end\n        - Back-end\n        - DevOps / CI\n        - Docs
+name: Bug report
+description: Create a report to help us improve
+title: \"[Bug]: <short description>\"
+labels: [\"bug\"]
+body:
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Describe the bug in detail.
+      placeholder: A clear and concise description...
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      value: |
+        1. Go to '...'
+        2. Click on '....'
+        3. See error
+  - type: dropdown
+    id: area
+    attributes:
+      label: Affected area
+      options:
+        - Front-end
+        - Back-end
+        - DevOps / CI
+        - Docs

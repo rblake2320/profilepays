@@ -1,1 +1,31 @@
-# ► Node / TypeScript / NestJS\nnode_modules/\ndist/\ncoverage/\n.env*\n*.log\n\n# ► React / Vite / Create-React-App\nbuild/\n.vite/\n.cache/\n*.local\n*.env.*\n\n# ► Yarn & pnpm\n.yarn/*\n!.yarn/patches\n.pnpm-debug.log\n\n# ► Docker & Kubernetes\n*.tar\ndocker-compose.override.yml\n# k8s local config\n*.local.yaml\n\n# ► OS / Editor cruft\n.DS_Store\nThumbs.db\n.idea/\n.vscode/\n*.sw?
+# ► Node / TypeScript / NestJS
+node_modules/
+dist/
+coverage/
+.env*
+*.log
+
+# ► React / Vite / Create-React-App
+build/
+.vite/
+.cache/
+*.local
+*.env.*
+
+# ► Yarn & pnpm
+.yarn/*
+!.yarn/patches
+.pnpm-debug.log
+
+# ► Docker & Kubernetes
+*.tar
+docker-compose.override.yml
+# k8s local config
+*.local.yaml
+
+# ► OS / Editor cruft
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.sw?

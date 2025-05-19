@@ -1,1 +1,61 @@
-# ProfilePays\n\n**Turn your profile into profit.**  \nProfilePays is a social-advertising platform that pays users for temporarily swapping their profile pictures with brand-sponsored images while giving businesses self-service tooling to launch targeted campaigns.\n\n## Tech Stack\n| Layer        | Choices used in this repo | Rationale |\n|--------------|---------------------------|-----------|\n| Front-end    | React + Redux Toolkit, Material-UI, Axios, React Router, React Hook Form | Component-based UI and strong ecosystem |\n| Back-end     | NestJS (TypeScript), TypeORM, PostgreSQL | Modular architecture & typed safety |\n| Auth         | JWT + OAuth2 (social log-ins) | Stateless, scalable |\n| Payments     | Stripe (subscriptions) & PayPal/Payoneer (payouts) | Covers both sides of the marketplace |\n| CI/CD        | GitHub Actions (build, test, Docker) | Automated quality gates |\n| Container    | Docker (+ optional K8s) | Consistent deployment |\n\n## Features\n* Multi-step user & business onboarding  \n* Campaign marketplace with earnings tracking  \n* Tier-based subscription & reward system  \n* Real-time analytics dashboards  \n* REST API documented with Swagger / OpenAPI  \n* Secure profile-picture swap verification  \n\n## Local Setup\n\n```bash\n# clone & install root dependencies\ngit clone https://github.com/<your-org>/profilepays.git\ncd profilepays\nnpm install   # tooling, husky etc.\n\n# Front-end\ncd frontend\nnpm install\nnpm run dev\n\n# Back-end\ncd ../backend\nnpm install\ncp .env.example .env\nnpm run start:dev         # NestJS watch mode\nnpm run test              # Jest unit + integration tests\n\n# Docker (optional all-in-one)\ndocker compose up --build\n```\n\n## Tests\n\n* **Jest + SuperTest** for back-end unit / integration\n* **React-Testing-Library + Jest** for front-end components\n\n## Contributing\n\n1. Fork / branch from `main`\n2. `npm run lint && npm test` must pass\n3. Open a pull request; PR template below will guide you.\n\n## License\n\nMIT – see [`LICENSE`](LICENSE)."
+# ProfilePays
+
+**Turn your profile into profit.**  
+ProfilePays is a social-advertising platform that pays users for temporarily swapping their profile pictures with brand-sponsored images while giving businesses self-service tooling to launch targeted campaigns.
+
+## Tech Stack
+| Layer        | Choices used in this repo | Rationale |
+|--------------|---------------------------|-----------|
+| Front-end    | React + Redux Toolkit, Material-UI, Axios, React Router, React Hook Form | Component-based UI and strong ecosystem |
+| Back-end     | NestJS (TypeScript), TypeORM, PostgreSQL | Modular architecture & typed safety |
+| Auth         | JWT + OAuth2 (social log-ins) | Stateless, scalable |
+| Payments     | Stripe (subscriptions) & PayPal/Payoneer (payouts) | Covers both sides of the marketplace |
+| CI/CD        | GitHub Actions (build, test, Docker) | Automated quality gates |
+| Container    | Docker (+ optional K8s) | Consistent deployment |
+
+## Features
+* Multi-step user & business onboarding  
+* Campaign marketplace with earnings tracking  
+* Tier-based subscription & reward system  
+* Real-time analytics dashboards  
+* REST API documented with Swagger / OpenAPI  
+* Secure profile-picture swap verification  
+
+## Local Setup
+
+```bash
+# clone & install root dependencies
+git clone https://github.com/<your-org>/profilepays.git
+cd profilepays
+npm install   # tooling, husky etc.
+
+# Front-end
+cd frontend
+npm install
+npm run dev
+
+# Back-end
+cd ../backend
+npm install
+cp .env.example .env
+npm run start:dev         # NestJS watch mode
+npm run test              # Jest unit + integration tests
+
+# Docker (optional all-in-one)
+docker compose up --build
+```
+
+## Tests
+
+* **Jest + SuperTest** for back-end unit / integration
+* **React-Testing-Library + Jest** for front-end components
+
+## Contributing
+
+1. Fork / branch from `main`
+2. `npm run lint && npm test` must pass
+3. Open a pull request; PR template below will guide you.
+
+## License
+
+MIT – see [`LICENSE`](LICENSE)."
