@@ -1,1 +1,15 @@
-name: Feature request\ndescription: Suggest an idea for this project\ntitle: \"[Feature]: <short description>\"\nlabels: [\"enhancement\"]\nbody:\n  - type: textarea\n    id: summary\n    attributes:\n      label: Summary\n      description: What problem are you trying to solve?\n  - type: textarea\n    id: acceptance\n    attributes:\n      label: Acceptance Criteria\n      description: Definition of done / testing notes
+name: Feature request
+description: Suggest an idea for this project
+title: \"[Feature]: <short description>\"
+labels: [\"enhancement\"]
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What problem are you trying to solve?
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance Criteria
+      description: Definition of done / testing notes

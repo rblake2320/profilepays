@@ -1,1 +1,13 @@
-## Purpose / Approach\n<!-- Why is this change required? -->\n\n## Type of change\n- [ ] Bug fix\n- [ ] New feature\n- [ ] Refactor\n- [ ] Docs\n\n## Checklist\n- [ ] Tests pass locally\n- [ ] Linted & formatted\n- [ ] Updated docs / README
+## Purpose / Approach
+<!-- Why is this change required? -->
+
+## Type of change
+- [ ] Bug fix
+- [ ] New feature
+- [ ] Refactor
+- [ ] Docs
+
+## Checklist
+- [ ] Tests pass locally
+- [ ] Linted & formatted
+- [ ] Updated docs / README
