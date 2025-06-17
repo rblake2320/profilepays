@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000" # Exposes port 3000 on the host to port 3000 in the container
+    env_file:
+      - ./backend/.env # Loads environment variables from backend/.env
+    depends_on:
+      db:
+        condition: service_healthy # Waits for the database to be healthy before starting the app
+    volumes:
+      # For local development, you might want to mount volumes to reflect code changes without rebuilding.
+      # However, the Dockerfile is set up for a production-like build.
+      # If you need hot-reloading for backend development:
+      # - ./backend:/app/backend
+      # Ensure your Dockerfile's CMD or entrypoint supports hot-reloading (e.g., using nodemon).
+      # The current Dockerfile CMD is `node backend/dist/main.js`.
+      # For frontend changes to be reflected, you'd typically run the frontend dev server separately
+      # or ensure your backend serves dynamically updated frontend assets.
+      # The current Dockerfile bakes in the frontend build.
+      - ./public:/app/public # If you want to see static assets or upload to public from host
+    environment:
+      # Override or set additional environment variables here if needed
+      # For example, ensuring the app connects to the Dockerized DB:
+      - DATABASE_URL=postgresql://profilepays_user:profilepays_password@db:5432/profilepays_db
+      # Ensure other necessary variables from .env are also available if not using env_file,
+      # or if they need to be specific for Docker Compose environment.
+      # PORT is set by Dockerfile EXPOSE and CMD, but can be confirmed here if needed.
+      - PORT=3000 # This should match the EXPOSE in Dockerfile and app's listening port
+
+  db:
+    image: postgres:15-alpine # Using a specific version of PostgreSQL
+    ports:
+      - "5432:5432" # Exposes PostgreSQL port to the host (optional, for direct DB access)
+    environment:
+      POSTGRES_USER: profilepays_user
+      POSTGRES_PASSWORD: profilepays_password
+      POSTGRES_DB: profilepays_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data # Persists database data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U profilepays_user -d profilepays_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data: # Defines the named volume for data persistence
