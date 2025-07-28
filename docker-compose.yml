@@ -1,0 +1,120 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    container_name: profilepays-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: profilepays
+      POSTGRES_USER: profilepays_user
+      POSTGRES_PASSWORD: secure_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    networks:
+      - profilepays-network
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: profilepays-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    networks:
+      - profilepays-network
+
+  # Backend API (when implemented)
+  backend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.backend
+    container_name: profilepays-backend
+    restart: unless-stopped
+    depends_on:
+      - db
+      - redis
+    environment:
+      NODE_ENV: development
+      DATABASE_HOST: db
+      DATABASE_PORT: 5432
+      DATABASE_USERNAME: profilepays_user
+      DATABASE_PASSWORD: secure_password
+      DATABASE_NAME: profilepays
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    networks:
+      - profilepays-network
+    profiles:
+      - backend  # Only start when explicitly requested
+
+  # Frontend App (when implemented)
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.frontend
+    container_name: profilepays-frontend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: development
+      REACT_APP_API_URL: http://localhost:3000/api/v1
+    ports:
+      - "3001:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    networks:
+      - profilepays-network
+    profiles:
+      - frontend  # Only start when explicitly requested
+
+  # Adminer (Database Management)
+  adminer:
+    image: adminer:4-standalone
+    container_name: profilepays-adminer
+    restart: unless-stopped
+    depends_on:
+      - db
+    ports:
+      - "8080:8080"
+    environment:
+      ADMINER_DEFAULT_SERVER: db
+    networks:
+      - profilepays-network
+    profiles:
+      - tools  # Only start when explicitly requested
+
+  # MailHog (Email Testing)
+  mailhog:
+    image: mailhog/mailhog:v1.0.1
+    container_name: profilepays-mailhog
+    restart: unless-stopped
+    ports:
+      - "1025:1025"  # SMTP
+      - "8025:8025"  # Web UI
+    networks:
+      - profilepays-network
+    profiles:
+      - tools  # Only start when explicitly requested
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  profilepays-network:
+    driver: bridge
