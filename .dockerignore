@@ -1,0 +1,33 @@
+# General
+.git
+.gitignore
+.dockerignore
+Dockerfile
+docker-compose.yml
+README.md
+*.md
+
+# Node.js
+node_modules
+*/node_modules
+npm-debug.log*
+yarn-error.log*
+package-lock.json # Often included in repo, but can be rebuilt by Dockerfile's npm ci/install
+*/package-lock.json
+
+# Frontend specific build artifacts (if not copied from a build stage)
+# frontend/build # Covered by Dockerfile multi-stage copy
+# frontend/dist
+
+# Backend specific build artifacts (if not copied from a build stage)
+# backend/dist # Covered by Dockerfile multi-stage copy
+
+# Environment files
+.env
+*/*.env
+!.env.example
+!*/.env.example
+
+# OS specific
+.DS_Store
+Thumbs.db
