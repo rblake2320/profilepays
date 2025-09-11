@@ -1,52 +1,147 @@
 version: '3.8'
 
 services:
+  # Main Application (from PR #2)
   app:
     build:
       context: .
       dockerfile: Dockerfile
+    container_name: profilepays-app
+    restart: unless-stopped
     ports:
-      - "3000:3000" # Exposes port 3000 on the host to port 3000 in the container
+      - "3000:3000"
     env_file:
-      - ./backend/.env # Loads environment variables from backend/.env
+      - ./backend/.env
     depends_on:
       db:
-        condition: service_healthy # Waits for the database to be healthy before starting the app
+        condition: service_healthy
     volumes:
-      # For local development, you might want to mount volumes to reflect code changes without rebuilding.
-      # However, the Dockerfile is set up for a production-like build.
-      # If you need hot-reloading for backend development:
-      # - ./backend:/app/backend
-      # Ensure your Dockerfile's CMD or entrypoint supports hot-reloading (e.g., using nodemon).
-      # The current Dockerfile CMD is `node backend/dist/main.js`.
-      # For frontend changes to be reflected, you'd typically run the frontend dev server separately
-      # or ensure your backend serves dynamically updated frontend assets.
-      # The current Dockerfile bakes in the frontend build.
-      - ./public:/app/public # If you want to see static assets or upload to public from host
+      - ./public:/app/public
     environment:
-      # Override or set additional environment variables here if needed
-      # For example, ensuring the app connects to the Dockerized DB:
       - DATABASE_URL=postgresql://profilepays_user:profilepays_password@db:5432/profilepays_db
-      # Ensure other necessary variables from .env are also available if not using env_file,
-      # or if they need to be specific for Docker Compose environment.
-      # PORT is set by Dockerfile EXPOSE and CMD, but can be confirmed here if needed.
-      - PORT=3000 # This should match the EXPOSE in Dockerfile and app's listening port
+      - PORT=3000
+    networks:
+      - profilepays-network
 
+  # PostgreSQL Database (enhanced from PR #3)
   db:
-    image: postgres:15-alpine # Using a specific version of PostgreSQL
-    ports:
-      - "5432:5432" # Exposes PostgreSQL port to the host (optional, for direct DB access)
+    image: postgres:15-alpine
+    container_name: profilepays-db
+    restart: unless-stopped
     environment:
+      POSTGRES_DB: profilepays_db
       POSTGRES_USER: profilepays_user
       POSTGRES_PASSWORD: profilepays_password
-      POSTGRES_DB: profilepays_db
+    ports:
+      - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data # Persists database data
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U profilepays_user -d profilepays_db"]
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - profilepays-network
+
+  # Redis Cache (from PR #3)
+  redis:
+    image: redis:7-alpine
+    container_name: profilepays-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    networks:
+      - profilepays-network
+
+  # Backend API (from PR #3, when implemented)
+  backend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.backend
+    container_name: profilepays-backend
+    restart: unless-stopped
+    depends_on:
+      - db
+      - redis
+    environment:
+      NODE_ENV: development
+      DATABASE_HOST: db
+      DATABASE_PORT: 5432
+      DATABASE_USERNAME: profilepays_user
+      DATABASE_PASSWORD: profilepays_password
+      DATABASE_NAME: profilepays_db
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+    ports:
+      - "3001:3000"
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    networks:
+      - profilepays-network
+    profiles:
+      - backend
+
+  # Frontend App (from PR #3, when implemented)
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.frontend
+    container_name: profilepays-frontend
+    restart: unless-stopped
+    environment:
+      NODE_ENV: development
+      REACT_APP_API_URL: http://localhost:3001/api/v1
+    ports:
+      - "3002:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    networks:
+      - profilepays-network
+    profiles:
+      - frontend
+
+  # Adminer (Database Management from PR #3)
+  adminer:
+    image: adminer:4-standalone
+    container_name: profilepays-adminer
+    restart: unless-stopped
+    depends_on:
+      - db
+    ports:
+      - "8080:8080"
+    environment:
+      ADMINER_DEFAULT_SERVER: db
+    networks:
+      - profilepays-network
+    profiles:
+      - tools
+
+  # MailHog (Email Testing from PR #3)
+  mailhog:
+    image: mailhog/mailhog:v1.0.1
+    container_name: profilepays-mailhog
+    restart: unless-stopped
+    ports:
+      - "1025:1025"  # SMTP
+      - "8025:8025"  # Web UI
+    networks:
+      - profilepays-network
+    profiles:
+      - tools
 
 volumes:
-  postgres_data: # Defines the named volume for data persistence
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+
+networks:
+  profilepays-network:
+    driver: bridge

@@ -1,0 +1,65 @@
+version: '3.8'
+
+# Development environment with all services
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    container_name: profilepays-db-dev
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: profilepays_dev
+      POSTGRES_USER: dev_user
+      POSTGRES_PASSWORD: dev_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+    networks:
+      - profilepays-dev
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: profilepays-redis-dev
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_dev_data:/data
+    networks:
+      - profilepays-dev
+
+  # Development tools
+  adminer:
+    image: adminer:4-standalone
+    container_name: profilepays-adminer-dev
+    restart: unless-stopped
+    depends_on:
+      - db
+    ports:
+      - "8080:8080"
+    environment:
+      ADMINER_DEFAULT_SERVER: db
+    networks:
+      - profilepays-dev
+
+  mailhog:
+    image: mailhog/mailhog:v1.0.1
+    container_name: profilepays-mailhog-dev
+    restart: unless-stopped
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    networks:
+      - profilepays-dev
+
+volumes:
+  postgres_dev_data:
+    driver: local
+  redis_dev_data:
+    driver: local
+
+networks:
+  profilepays-dev:
+    driver: bridge
