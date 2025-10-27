@@ -7,11 +7,12 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "lint": "eslint src --ext .js,.jsx,.ts,.tsx",
-    "lint:fix": "eslint src --ext .js,.jsx,.ts,.tsx --fix",
-    "test": "vitest",
-    "test:ui": "vitest --ui",
-    "test:coverage": "vitest --coverage"
+    "lint": "NODE_PATH=../node_modules:../backend/node_modules ESLINT_USE_FLAT_CONFIG=false eslint src --ext .js,.jsx,.ts,.tsx --resolve-plugins-relative-to ..",
+    "lint:fix": "NODE_PATH=../node_modules:../backend/node_modules ESLINT_USE_FLAT_CONFIG=false eslint src --ext .js,.jsx,.ts,.tsx --resolve-plugins-relative-to .. --fix",
+    "test": "NODE_PATH=../node_modules:./node_modules TS_NODE_TRANSPILE_ONLY=1 TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\",\"esModuleInterop\":true,\"moduleResolution\":\"node\"}' node -r ts-node/register ./tests/run-tests.ts",
+    "test:ui": "NODE_PATH=../node_modules:./node_modules TS_NODE_TRANSPILE_ONLY=1 TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\",\"esModuleInterop\":true,\"moduleResolution\":\"node\"}' node -r ts-node/register ./tests/run-tests.ts",
+    "test:coverage": "NODE_PATH=../node_modules:./node_modules TS_NODE_TRANSPILE_ONLY=1 TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\",\"esModuleInterop\":true,\"moduleResolution\":\"node\"}' node -r ts-node/register ./tests/run-tests.ts",
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
     "react": "^18.2.0",
