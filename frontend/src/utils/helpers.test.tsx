@@ -96,7 +96,7 @@ describe('ProfilePays Frontend Utilities', () => {
 
     test('should mock API responses', () => {
       const mockResponse = global.testUtils.mockApiResponse({ success: true });
-      
+
       expect(mockResponse.data.success).toBe(true);
       expect(mockResponse.status).toBe(200);
     });
@@ -109,7 +109,7 @@ describe('ProfilePays Frontend Utilities', () => {
 
       localStorage.setItem(testKey, testValue);
       expect(localStorage.setItem).toHaveBeenCalledWith(testKey, testValue);
-      
+
       localStorage.getItem(testKey);
       expect(localStorage.getItem).toHaveBeenCalledWith(testKey);
     });

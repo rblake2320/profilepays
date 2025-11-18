@@ -28,8 +28,7 @@
   },
   "workspaces": [
     "frontend",
-    "backend",
-    "shared"
+    "backend"
   ],
   "scripts": {
     "prepare": "husky install",

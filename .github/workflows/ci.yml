@@ -37,10 +37,9 @@ jobs:
             echo "✗ Issue templates missing" && exit 1
           fi
 
-  # Future: Backend testing (when code is implemented)
+  # Backend testing
   backend:
     runs-on: ubuntu-latest
-    if: ${{ false }}  # Disabled until backend code exists
     defaults:
       run:
         working-directory: backend
@@ -62,10 +61,9 @@ jobs:
         with:
           directory: ./backend/coverage
 
-  # Future: Frontend testing (when code is implemented)
+  # Frontend testing
   frontend:
     runs-on: ubuntu-latest
-    if: ${{ false }}  # Disabled until frontend code exists
     defaults:
       run:
         working-directory: frontend

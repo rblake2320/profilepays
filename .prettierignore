@@ -5,12 +5,22 @@ node_modules/
 dist/
 build/
 coverage/
+.next/
+out/
+.vite/
+.cache/
 
 # Logs
 *.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
 
 # Environment files
-.env*
+.env
+.env.*
+!.env.example
 
 # Package manager files
 package-lock.json
@@ -19,10 +29,14 @@ pnpm-lock.yaml
 
 # Git
 .git/
+.gitignore
 
 # IDE
 .vscode/
 .idea/
+*.swp
+*.swo
+*~
 
 # OS
 .DS_Store
@@ -31,6 +45,16 @@ Thumbs.db
 # Docker
 Dockerfile*
 docker-compose*.yml
+.dockerignore
 
 # Generated files
 CHANGELOG.md
+*.min.js
+*.min.css
+
+# Test coverage
+coverage/
+.nyc_output/
+
+# TypeScript
+*.tsbuildinfo

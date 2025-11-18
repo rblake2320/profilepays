@@ -32,7 +32,7 @@ global.testUtils = {
     updatedAt: new Date(),
     ...overrides,
   }),
-  
+
   createMockCampaign: (overrides = {}) => ({
     id: '1',
     advertiserId: '1',
@@ -44,7 +44,7 @@ global.testUtils = {
     updatedAt: new Date(),
     ...overrides,
   }),
-  
+
   // HTTP utilities
   createMockRequest: (overrides = {}) => ({
     body: {},
@@ -54,7 +54,7 @@ global.testUtils = {
     user: null,
     ...overrides,
   }),
-  
+
   createMockResponse: () => {
     const res = {};
     res.status = jest.fn().mockReturnValue(res);
@@ -65,7 +65,7 @@ global.testUtils = {
     res.redirect = jest.fn().mockReturnValue(res);
     return res;
   },
-  
+
   // JWT utilities
   createMockJwtPayload: (overrides = {}) => ({
     sub: '1',
@@ -75,7 +75,7 @@ global.testUtils = {
     exp: Math.floor(Date.now() / 1000) + 3600,
     ...overrides,
   }),
-  
+
   // Database connection mock
   createMockRepository: () => ({
     find: jest.fn(),

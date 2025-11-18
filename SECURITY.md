@@ -2,7 +2,8 @@
 
 ## Supported Versions
 
-Currently, this project is in development phase. Once released, we will maintain security updates for the following versions:
+Currently, this project is in development phase. Once released, we will maintain
+security updates for the following versions:
 
 | Version | Supported          |
 | ------- | ------------------ |
@@ -11,19 +12,22 @@ Currently, this project is in development phase. Once released, we will maintain
 
 ## Reporting a Vulnerability
 
-We take security vulnerabilities seriously. If you discover a security vulnerability, please follow these steps:
+We take security vulnerabilities seriously. If you discover a security
+vulnerability, please follow these steps:
 
 ### 🚨 For Critical Security Issues
 
 **DO NOT** create a public issue. Instead:
 
-1. **Email us directly** at [security@profilepays.com] or contact the repository owner
+1. **Email us directly** at [security@profilepays.com] or contact the repository
+   owner
 2. **Provide detailed information** including:
    - Description of the vulnerability
    - Steps to reproduce
    - Potential impact
    - Any proof-of-concept code (if applicable)
-3. **Allow reasonable time** for us to respond and fix the issue before public disclosure
+3. **Allow reasonable time** for us to respond and fix the issue before public
+   disclosure
 
 ### 📋 Security Report Template
 
@@ -36,9 +40,9 @@ We take security vulnerabilities seriously. If you discover a security vulnerabi
 [Detailed description of the vulnerability]
 
 **Steps to Reproduce**:
-1. 
-2. 
-3. 
+1.
+2.
+3.
 
 **Impact**:
 [What could an attacker accomplish?]
@@ -138,7 +142,8 @@ ProfilePays aims to comply with:
 
 ## Recognition
 
-We appreciate security researchers who help improve our security. Responsible disclosure will be acknowledged in:
+We appreciate security researchers who help improve our security. Responsible
+disclosure will be acknowledged in:
 
 - Security advisory credits
 - Hall of fame (if applicable)
@@ -146,6 +151,7 @@ We appreciate security researchers who help improve our security. Responsible di
 
 ---
 
-**Contact**: For security-related questions, contact [repository owner] or create a private issue.
+**Contact**: For security-related questions, contact [repository owner] or
+create a private issue.
 
 Last updated: January 2025

@@ -13,7 +13,8 @@ Fixes #(issue_number)
 
 - [ ] 🐛 Bug fix (non-breaking change which fixes an issue)
 - [ ] ✨ New feature (non-breaking change which adds functionality)
-- [ ] 💥 Breaking change (fix or feature that would cause existing functionality to not work as expected)
+- [ ] 💥 Breaking change (fix or feature that would cause existing functionality
+      to not work as expected)
 - [ ] 🔧 Refactor (code change that neither fixes a bug nor adds a feature)
 - [ ] 📖 Documentation update
 - [ ] 🎨 Style/formatting changes
@@ -30,18 +31,19 @@ Fixes #(issue_number)
 - [ ] New tests added for this change
 
 **Test Instructions:**
+
 <!-- Provide step-by-step instructions for testing this change -->
 
-1. 
-2. 
-3. 
+1.
+2.
+3.
 
 ## 📱 Screenshots (if applicable)
 
 <!-- Add screenshots for UI changes -->
 
-| Before | After |
-|--------|-------|
+| Before         | After         |
+| -------------- | ------------- |
 | ![Before](url) | ![After](url) |
 
 ## ✅ Checklist

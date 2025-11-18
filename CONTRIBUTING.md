@@ -1,6 +1,7 @@
 # Contributing to ProfilePays
 
-Thank you for your interest in contributing to ProfilePays! This document provides guidelines and information for contributors.
+Thank you for your interest in contributing to ProfilePays! This document
+provides guidelines and information for contributors.
 
 ## Table of Contents
 
@@ -34,7 +35,8 @@ By participating in this project, you agree to abide by our Code of Conduct:
 
 ### Repository Structure
 
-Currently, this repository contains project documentation and templates. When development begins:
+Currently, this repository contains project documentation and templates. When
+development begins:
 
 ```
 profilepays/
@@ -59,7 +61,8 @@ profilepays/
 
 ### Before You Start
 
-1. Check existing [issues](https://github.com/rblake2320/profilepays/issues) to avoid duplicates
+1. Check existing [issues](https://github.com/rblake2320/profilepays/issues) to
+   avoid duplicates
 2. For large changes, open an issue first to discuss the approach
 3. Fork the repository and create a feature branch
 4. Ensure you understand the project's goals and architecture
@@ -209,7 +212,8 @@ Use our [Bug Report Template](.github/ISSUE_TEMPLATE/bug_report.md) and include:
 
 ### Feature Requests
 
-Use our [Feature Request Template](.github/ISSUE_TEMPLATE/feature_request.md) and include:
+Use our [Feature Request Template](.github/ISSUE_TEMPLATE/feature_request.md)
+and include:
 
 - Problem statement
 - Proposed solution
@@ -256,13 +260,16 @@ npm run migration:run
 ## Getting Help
 
 - 📖 Check the [README](README.md) and documentation
-- 💬 Open a [Discussion](https://github.com/rblake2320/profilepays/discussions) for questions
-- 🐛 Create an [Issue](https://github.com/rblake2320/profilepays/issues) for bugs
+- 💬 Open a [Discussion](https://github.com/rblake2320/profilepays/discussions)
+  for questions
+- 🐛 Create an [Issue](https://github.com/rblake2320/profilepays/issues) for
+  bugs
 - 📧 Contact maintainers directly for security issues
 
 ## Recognition
 
 Contributors will be recognized in:
+
 - README contributors section
 - Release notes
 - Annual contributor appreciation posts

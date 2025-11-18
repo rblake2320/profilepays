@@ -77,7 +77,7 @@ global.testUtils = {
     name: 'Test User',
     userType: 'member',
   }),
-  
+
   createMockCampaign: () => ({
     id: '1',
     title: 'Test Campaign',
@@ -85,7 +85,7 @@ global.testUtils = {
     budget: 100,
     status: 'active',
   }),
-  
+
   // Mock API responses
   mockApiResponse: (data, status = 200) => ({
     data,
@@ -94,7 +94,7 @@ global.testUtils = {
     headers: {},
     config: {},
   }),
-  
+
   // Mock Redux store
   createMockStore: (initialState = {}) => ({
     getState: () => initialState,
