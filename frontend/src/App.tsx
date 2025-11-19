@@ -1,6 +1,12 @@
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
-import { ThemeProvider, createTheme, CssBaseline, Container, Box, Typography } from '@mui/material';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
+import { AuthProvider, useAuth } from './context/AuthContext';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import Dashboard from './pages/Dashboard';
+import CampaignForm from './pages/CampaignForm';
+import Home from './pages/Home';
 
 const theme = createTheme({
   palette: {
@@ -14,33 +20,65 @@ const theme = createTheme({
   },
 });
 
+function ProtectedRoute({ children }: { children: React.ReactElement }) {
+  const { isAuthenticated, loading } = useAuth();
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  return isAuthenticated ? children : <Navigate to="/login" />;
+}
+
+function AppRoutes() {
+  return (
+    <Routes>
+      <Route path="/" element={<Home />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
+      <Route
+        path="/dashboard"
+        element={
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/campaigns/new"
+        element={
+          <ProtectedRoute>
+            <CampaignForm />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/campaigns/:id/edit"
+        element={
+          <ProtectedRoute>
+            <CampaignForm />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/campaigns/:id"
+        element={
+          <ProtectedRoute>
+            <CampaignForm />
+          </ProtectedRoute>
+        }
+      />
+    </Routes>
+  );
+}
+
 function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Container maxWidth="lg">
-        <Box
-          sx={{
-            minHeight: '100vh',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            textAlign: 'center',
-          }}
-        >
-          <Typography variant="h2" component="h1" gutterBottom>
-            Welcome to ProfilePays
-          </Typography>
-          <Typography variant="h5" component="p" color="text.secondary" gutterBottom>
-            A social-advertising platform that pays users for temporarily swapping their profile
-            pictures with brand-sponsored images
-          </Typography>
-          <Typography variant="body1" color="text.secondary" sx={{ mt: 2 }}>
-            Application is in development. Stay tuned!
-          </Typography>
-        </Box>
-      </Container>
+      <AuthProvider>
+        <AppRoutes />
+      </AuthProvider>
     </ThemeProvider>
   );
 }
