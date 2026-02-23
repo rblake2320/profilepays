@@ -3,7 +3,7 @@ module.exports = {
   projects: [
     {
       displayName: 'frontend',
-      testEnvironment: 'jsdom',
+      testEnvironment: 'node',
       testMatch: ['<rootDir>/frontend/**/*.(test|spec).(ts|tsx|js|jsx)'],
       moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json'],
       transform: {
@@ -14,7 +14,8 @@ module.exports = {
       moduleNameMapper: {
         '^@/(.*)$': '<rootDir>/frontend/src/$1',
         '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
-        '\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$': 'jest-transform-stub',
+        '\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$':
+          'jest-transform-stub',
       },
       collectCoverageFrom: [
         'frontend/src/**/*.{ts,tsx,js,jsx}',
@@ -44,12 +45,12 @@ module.exports = {
       ],
     },
   ],
-  
+
   // Global configuration
   collectCoverage: true,
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html', 'json'],
-  
+
   // Coverage thresholds
   coverageThreshold: {
     global: {
@@ -59,23 +60,13 @@ module.exports = {
       statements: 70,
     },
   },
-  
+
   // Clear mocks between tests
   clearMocks: true,
-  
+
   // Verbose output
   verbose: true,
-  
+
   // Ignore patterns
-  testPathIgnorePatterns: [
-    '/node_modules/',
-    '/dist/',
-    '/build/',
-  ],
-  
-  // Watch plugins for better development experience
-  watchPlugins: [
-    'jest-watch-typeahead/filename',
-    'jest-watch-typeahead/testname',
-  ],
+  testPathIgnorePatterns: ['/node_modules/', '/dist/', '/build/'],
 };

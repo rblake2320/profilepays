@@ -1,5 +1,5 @@
 // Frontend utility tests for ProfilePays
-import { render, screen } from '@testing-library/react';
+import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, test, expect } from '@jest/globals';
 
 // Sample utility functions to test
@@ -73,13 +73,13 @@ describe('ProfilePays Frontend Utilities', () => {
 
   describe('React Component Tests', () => {
     test('should render welcome message', () => {
-      render(<WelcomeMessage userName="John Doe" />);
-      expect(screen.getByText('Welcome to ProfilePays, John Doe!')).toBeInTheDocument();
+      const markup = renderToStaticMarkup(<WelcomeMessage userName="John Doe" />);
+      expect(markup).toContain('Welcome to ProfilePays, John Doe!');
     });
 
     test('should handle empty username', () => {
-      render(<WelcomeMessage userName="" />);
-      expect(screen.getByText('Welcome to ProfilePays, !')).toBeInTheDocument();
+      const markup = renderToStaticMarkup(<WelcomeMessage userName="" />);
+      expect(markup).toContain('Welcome to ProfilePays, !');
     });
   });
 
@@ -96,7 +96,7 @@ describe('ProfilePays Frontend Utilities', () => {
 
     test('should mock API responses', () => {
       const mockResponse = global.testUtils.mockApiResponse({ success: true });
-      
+
       expect(mockResponse.data.success).toBe(true);
       expect(mockResponse.status).toBe(200);
     });
@@ -109,7 +109,7 @@ describe('ProfilePays Frontend Utilities', () => {
 
       localStorage.setItem(testKey, testValue);
       expect(localStorage.setItem).toHaveBeenCalledWith(testKey, testValue);
-      
+
       localStorage.getItem(testKey);
       expect(localStorage.getItem).toHaveBeenCalledWith(testKey);
     });
