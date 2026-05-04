@@ -10,6 +10,8 @@ const CountdownTimer = ({ durationInMinutes = 5 }: CountdownTimerProps) => {
   const [secondsRemaining, setSecondsRemaining] = useState(durationInMinutes * 60);
 
   useEffect(() => {
+    setSecondsRemaining(durationInMinutes * 60);
+
     const interval = window.setInterval(() => {
       setSecondsRemaining(prev => {
         if (prev <= 1) {
