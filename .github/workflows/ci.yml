@@ -1,39 +1,79 @@
 name: CI
-
 on:
-  pull_request:
   push:
-    branches: [main]
+    paths-ignore:
+      - "**/*.md"
+      - "**/*.rst"
+      - "docs/**"
+  pull_request:
 
 jobs:
-  backend:
+  build:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: backend
+    timeout-minutes: 30
     strategy:
       matrix:
-        node: [20.x, 18.x]
+        language: [node, python, go, rust, dotnet, java]
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: dorny/paths-filter@v3
+        id: changes
         with:
-          node-version: ${{ matrix.node }}
-          cache: 'npm'
-      - run: npm ci
-      - run: npm run lint
-      - run: npm test -- --coverage
-
-  frontend:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: frontend
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+          filters: |
+            code:
+              - "!"
+              - "!**/*.md"
+              - "!**/*.rst"
+              - "!docs/**"
+      - name: Setup Node
+        if: matrix.language == 'node' && steps.changes.outputs.code == 'true'
+        uses: actions/setup-node@v4
         with:
-          node-version: '20.x'
-          cache: 'npm'
-      - run: npm ci
-      - run: npm run build --if-present
+          node-version: 18
+          cache: npm
+      - name: Setup Python
+        if: matrix.language == 'python' && steps.changes.outputs.code == 'true'
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Setup Go
+        if: matrix.language == 'go' && steps.changes.outputs.code == 'true'
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+      - name: Setup Rust
+        if: matrix.language == 'rust' && steps.changes.outputs.code == 'true'
+        uses: dtolnay/rust-toolchain@stable
+      - name: Setup .NET
+        if: matrix.language == 'dotnet' && steps.changes.outputs.code == 'true'
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+      - name: Setup Java
+        if: matrix.language == 'java' && steps.changes.outputs.code == 'true'
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - name: Install dependencies
+        if: steps.changes.outputs.code == 'true'
+        run: |
+          case "${{ matrix.language }}" in
+            node) npm ci ;;
+            python) python -m pip install -U pip && pip install -r requirements.txt ;;
+            go) go mod tidy ;;
+            rust) cargo fetch ;;
+            dotnet) dotnet restore ;;
+            java) if [ -f pom.xml ]; then mvn -B install -DskipTests; else ./gradlew --no-daemon build -x test; fi ;;
+          esac
+      - name: Lint and test
+        if: steps.changes.outputs.code == 'true'
+        run: |
+          case "${{ matrix.language }}" in
+            node) npm run lint && npm test ;;
+            python) ruff check . && pytest -q && mypy --strict . ;;
+            go) gofmt -w . && go vet ./... && go test ./... ;;
+            rust) cargo fmt --all && cargo clippy -- -D warnings && cargo test ;;
+            dotnet) dotnet format && dotnet build -c Release && dotnet test -c Release ;;
+            java) if [ -f pom.xml ]; then mvn -B verify; else ./gradlew --no-daemon build test; fi ;;
+          esac
