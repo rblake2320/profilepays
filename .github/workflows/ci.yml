@@ -1,86 +1,184 @@
-name: CI
+name: CI/CD Pipeline
 
 on:
-  pull_request:
   push:
-    branches: [main]
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+env:
+  NODE_VERSION: '22'
 
 jobs:
-  # Documentation and template validation
-  docs:
+  # ─── Backend Tests ─────────────────────────────────────────────────────────
+  backend-test:
+    name: Backend Tests
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
-      
-      - name: Check README links
-        uses: gaurav-nelson/github-action-markdown-link-check@v1
-        with:
-          use-quiet-mode: 'yes'
-          
-      - name: Lint markdown files
-        uses: DavidAnson/markdownlint-cli2-action@v16
-        with:
-          globs: '**/*.md'
-          
-      - name: Validate GitHub templates
-        run: |
-          # Check that all referenced templates exist
-          if [ -f ".github/PULL_REQUEST_TEMPLATE.md" ]; then
-            echo "✓ PR template exists"
-          else
-            echo "✗ PR template missing" && exit 1
-          fi
-          
-          if [ -d ".github/ISSUE_TEMPLATE" ]; then
-            echo "✓ Issue templates exist"
-          else
-            echo "✗ Issue templates missing" && exit 1
-          fi
 
-  # Future: Backend testing (when code is implemented)
-  backend:
-    runs-on: ubuntu-latest
-    if: ${{ false }}  # Disabled until backend code exists
-    defaults:
-      run:
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install backend dependencies
         working-directory: backend
-    strategy:
-      matrix:
-        node: [20.x, 18.x]
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node }}
-          cache: 'npm'
-          cache-dependency-path: 'backend/package-lock.json'
-      - run: npm ci
-      - run: npm run lint
-      - run: npm test -- --coverage
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
-        with:
-          directory: ./backend/coverage
+        run: npm ci --legacy-peer-deps
 
-  # Future: Frontend testing (when code is implemented)
-  frontend:
+      - name: Install root dependencies (for jest)
+        run: npm ci --ignore-scripts --legacy-peer-deps
+
+      - name: TypeScript compile check
+        working-directory: backend
+        run: npx tsc -p tsconfig.build.json --noEmit
+
+      - name: Run backend tests
+        run: npx jest --testPathPattern="backend/src" --passWithNoTests --forceExit
+        env:
+          NODE_ENV: test
+          DB_TYPE: better-sqlite3
+          SQLITE_PATH: ':memory:'
+          JWT_SECRET: test_jwt_secret_for_ci_minimum_32_chars_long
+          JWT_REFRESH_SECRET: test_refresh_secret_for_ci_minimum_32_chars_long
+
+  # ─── Frontend Tests ────────────────────────────────────────────────────────
+  frontend-test:
+    name: Frontend Tests
     runs-on: ubuntu-latest
-    if: ${{ false }}  # Disabled until frontend code exists
-    defaults:
-      run:
-        working-directory: frontend
+
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: '20.x'
+          node-version: ${{ env.NODE_VERSION }}
           cache: 'npm'
-          cache-dependency-path: 'frontend/package-lock.json'
-      - run: npm ci
-      - run: npm run lint
-      - run: npm run test -- --coverage
-      - run: npm run build
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci --legacy-peer-deps
+
+      - name: Install root dependencies (for jest)
+        run: npm ci --ignore-scripts --legacy-peer-deps
+
+      - name: TypeScript compile check
+        working-directory: frontend
+        run: npx tsc --noEmit
+
+      - name: Run frontend tests
+        run: npx jest --testPathPattern="frontend/src" --passWithNoTests --forceExit
+        env:
+          NODE_ENV: test
+
+  # ─── Frontend Build ────────────────────────────────────────────────────────
+  frontend-build:
+    name: Frontend Build
+    runs-on: ubuntu-latest
+    needs: frontend-test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          directory: ./frontend/coverage
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci --legacy-peer-deps
+
+      - name: Build frontend
+        working-directory: frontend
+        run: npm run build
+        env:
+          VITE_API_URL: http://localhost:3000/api/v1
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: frontend/dist/
+          retention-days: 7
+
+  # ─── Backend Build ─────────────────────────────────────────────────────────
+  backend-build:
+    name: Backend Build
+    runs-on: ubuntu-latest
+    needs: backend-test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: backend
+        run: npm ci --legacy-peer-deps
+
+      - name: Install NestJS CLI
+        run: npm install -g @nestjs/cli
+
+      - name: Build backend
+        working-directory: backend
+        run: nest build
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-dist
+          path: backend/dist/
+          retention-days: 7
+
+  # ─── Docker Build (on main only) ───────────────────────────────────────────
+  docker-build:
+    name: Docker Build & Push
+    runs-on: ubuntu-latest
+    needs: [frontend-build, backend-build]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        if: ${{ secrets.DOCKERHUB_USERNAME != '' }}
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build backend Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: false
+          tags: profilepays-backend:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build frontend Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          push: false
+          tags: profilepays-frontend:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

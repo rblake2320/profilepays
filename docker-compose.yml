@@ -1,147 +1,107 @@
-version: '3.8'
+version: '3.9'
 
 services:
-  # Main Application (from PR #2)
-  app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: profilepays-app
-    restart: unless-stopped
-    ports:
-      - "3000:3000"
-    env_file:
-      - ./backend/.env
-    depends_on:
-      db:
-        condition: service_healthy
-    volumes:
-      - ./public:/app/public
-    environment:
-      - DATABASE_URL=postgresql://profilepays_user:profilepays_password@db:5432/profilepays_db
-      - PORT=3000
-    networks:
-      - profilepays-network
-
-  # PostgreSQL Database (enhanced from PR #3)
-  db:
-    image: postgres:15-alpine
-    container_name: profilepays-db
+  # ─── PostgreSQL (production database) ───────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: profilepays_postgres
     restart: unless-stopped
     environment:
-      POSTGRES_DB: profilepays_db
-      POSTGRES_USER: profilepays_user
-      POSTGRES_PASSWORD: profilepays_password
-    ports:
-      - "5432:5432"
+      POSTGRES_USER: ${DB_USERNAME:-profilepays_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-profilepays_password}
+      POSTGRES_DB: ${DB_DATABASE:-profilepays_db}
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U profilepays_user -d profilepays_db"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-profilepays_user} -d ${DB_DATABASE:-profilepays_db}"]
       interval: 10s
       timeout: 5s
       retries: 5
     networks:
-      - profilepays-network
+      - profilepays_net
 
-  # Redis Cache (from PR #3)
+  # ─── Redis (session / queue cache) ──────────────────────────────────────────
   redis:
     image: redis:7-alpine
-    container_name: profilepays-redis
+    container_name: profilepays_redis
     restart: unless-stopped
+    command: redis-server --requirepass ${REDIS_PASSWORD:-redispassword}
     ports:
       - "6379:6379"
-    volumes:
-      - redis_data:/data
-    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-redispassword}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
-      - profilepays-network
+      - profilepays_net
 
-  # Backend API (from PR #3, when implemented)
+  # ─── NestJS Backend API ──────────────────────────────────────────────────────
   backend:
     build:
-      context: .
-      dockerfile: docker/Dockerfile.backend
-    container_name: profilepays-backend
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: profilepays_backend
     restart: unless-stopped
     depends_on:
-      - db
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     environment:
-      NODE_ENV: development
-      DATABASE_HOST: db
-      DATABASE_PORT: 5432
-      DATABASE_USERNAME: profilepays_user
-      DATABASE_PASSWORD: profilepays_password
-      DATABASE_NAME: profilepays_db
-      REDIS_HOST: redis
-      REDIS_PORT: 6379
+      NODE_ENV: production
+      PORT: 3000
+      DB_TYPE: postgres
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USERNAME: ${DB_USERNAME:-profilepays_user}
+      DB_PASSWORD: ${DB_PASSWORD:-profilepays_password}
+      DB_DATABASE: ${DB_DATABASE:-profilepays_db}
+      DB_SSL: "false"
+      JWT_SECRET: ${JWT_SECRET:-change_this_in_production_jwt_secret_min_32_chars}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-change_this_in_production_refresh_secret_min_32_chars}
+      JWT_REFRESH_EXPIRES_IN: ${JWT_REFRESH_EXPIRES_IN:-30d}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-sk_test_placeholder}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-whsec_placeholder}
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:80}
+      REDIS_URL: redis://:${REDIS_PASSWORD:-redispassword}@redis:6379
     ports:
-      - "3001:3000"
-    volumes:
-      - ./backend:/app
-      - /app/node_modules
+      - "3000:3000"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/api/v1/campaigns/stats || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
     networks:
-      - profilepays-network
-    profiles:
-      - backend
+      - profilepays_net
 
-  # Frontend App (from PR #3, when implemented)
+  # ─── React Frontend (Nginx) ──────────────────────────────────────────────────
   frontend:
     build:
-      context: .
-      dockerfile: docker/Dockerfile.frontend
-    container_name: profilepays-frontend
-    restart: unless-stopped
-    environment:
-      NODE_ENV: development
-      REACT_APP_API_URL: http://localhost:3001/api/v1
-    ports:
-      - "3002:3000"
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
-    networks:
-      - profilepays-network
-    profiles:
-      - frontend
-
-  # Adminer (Database Management from PR #3)
-  adminer:
-    image: adminer:4-standalone
-    container_name: profilepays-adminer
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:3000/api/v1}
+    container_name: profilepays_frontend
     restart: unless-stopped
     depends_on:
-      - db
+      backend:
+        condition: service_healthy
     ports:
-      - "8080:8080"
-    environment:
-      ADMINER_DEFAULT_SERVER: db
+      - "80:80"
+      - "443:443"
     networks:
-      - profilepays-network
-    profiles:
-      - tools
-
-  # MailHog (Email Testing from PR #3)
-  mailhog:
-    image: mailhog/mailhog:v1.0.1
-    container_name: profilepays-mailhog
-    restart: unless-stopped
-    ports:
-      - "1025:1025"  # SMTP
-      - "8025:8025"  # Web UI
-    networks:
-      - profilepays-network
-    profiles:
-      - tools
+      - profilepays_net
 
 volumes:
   postgres_data:
     driver: local
-  redis_data:
-    driver: local
 
 networks:
-  profilepays-network:
+  profilepays_net:
     driver: bridge

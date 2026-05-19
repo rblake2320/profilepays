@@ -149,5 +149,9 @@
       "prebump": "npm test",
       "precommit": "git add CHANGELOG.md"
     }
+  },
+  "dependencies": {
+    "jest-environment-jsdom": "^30.4.1",
+    "react-dom": "^19.2.6"
   }
 }

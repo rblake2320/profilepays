@@ -3,13 +3,13 @@ import { describe, test, expect, beforeEach, jest } from '@jest/globals';
 
 // Mock bcrypt for password hashing
 const mockBcrypt = {
-  hash: jest.fn(),
-  compare: jest.fn(),
+  hash: jest.fn<(...args: any[]) => Promise<string>>(),
+  compare: jest.fn<(...args: any[]) => Promise<boolean>>(),
 };
 
 // Mock JWT for token handling
 const mockJwt = {
-  sign: jest.fn(),
+  sign: jest.fn<(...args: any[]) => string>(),
   verify: jest.fn(),
 };
 
@@ -22,15 +22,15 @@ class AuthService {
   }
 
   async hashPassword(password: string): Promise<string> {
-    return mockBcrypt.hash(password, 12);
+    return mockBcrypt.hash(password, 12) as Promise<string>;
   }
 
   async comparePasswords(password: string, hash: string): Promise<boolean> {
-    return mockBcrypt.compare(password, hash);
+    return mockBcrypt.compare(password, hash) as Promise<boolean>;
   }
 
   async generateToken(payload: any): Promise<string> {
-    return mockJwt.sign(payload, 'secret', { expiresIn: '1h' });
+    return mockJwt.sign(payload, 'secret', { expiresIn: '1h' }) as string;
   }
 
   async validateUser(email: string, password: string): Promise<any> {
@@ -70,7 +70,7 @@ describe('ProfilePays AuthService', () => {
   beforeEach(() => {
     mockUserRepository = global.testUtils.createMockRepository();
     authService = new AuthService(mockUserRepository);
-    
+
     // Reset all mocks
     jest.clearAllMocks();
   });
@@ -79,11 +79,11 @@ describe('ProfilePays AuthService', () => {
     test('should hash password correctly', async () => {
       const password = 'testpassword123';
       const hashedPassword = 'hashed_password';
-      
-      mockBcrypt.hash.mockResolvedValue(hashedPassword);
-      
+
+      mockBcrypt.hash.mockResolvedValue(hashedPassword as never);
+
       const result = await authService.hashPassword(password);
-      
+
       expect(mockBcrypt.hash).toHaveBeenCalledWith(password, 12);
       expect(result).toBe(hashedPassword);
     });
@@ -93,11 +93,11 @@ describe('ProfilePays AuthService', () => {
     test('should compare passwords correctly', async () => {
       const password = 'testpassword123';
       const hash = 'hashed_password';
-      
-      mockBcrypt.compare.mockResolvedValue(true);
-      
+
+      mockBcrypt.compare.mockResolvedValue(true as never);
+
       const result = await authService.comparePasswords(password, hash);
-      
+
       expect(mockBcrypt.compare).toHaveBeenCalledWith(password, hash);
       expect(result).toBe(true);
     });
@@ -105,11 +105,11 @@ describe('ProfilePays AuthService', () => {
     test('should return false for incorrect password', async () => {
       const password = 'wrongpassword';
       const hash = 'hashed_password';
-      
-      mockBcrypt.compare.mockResolvedValue(false);
-      
+
+      mockBcrypt.compare.mockResolvedValue(false as never);
+
       const result = await authService.comparePasswords(password, hash);
-      
+
       expect(result).toBe(false);
     });
   });
@@ -118,11 +118,11 @@ describe('ProfilePays AuthService', () => {
     test('should generate JWT token', async () => {
       const payload = { userId: '1', email: 'test@example.com' };
       const token = 'jwt_token';
-      
-      mockJwt.sign.mockReturnValue(token);
-      
+
+      mockJwt.sign.mockReturnValue(token as never);
+
       const result = await authService.generateToken(payload);
-      
+
       expect(mockJwt.sign).toHaveBeenCalledWith(payload, 'secret', { expiresIn: '1h' });
       expect(result).toBe(token);
     });
@@ -133,12 +133,12 @@ describe('ProfilePays AuthService', () => {
       const email = 'test@example.com';
       const password = 'testpassword123';
       const mockUser = global.testUtils.createMockUser({ email });
-      
+
       mockUserRepository.findOneBy.mockResolvedValue(mockUser);
-      mockBcrypt.compare.mockResolvedValue(true);
-      
+      mockBcrypt.compare.mockResolvedValue(true as never);
+
       const result = await authService.validateUser(email, password);
-      
+
       expect(mockUserRepository.findOneBy).toHaveBeenCalledWith({ email });
       expect(result).toEqual({
         id: mockUser.id,
@@ -150,11 +150,11 @@ describe('ProfilePays AuthService', () => {
     test('should return null for non-existent user', async () => {
       const email = 'nonexistent@example.com';
       const password = 'testpassword123';
-      
+
       mockUserRepository.findOneBy.mockResolvedValue(null);
-      
+
       const result = await authService.validateUser(email, password);
-      
+
       expect(result).toBeNull();
     });
 
@@ -162,12 +162,12 @@ describe('ProfilePays AuthService', () => {
       const email = 'test@example.com';
       const password = 'wrongpassword';
       const mockUser = global.testUtils.createMockUser({ email });
-      
+
       mockUserRepository.findOneBy.mockResolvedValue(mockUser);
-      mockBcrypt.compare.mockResolvedValue(false);
-      
+      mockBcrypt.compare.mockResolvedValue(false as never);
+
       const result = await authService.validateUser(email, password);
-      
+
       expect(result).toBeNull();
     });
   });
@@ -184,14 +184,14 @@ describe('ProfilePays AuthService', () => {
         email: userData.email,
         passwordHash: hashedPassword,
       });
-      
-      mockUserRepository.findOneBy.mockResolvedValue(null); // User doesn't exist
-      mockBcrypt.hash.mockResolvedValue(hashedPassword);
+
+      mockUserRepository.findOneBy.mockResolvedValue(null);
+      mockBcrypt.hash.mockResolvedValue(hashedPassword as never);
       mockUserRepository.create.mockReturnValue(savedUser);
       mockUserRepository.save.mockResolvedValue(savedUser);
-      
+
       const result = await authService.register(userData);
-      
+
       expect(mockUserRepository.findOneBy).toHaveBeenCalledWith({ email: userData.email });
       expect(mockBcrypt.hash).toHaveBeenCalledWith(userData.password, 12);
       expect(mockUserRepository.save).toHaveBeenCalledWith(savedUser);
@@ -205,9 +205,9 @@ describe('ProfilePays AuthService', () => {
         userType: 'member',
       };
       const existingUser = global.testUtils.createMockUser({ email: userData.email });
-      
+
       mockUserRepository.findOneBy.mockResolvedValue(existingUser);
-      
+
       await expect(authService.register(userData)).rejects.toThrow('User already exists');
     });
   });

@@ -1,110 +1,133 @@
-import { Box, Button, Card, CardContent, Divider, Grid, Stack, Typography } from '@mui/material';
-import { PlayCircleIcon } from '../components/common/icons';
-import { Link as RouterLink } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useLocation, Link as RouterLink } from 'react-router-dom';
+import {
+  Alert, Box, Button, Card, CardContent, CircularProgress,
+  Divider, Stack, Typography,
+} from '@mui/material';
+import { campaignsApi, Campaign } from '../api/campaigns';
+import { useAppSelector } from '../hooks/redux';
 
 const ConfirmationPage = () => {
+  const location = useLocation();
+  const { user } = useAppSelector((s) => s.auth);
+  const campaignId = (location.state as any)?.campaignId;
+
+  const [campaign, setCampaign] = useState<Campaign | null>(null);
+  const [loading, setLoading] = useState(!!campaignId);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!campaignId) return;
+    const fetchCampaign = async () => {
+      try {
+        const data = await campaignsApi.getById(campaignId);
+        setCampaign(data);
+      } catch (err: any) {
+        setError(err.response?.data?.message || 'Failed to load campaign details');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchCampaign();
+  }, [campaignId]);
+
+  if (loading) {
+    return (
+      <Box display="flex" justifyContent="center" py={8}>
+        <CircularProgress color="success" />
+      </Box>
+    );
+  }
+
   return (
-    <Stack spacing={4}>
-      <Stack spacing={1}>
-        <Typography variant="overline" color="success.main" fontWeight={700}>
-          Page 3 · Confirmation
-        </Typography>
-        <Typography variant="h2">You&apos;re ready to go live.</Typography>
-        <Typography variant="body1" color="text.secondary">
-          Preview your selected creative, confirm advertiser requirements, and activate your payout
-          tracker.
-        </Typography>
-      </Stack>
-      <Grid container spacing={4}>
-        <Grid item xs={12} md={8}>
-          <Card>
-            <CardContent>
-              <Stack spacing={2}>
-                <Box
-                  sx={{
-                    position: 'relative',
-                    borderRadius: 3,
-                    overflow: 'hidden',
-                    background:
-                      'linear-gradient(120deg, rgba(255,255,255,0.4), rgba(46,125,50,0.2))',
-                    border: '1px solid',
-                    borderColor: 'divider',
-                    minHeight: { xs: 220, md: 320 },
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                >
-                  <PlayCircleIcon sx={{ fontSize: 72, color: 'success.main' }} />
-                </Box>
-                <Typography variant="subtitle1" fontWeight={600}>
-                  Watch how payouts work
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Once you go live we automatically capture proof-of-profile, notify the advertiser,
-                  and release funds to your wallet. Keep the creative up for the full duration to
-                  secure the bonus tier.
-                </Typography>
-                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-                  <Button variant="contained" color="success" size="large">
-                    Start Campaign
-                  </Button>
-                  <Button component={RouterLink} to="/marketplace" variant="outlined" size="large">
-                    Pick a different ad
-                  </Button>
+    <Box display="flex" justifyContent="center" py={4}>
+      <Card sx={{ maxWidth: 560, width: '100%' }}>
+        <CardContent sx={{ p: 4 }}>
+          <Stack spacing={3} alignItems="center" textAlign="center">
+            <Box
+              sx={{
+                width: 72, height: 72, borderRadius: '50%',
+                bgcolor: 'success.light', display: 'flex',
+                alignItems: 'center', justifyContent: 'center',
+              }}
+            >
+              <Typography variant="h3">✓</Typography>
+            </Box>
+
+            <Stack spacing={1}>
+              <Typography variant="h4" fontWeight={700}>
+                You&apos;re in!
+              </Typography>
+              <Typography variant="body1" color="text.secondary">
+                You&apos;ve successfully joined the campaign. Your profile is now promoting this ad.
+              </Typography>
+            </Stack>
+
+            {error && <Alert severity="warning" sx={{ width: '100%' }}>{error}</Alert>}
+
+            {campaign && (
+              <>
+                <Divider sx={{ width: '100%' }} />
+                <Stack spacing={2} width="100%" textAlign="left">
+                  <Typography variant="subtitle1" fontWeight={600}>Campaign Details</Typography>
+                  <Stack direction="row" justifyContent="space-between">
+                    <Typography variant="body2" color="text.secondary">Campaign</Typography>
+                    <Typography variant="body2" fontWeight={600}>{campaign.title}</Typography>
+                  </Stack>
+                  <Stack direction="row" justifyContent="space-between">
+                    <Typography variant="body2" color="text.secondary">Your payout</Typography>
+                    <Typography variant="body2" fontWeight={600} color="success.main">
+                      ${Number(campaign.payoutPerSwap).toFixed(2)}
+                    </Typography>
+                  </Stack>
+                  <Stack direction="row" justifyContent="space-between">
+                    <Typography variant="body2" color="text.secondary">Duration</Typography>
+                    <Typography variant="body2" fontWeight={600}>{campaign.durationHours} hours</Typography>
+                  </Stack>
+                  {campaign.advertiser?.companyName && (
+                    <Stack direction="row" justifyContent="space-between">
+                      <Typography variant="body2" color="text.secondary">Advertiser</Typography>
+                      <Typography variant="body2" fontWeight={600}>{campaign.advertiser.companyName}</Typography>
+                    </Stack>
+                  )}
                 </Stack>
-              </Stack>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} md={4}>
-          <Card variant="outlined">
-            <CardContent>
-              <Stack spacing={2}>
-                <Typography variant="subtitle1" fontWeight={700}>
-                  Advertiser details
-                </Typography>
-                <Stack spacing={1}>
-                  <Typography variant="body2" color="text.secondary">
-                    Brand
-                  </Typography>
-                  <Typography variant="body1" fontWeight={600}>
-                    Target
-                  </Typography>
-                </Stack>
-                <Divider />
-                <Stack spacing={1}>
-                  <Typography variant="body2" color="text.secondary">
-                    Payout timing
-                  </Typography>
-                  <Typography variant="body1" fontWeight={600}>
-                    04:26 remaining
-                  </Typography>
-                </Stack>
-                <Divider />
-                <Stack spacing={1}>
-                  <Typography variant="body2" color="text.secondary">
-                    Swap duration
-                  </Typography>
-                  <Typography variant="body1" fontWeight={600}>
-                    24 hours
-                  </Typography>
-                </Stack>
-                <Divider />
-                <Stack spacing={1}>
-                  <Typography variant="body2" color="text.secondary">
-                    Bonus
-                  </Typography>
-                  <Typography variant="body1" fontWeight={600}>
-                    +$8 for 48 hours
-                  </Typography>
-                </Stack>
-              </Stack>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
-    </Stack>
+              </>
+            )}
+
+            <Divider sx={{ width: '100%' }} />
+
+            <Stack spacing={1} width="100%">
+              <Typography variant="body2" color="text.secondary">
+                Current wallet balance
+              </Typography>
+              <Typography variant="h5" fontWeight={700} color="success.main">
+                ${Number(user?.walletBalance || 0).toFixed(2)}
+              </Typography>
+            </Stack>
+
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} width="100%">
+              <Button
+                component={RouterLink}
+                to="/marketplace"
+                variant="outlined"
+                fullWidth
+              >
+                Browse More Campaigns
+              </Button>
+              <Button
+                component={RouterLink}
+                to="/"
+                variant="contained"
+                color="success"
+                fullWidth
+              >
+                Go to Dashboard
+              </Button>
+            </Stack>
+          </Stack>
+        </CardContent>
+      </Card>
+    </Box>
   );
 };
 

@@ -1,5 +1,10 @@
 // Frontend Jest setup for ProfilePays
 
+// Polyfill TextEncoder/TextDecoder for jsdom (required by react-dom/server)
+const { TextEncoder, TextDecoder } = require('util');
+global.TextEncoder = TextEncoder;
+global.TextDecoder = TextDecoder;
+
 global.console = {
   ...console,
   debug: jest.fn(),

@@ -1,5 +1,5 @@
 // Frontend utility tests for ProfilePays
-import { renderToStaticMarkup } from 'react-dom/server';
+import { render } from '@testing-library/react';
 import { describe, test, expect } from '@jest/globals';
 
 // Sample utility functions to test
@@ -73,13 +73,13 @@ describe('ProfilePays Frontend Utilities', () => {
 
   describe('React Component Tests', () => {
     test('should render welcome message', () => {
-      const markup = renderToStaticMarkup(<WelcomeMessage userName="John Doe" />);
-      expect(markup).toContain('Welcome to ProfilePays, John Doe!');
+      const { container } = render(<WelcomeMessage userName="John Doe" />);
+      expect(container.innerHTML).toContain('Welcome to ProfilePays, John Doe!');
     });
 
     test('should handle empty username', () => {
-      const markup = renderToStaticMarkup(<WelcomeMessage userName="" />);
-      expect(markup).toContain('Welcome to ProfilePays, !');
+      const { container } = render(<WelcomeMessage userName="" />);
+      expect(container.innerHTML).toContain('Welcome to ProfilePays, !');
     });
   });
 
@@ -107,11 +107,18 @@ describe('ProfilePays Frontend Utilities', () => {
       const testKey = 'profilepays-test';
       const testValue = 'test-value';
 
+      // jsdom provides a real localStorage; spy on it
+      const setItemSpy = jest.spyOn(Storage.prototype, 'setItem');
+      const getItemSpy = jest.spyOn(Storage.prototype, 'getItem');
+
       localStorage.setItem(testKey, testValue);
-      expect(localStorage.setItem).toHaveBeenCalledWith(testKey, testValue);
+      expect(setItemSpy).toHaveBeenCalledWith(testKey, testValue);
 
       localStorage.getItem(testKey);
-      expect(localStorage.getItem).toHaveBeenCalledWith(testKey);
+      expect(getItemSpy).toHaveBeenCalledWith(testKey);
+
+      setItemSpy.mockRestore();
+      getItemSpy.mockRestore();
     });
   });
 });
