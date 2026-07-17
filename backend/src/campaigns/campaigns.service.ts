@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, FindOptionsWhere, FindManyOptions, ILike, Between, In, Not, IsNull } from 'typeorm';
+import { InjectRepository, InjectDataSource } from '@nestjs/typeorm';
+import { DataSource, LessThan, Repository, FindOptionsWhere } from 'typeorm';
 import { Campaign, CampaignStatus } from './entities/campaign.entity';
 import { CampaignParticipation, ParticipationStatus } from './entities/campaign-participation.entity';
 import { User, UserRole } from '../users/entities/user.entity';
@@ -19,6 +19,8 @@ export class CampaignsService {
     private participationRepository: Repository<CampaignParticipation>,
     @InjectRepository(User)
     private userRepository: Repository<User>,
+    @InjectDataSource()
+    private dataSource: DataSource,
   ) {}
 
   async create(createCampaignDto: CreateCampaignDto, advertiserId: string): Promise<Campaign> {
@@ -311,34 +313,47 @@ export class CampaignsService {
       throw new BadRequestException(eligibility.reason);
     }
 
-    // Check if user already joined
-    const existingParticipation = await this.participationRepository.findOne({
-      where: { campaignId, userId },
+    // Insert participation and claim a spot atomically. The UQ_user_campaign
+    // constraint rejects duplicate joins, and the guarded UPDATE prevents
+    // overshooting maxParticipants under concurrent joins — if either fails,
+    // the transaction rolls back both writes.
+    return this.dataSource.transaction(async (manager) => {
+      const participation = manager.create(CampaignParticipation, {
+        campaignId,
+        userId,
+        status: campaign.approvalRequired ? ParticipationStatus.PENDING : ParticipationStatus.ACTIVE,
+      });
+
+      if (!campaign.approvalRequired) {
+        participation.startTime = new Date();
+        participation.endTime = new Date(Date.now() + campaign.durationMinutes * 60000);
+      }
+
+      let savedParticipation: CampaignParticipation;
+      try {
+        savedParticipation = await manager.save(participation);
+      } catch (error: any) {
+        if (error?.code === '23505') {
+          // unique_violation on UQ_user_campaign
+          throw new ConflictException('You have already joined this campaign');
+        }
+        throw error;
+      }
+
+      const claimed = await manager
+        .createQueryBuilder()
+        .update(Campaign)
+        .set({ currentParticipants: () => 'current_participants + 1' })
+        .where('id = :id', { id: campaignId })
+        .andWhere('(max_participants IS NULL OR current_participants < max_participants)')
+        .execute();
+
+      if (!claimed.affected) {
+        throw new BadRequestException('Campaign is full');
+      }
+
+      return savedParticipation;
     });
-
-    if (existingParticipation) {
-      throw new ConflictException('You have already joined this campaign');
-    }
-
-    // Create participation
-    const participation = this.participationRepository.create({
-      campaignId,
-      userId,
-      status: campaign.approvalRequired ? ParticipationStatus.PENDING : ParticipationStatus.ACTIVE,
-    });
-
-    // If auto-approved, set start time
-    if (!campaign.approvalRequired) {
-      participation.startTime = new Date();
-      participation.endTime = new Date(Date.now() + campaign.durationMinutes * 60000);
-    }
-
-    const savedParticipation = await this.participationRepository.save(participation);
-
-    // Update campaign participant count
-    await this.campaignRepository.increment({ id: campaignId }, 'currentParticipants', 1);
-
-    return savedParticipation;
   }
 
   async completeCampaign(participationId: string, userId: string, completeDto: CompleteCampaignDto): Promise<CampaignParticipation> {
@@ -488,36 +503,22 @@ export class CampaignsService {
 
   // Scheduled tasks (to be called by cron jobs)
   async expireOldParticipations(): Promise<void> {
-    const expiredParticipations = await this.participationRepository.find({
-      where: {
+    await this.participationRepository.update(
+      {
         status: ParticipationStatus.ACTIVE,
-        endTime: IsNull() ? undefined : Not(IsNull()),
+        endTime: LessThan(new Date()),
       },
-    });
-
-    const now = new Date();
-    const toExpire = expiredParticipations.filter(p => p.endTime && p.endTime < now);
-
-    for (const participation of toExpire) {
-      participation.status = ParticipationStatus.EXPIRED;
-      await this.participationRepository.save(participation);
-    }
+      { status: ParticipationStatus.EXPIRED },
+    );
   }
 
   async autoCompleteCampaigns(): Promise<void> {
-    const campaigns = await this.campaignRepository.find({
-      where: {
+    await this.campaignRepository.update(
+      {
         status: CampaignStatus.ACTIVE,
-        endDate: IsNull() ? undefined : Not(IsNull()),
+        endDate: LessThan(new Date()),
       },
-    });
-
-    const now = new Date();
-    const toComplete = campaigns.filter(c => c.endDate && c.endDate < now);
-
-    for (const campaign of toComplete) {
-      campaign.status = CampaignStatus.COMPLETED;
-      await this.campaignRepository.save(campaign);
-    }
+      { status: CampaignStatus.COMPLETED },
+    );
   }
 }

@@ -6,6 +6,7 @@ import {
   Res,
   HttpCode,
   HttpStatus,
+  UnauthorizedException,
   UseGuards,
   Get,
   Query,
@@ -75,7 +76,7 @@ export class AuthController {
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ): Promise<AuthResponse> {
-    const ipAddress = req.ip || req.connection.remoteAddress || 'unknown';
+    const ipAddress = req.ip || req.socket?.remoteAddress || 'unknown';
     const userAgent = req.headers['user-agent'] || 'unknown';
 
     const authResponse = await this.authService.signup(
@@ -132,7 +133,7 @@ export class AuthController {
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ): Promise<AuthResponse> {
-    const ipAddress = req.ip || req.connection.remoteAddress || 'unknown';
+    const ipAddress = req.ip || req.socket?.remoteAddress || 'unknown';
     const userAgent = req.headers['user-agent'] || 'unknown';
 
     const authResponse = await this.authService.login(
@@ -183,7 +184,7 @@ export class AuthController {
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
   ): Promise<{ accessToken: string; refreshToken: string }> {
-    const ipAddress = req.ip || req.connection.remoteAddress || 'unknown';
+    const ipAddress = req.ip || req.socket?.remoteAddress || 'unknown';
     const userAgent = req.headers['user-agent'] || 'unknown';
 
     // Get refresh token from body or cookie
@@ -192,7 +193,7 @@ export class AuthController {
       req.cookies?.refreshToken;
 
     if (!refreshToken) {
-      throw new Error('Refresh token is required');
+      throw new UnauthorizedException('Refresh token is required');
     }
 
     const tokens = await this.authService.refreshAccessToken(

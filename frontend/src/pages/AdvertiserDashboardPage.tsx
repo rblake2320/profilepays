@@ -55,7 +55,9 @@ const AdvertiserDashboardPage = () => {
     }
   };
 
-  useEffect(() => { fetchCampaigns(); }, []);
+  useEffect(() => {
+    fetchCampaigns(); 
+  }, []);
 
   const onCreateSubmit = async (data: CampaignFormData) => {
     try {
@@ -75,9 +77,13 @@ const AdvertiserDashboardPage = () => {
   const handleAction = async (action: 'activate' | 'pause' | 'end', id: string) => {
     setActionLoading(id);
     try {
-      if (action === 'activate') await campaignsApi.activate(id);
-      else if (action === 'pause') await campaignsApi.pause(id);
-      else await campaignsApi.end(id);
+      if (action === 'activate') {
+        await campaignsApi.activate(id);
+      } else if (action === 'pause') {
+        await campaignsApi.pause(id);
+      } else {
+        await campaignsApi.end(id);
+      }
       await fetchCampaigns();
     } catch (err: any) {
       setError(err.response?.data?.message || `Failed to ${action} campaign`);

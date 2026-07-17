@@ -220,13 +220,12 @@ export class AuthService {
     ipAddress: string,
     userAgent: string,
   ): Promise<{ accessToken: string; refreshToken: string }> {
-    // JWT payload
+    // JWT payload — iat/exp must be left to the JWT library: supplying exp
+    // in the payload alongside the expiresIn option makes jsonwebtoken throw.
     const payload: JwtPayload = {
       sub: user.id,
       email: user.email,
       userRole: user.userRole,
-      iat: Math.floor(Date.now() / 1000),
-      exp: Math.floor(Date.now() / 1000) + 60 * 15, // 15 minutes
     };
 
     // Generate access token

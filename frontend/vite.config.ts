@@ -1,4 +1,5 @@
-import { defineConfig, loadEnv } from 'vite';
+import { defineConfig } from 'vitest/config';
+import { loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 
 export default defineConfig(({ mode }) => {
@@ -28,10 +29,13 @@ export default defineConfig(({ mode }) => {
       sourcemap: false,
       rollupOptions: {
         output: {
-          manualChunks: {
-            vendor: ['react', 'react-dom'],
-            mui: ['@mui/material', '@mui/icons-material'],
-            redux: ['@reduxjs/toolkit', 'react-redux'],
+          // Rolldown (Vite 8) only supports the function form
+          manualChunks(id: string) {
+            if (!id.includes('node_modules')) return undefined;
+            if (id.includes('@mui') || id.includes('@emotion')) return 'mui';
+            if (id.includes('@reduxjs') || id.includes('react-redux')) return 'redux';
+            if (id.includes('react')) return 'vendor';
+            return undefined;
           },
         },
       },
@@ -39,7 +43,7 @@ export default defineConfig(({ mode }) => {
     test: {
       globals: true,
       environment: 'jsdom',
-      setupFiles: './jest.setup.js',
+      setupFiles: './vitest.setup.ts',
       css: true,
     },
   };

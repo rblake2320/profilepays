@@ -45,7 +45,7 @@ export const registerUser = createAsyncThunk(
     } catch (err: any) {
       return rejectWithValue(err.response?.data?.message || 'Registration failed');
     }
-  },
+  }
 );
 
 export const loginUser = createAsyncThunk(
@@ -56,7 +56,7 @@ export const loginUser = createAsyncThunk(
     } catch (err: any) {
       return rejectWithValue(err.response?.data?.message || 'Login failed');
     }
-  },
+  }
 );
 
 export const fetchCurrentUser = createAsyncThunk(
@@ -67,7 +67,7 @@ export const fetchCurrentUser = createAsyncThunk(
     } catch (err: any) {
       return rejectWithValue(err.response?.data?.message || 'Failed to fetch user');
     }
-  },
+  }
 );
 
 const authSlice = createSlice({

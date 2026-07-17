@@ -8,8 +8,8 @@ export interface JwtPayload {
   sub: string; // user id
   email: string;
   userRole: string;
-  iat: number;
-  exp: number;
+  iat?: number; // set by the JWT library at sign time
+  exp?: number; // set by the JWT library at sign time
 }
 
 @Injectable()

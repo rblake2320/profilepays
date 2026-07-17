@@ -1,28 +1,13 @@
 import axios, { AxiosError } from 'axios';
 
-// Resolve API base URL: works in both Vite (import.meta.env) and Jest (process.env)
-function getBaseUrl(): string {
-  // In Vite build/dev environment
-  if (typeof window !== 'undefined' && (window as any).__VITE_API_URL__) {
-    return (window as any).__VITE_API_URL__;
-  }
-  // In Jest/Node environment
-  if (typeof process !== 'undefined' && process.env.VITE_API_URL) {
-    return process.env.VITE_API_URL;
-  }
-  return 'http://localhost:3000/api/v1';
-}
+// __API_URL__ is injected at build/test time by Vite's define config
+// (see vite.config.ts); the fallback matches the backend dev default.
+declare const __API_URL__: string | undefined;
 
-// Vite replaces this at build time via define config
-declare const __API_URL__: string;
-const BASE_URL: string = (() => {
-  try {
-    // This will be replaced by Vite's define plugin
-    return typeof __API_URL__ !== 'undefined' ? __API_URL__ : getBaseUrl();
-  } catch {
-    return getBaseUrl();
-  }
-})();
+const BASE_URL: string =
+  typeof __API_URL__ !== 'undefined' && __API_URL__
+    ? __API_URL__
+    : 'http://localhost:3000/api/v1';
 
 export const apiClient = axios.create({
   baseURL: BASE_URL,
@@ -41,7 +26,7 @@ apiClient.interceptors.request.use(
     }
     return config;
   },
-  (error) => Promise.reject(error),
+  (error) => Promise.reject(error)
 );
 
 // Response interceptor: handle 401 and refresh token
@@ -80,7 +65,7 @@ apiClient.interceptors.response.use(
     }
 
     return Promise.reject(error);
-  },
+  }
 );
 
 export default apiClient;

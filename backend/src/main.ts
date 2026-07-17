@@ -21,7 +21,7 @@ async function bootstrap() {
 
   // CORS configuration
   app.enableCors({
-    origin: configService.get('FRONTEND_URL', 'http://localhost:3000'),
+    origin: configService.get('FRONTEND_URL', 'http://localhost:5173'),
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
@@ -37,8 +37,9 @@ async function bootstrap() {
     }),
   );
 
-  // Global prefix
-  app.setGlobalPrefix('api');
+  // Global prefix — must match the frontend API client default (…/api/v1)
+  // and the documented endpoints in CAMPAIGN_MARKETPLACE_API.md.
+  app.setGlobalPrefix('api/v1');
 
   // Swagger documentation
   if (nodeEnv !== 'production') {
