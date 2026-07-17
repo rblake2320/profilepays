@@ -16,7 +16,7 @@ export const paymentsApi = {
     apiClient
       .post<{ clientSecret: string; platformFee: number; escrowAmount: number }>(
         '/payments/intent',
-        { amount },
+        { amount }
       )
       .then((r) => r.data),
 

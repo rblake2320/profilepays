@@ -51,7 +51,9 @@ const LoginPage = () => {
   }, [user, navigate, from]);
 
   useEffect(() => {
-    return () => { dispatch(clearError()); };
+    return () => {
+      dispatch(clearError()); 
+    };
   }, [dispatch]);
 
   const onSubmit = (data: FormData) => {

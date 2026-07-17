@@ -5,11 +5,9 @@ import {
   CircularProgress, Grid, Stack, Typography,
 } from '@mui/material';
 import { campaignsApi, Campaign } from '../api/campaigns';
-import { useAppSelector } from '../hooks/redux';
 
 const AdSelectionPage = () => {
   const navigate = useNavigate();
-  const { user } = useAppSelector((s) => s.auth);
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -32,7 +30,9 @@ const AdSelectionPage = () => {
   }, []);
 
   const handleParticipate = async () => {
-    if (!selectedId) return;
+    if (!selectedId) {
+      return;
+    }
     try {
       setParticipating(true);
       await campaignsApi.participate(selectedId, 'instagram');
