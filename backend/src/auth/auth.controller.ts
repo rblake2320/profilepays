@@ -6,6 +6,7 @@ import {
   Res,
   HttpCode,
   HttpStatus,
+  UnauthorizedException,
   UseGuards,
   Get,
   Query,
@@ -192,7 +193,7 @@ export class AuthController {
       req.cookies?.refreshToken;
 
     if (!refreshToken) {
-      throw new Error('Refresh token is required');
+      throw new UnauthorizedException('Refresh token is required');
     }
 
     const tokens = await this.authService.refreshAccessToken(
