@@ -30,11 +30,13 @@ function validateEnv(config: Record<string, unknown>): Record<string, unknown> {
       validate: validateEnv,
     }),
 
-    // Rate Limiting
-    ThrottlerModule.forRoot({
-      ttl: 60,
-      limit: 10,
-    }),
+    // Rate Limiting (ttl is milliseconds since @nestjs/throttler v5)
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60_000,
+        limit: 10,
+      },
+    ]),
 
     // Database
     TypeOrmModule.forRootAsync({

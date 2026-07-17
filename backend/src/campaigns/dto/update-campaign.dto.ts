@@ -1,4 +1,4 @@
-import { PartialType, OmitType } from '@nestjs/mapped-types';
+import { PartialType, OmitType } from '@nestjs/swagger';
 import { CreateCampaignDto } from './create-campaign.dto';
 import { IsOptional, IsEnum } from 'class-validator';
 import { CampaignStatus } from '../entities/campaign.entity';
