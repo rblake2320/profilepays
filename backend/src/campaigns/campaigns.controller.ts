@@ -27,7 +27,7 @@ import { Public } from '../auth/decorators/public.decorator';
 import { User, UserRole } from '../users/entities/user.entity';
 import { ParticipationStatus } from './entities/campaign-participation.entity';
 
-@Controller('api/campaigns')
+@Controller('campaigns')
 export class CampaignsController {
   constructor(private readonly campaignsService: CampaignsService) {}
 

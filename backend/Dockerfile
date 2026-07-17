@@ -1,33 +1,32 @@
+# ProfilePays backend — build from the repository root (npm workspace):
+#   docker build -f backend/Dockerfile .
+
 # ─── Stage 1: Build ────────────────────────────────────────────────────────────
 FROM node:22-alpine AS builder
 
 WORKDIR /app
 
-# Install NestJS CLI globally
-RUN npm install -g @nestjs/cli
+# The lockfile lives at the workspace root; install the whole workspace once
+COPY package.json package-lock.json ./
+COPY backend/package.json ./backend/
+COPY frontend/package.json ./frontend/
+RUN npm ci --ignore-scripts
 
-# Copy package files and install dependencies
-COPY package*.json ./
-RUN npm ci --legacy-peer-deps
-
-# Copy source and build
-COPY . .
-RUN nest build
+COPY backend/tsconfig.json backend/tsconfig.build.json backend/nest-cli.json ./backend/
+COPY backend/src ./backend/src
+RUN npm run build --workspace backend
 
 # ─── Stage 2: Production ───────────────────────────────────────────────────────
 FROM node:22-alpine AS production
 
+ENV NODE_ENV=production
 WORKDIR /app
 
-# Install curl for healthcheck
-RUN apk add --no-cache curl
+COPY package.json package-lock.json ./
+COPY backend/package.json ./backend/
+RUN npm ci --ignore-scripts --omit=dev --workspace backend && npm cache clean --force
 
-# Copy package files and install only production deps
-COPY package*.json ./
-RUN npm ci --only=production --legacy-peer-deps
-
-# Copy built artifacts from builder
-COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/backend/dist ./backend/dist
 
 # Non-root user for security
 RUN addgroup -g 1001 -S nodejs && adduser -S nestjs -u 1001
@@ -35,8 +34,8 @@ USER nestjs
 
 EXPOSE 3000
 
-# Health check
+# Health check against the public campaign listing (no auth required)
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
-  CMD curl -f http://localhost:3000/api/v1/campaigns/stats || exit 1
+  CMD node -e "fetch('http://localhost:3000/api/v1/campaigns').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 
-CMD ["node", "dist/src/main.js"]
+CMD ["node", "backend/dist/main.js"]
