@@ -10,7 +10,7 @@
 const https = require('https');
 const http = require('http');
 
-const API_BASE = 'http://localhost:3001/api';
+const API_BASE = 'http://localhost:3000/api/v1';
 
 // Test data
 const testUser = {
