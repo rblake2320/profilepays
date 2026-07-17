@@ -52,10 +52,9 @@ profilepays/
 │   ├── 📄 deploy.sh            # Deployment script
 │   └── 📄 setup.sh             # Development setup
 │
-├── 📂 docker/                   # Docker configuration
-│   ├── 📄 Dockerfile.frontend  # Frontend container
-│   ├── 📄 Dockerfile.backend   # Backend container
-│   └── 📄 docker-compose.yml   # Multi-container setup
+├── 📄 docker-compose.yml        # Multi-container setup (Postgres, Redis, API, SPA)
+├── 📄 backend/Dockerfile        # Backend image (multi-stage, root build context)
+├── 📄 frontend/Dockerfile       # Frontend image (multi-stage → nginx)
 │
 ├── 📂 .github/                  # GitHub configuration
 │   ├── 📂 workflows/           # CI/CD workflows
