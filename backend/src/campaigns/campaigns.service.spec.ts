@@ -1,11 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { getRepositoryToken } from '@nestjs/typeorm';
+import { getRepositoryToken, getDataSourceToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CampaignsService } from './campaigns.service';
 import { Campaign, CampaignStatus, CampaignCategory } from './entities/campaign.entity';
 import { CampaignParticipation, ParticipationStatus } from './entities/campaign-participation.entity';
 import { User, UserRole } from '../users/entities/user.entity';
-import { NotFoundException, BadRequestException } from '@nestjs/common';
+import { NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
 
 describe('CampaignsService', () => {
   let service: CampaignsService;
@@ -33,6 +33,17 @@ describe('CampaignsService', () => {
 
   const mockUserRepository = {
     findOne: jest.fn(),
+  };
+
+  // Transactional entity manager handed to dataSource.transaction callbacks
+  const mockManager = {
+    create: jest.fn(),
+    save: jest.fn(),
+    createQueryBuilder: jest.fn(),
+  };
+
+  const mockDataSource = {
+    transaction: jest.fn(async (cb: (manager: typeof mockManager) => unknown) => cb(mockManager)),
   };
 
   const mockUser: User = {
@@ -92,6 +103,10 @@ describe('CampaignsService', () => {
         {
           provide: getRepositoryToken(User),
           useValue: mockUserRepository,
+        },
+        {
+          provide: getDataSourceToken(),
+          useValue: mockDataSource,
         },
       ],
     }).compile();
@@ -172,24 +187,41 @@ describe('CampaignsService', () => {
   });
 
   describe('joinCampaign', () => {
-    it('should allow user to join campaign successfully', async () => {
-      const joinDto = {};
-      const mockParticipation = {
-        id: 'participation-id',
-        campaignId: mockCampaign.id,
-        userId: mockUser.id,
-        status: ParticipationStatus.ACTIVE,
-        toResponseObject: jest.fn().mockReturnValue({}),
-      };
+    const mockParticipation = {
+      id: 'participation-id',
+      campaignId: mockCampaign.id,
+      userId: mockUser.id,
+      status: ParticipationStatus.ACTIVE,
+      toResponseObject: jest.fn().mockReturnValue({}),
+    };
 
-      mockCampaign.canUserJoin.mockReturnValue({ canJoin: true });
+    // Query builder returned inside the join transaction for the guarded
+    // currentParticipants increment
+    const mockUpdateQb = {
+      update: jest.fn().mockReturnThis(),
+      set: jest.fn().mockReturnThis(),
+      where: jest.fn().mockReturnThis(),
+      andWhere: jest.fn().mockReturnThis(),
+      execute: jest.fn(),
+    };
+
+    beforeEach(() => {
+      mockManager.createQueryBuilder.mockReturnValue(mockUpdateQb);
+      mockUpdateQb.update.mockReturnThis();
+      mockUpdateQb.set.mockReturnThis();
+      mockUpdateQb.where.mockReturnThis();
+      mockUpdateQb.andWhere.mockReturnThis();
+    });
+
+    it('should allow user to join campaign successfully', async () => {
+      (mockCampaign.canUserJoin as jest.Mock).mockReturnValue({ canJoin: true });
       mockCampaignRepository.findOne.mockResolvedValue(mockCampaign);
       mockUserRepository.findOne.mockResolvedValue(mockUser);
-      mockParticipationRepository.findOne.mockResolvedValue(null);
-      mockParticipationRepository.create.mockReturnValue(mockParticipation);
-      mockParticipationRepository.save.mockResolvedValue(mockParticipation);
+      mockManager.create.mockReturnValue(mockParticipation);
+      mockManager.save.mockResolvedValue(mockParticipation);
+      mockUpdateQb.execute.mockResolvedValue({ affected: 1 });
 
-      const result = await service.joinCampaign(mockCampaign.id, mockUser.id, joinDto);
+      const result = await service.joinCampaign(mockCampaign.id, mockUser.id, {});
 
       expect(mockCampaignRepository.findOne).toHaveBeenCalledWith({
         where: { id: mockCampaign.id },
@@ -197,13 +229,9 @@ describe('CampaignsService', () => {
       });
       expect(mockUserRepository.findOne).toHaveBeenCalledWith({ where: { id: mockUser.id } });
       expect(mockCampaign.canUserJoin).toHaveBeenCalledWith(mockUser);
-      expect(mockParticipationRepository.create).toHaveBeenCalled();
-      expect(mockParticipationRepository.save).toHaveBeenCalledWith(mockParticipation);
-      expect(mockCampaignRepository.increment).toHaveBeenCalledWith(
-        { id: mockCampaign.id },
-        'currentParticipants',
-        1
-      );
+      expect(mockDataSource.transaction).toHaveBeenCalled();
+      expect(mockManager.save).toHaveBeenCalledWith(mockParticipation);
+      expect(mockUpdateQb.execute).toHaveBeenCalled();
       expect(result).toBe(mockParticipation);
     });
 
@@ -215,12 +243,35 @@ describe('CampaignsService', () => {
     });
 
     it('should throw BadRequestException if user cannot join', async () => {
-      mockCampaign.canUserJoin.mockReturnValue({ canJoin: false, reason: 'Campaign is full' });
+      (mockCampaign.canUserJoin as jest.Mock).mockReturnValue({ canJoin: false, reason: 'Campaign is full' });
       mockCampaignRepository.findOne.mockResolvedValue(mockCampaign);
       mockUserRepository.findOne.mockResolvedValue(mockUser);
 
       await expect(service.joinCampaign(mockCampaign.id, mockUser.id, {}))
         .rejects.toThrow(BadRequestException);
+    });
+
+    it('should throw BadRequestException when the last spot is taken concurrently', async () => {
+      (mockCampaign.canUserJoin as jest.Mock).mockReturnValue({ canJoin: true });
+      mockCampaignRepository.findOne.mockResolvedValue(mockCampaign);
+      mockUserRepository.findOne.mockResolvedValue(mockUser);
+      mockManager.create.mockReturnValue(mockParticipation);
+      mockManager.save.mockResolvedValue(mockParticipation);
+      mockUpdateQb.execute.mockResolvedValue({ affected: 0 });
+
+      await expect(service.joinCampaign(mockCampaign.id, mockUser.id, {}))
+        .rejects.toThrow(BadRequestException);
+    });
+
+    it('should throw ConflictException when the user already joined (unique violation)', async () => {
+      (mockCampaign.canUserJoin as jest.Mock).mockReturnValue({ canJoin: true });
+      mockCampaignRepository.findOne.mockResolvedValue(mockCampaign);
+      mockUserRepository.findOne.mockResolvedValue(mockUser);
+      mockManager.create.mockReturnValue(mockParticipation);
+      mockManager.save.mockRejectedValue({ code: '23505' });
+
+      await expect(service.joinCampaign(mockCampaign.id, mockUser.id, {}))
+        .rejects.toThrow(ConflictException);
     });
   });
 
@@ -281,7 +332,7 @@ describe('CampaignsService', () => {
       };
 
       mockCampaignRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder);
-      mockCampaign.toResponseObject.mockReturnValue({ id: mockCampaign.id });
+      (mockCampaign.toResponseObject as jest.Mock).mockReturnValue({ id: mockCampaign.id });
 
       const result = await service.findAll(filterDto);
 
