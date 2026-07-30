@@ -199,7 +199,7 @@ Use our [Pull Request Template](.github/PULL_REQUEST_TEMPLATE.md) and include:
 
 ### Bug Reports
 
-Use our [Bug Report Template](.github/ISSUE_TEMPLATE/bug_report.md) and include:
+Use our [Bug Report Template](.github/ISSUE_TEMPLATE/bug_report.yml) and include:
 
 - Clear description of the issue
 - Steps to reproduce
@@ -209,7 +209,7 @@ Use our [Bug Report Template](.github/ISSUE_TEMPLATE/bug_report.md) and include:
 
 ### Feature Requests
 
-Use our [Feature Request Template](.github/ISSUE_TEMPLATE/feature_request.md) and include:
+Use our [Feature Request Template](.github/ISSUE_TEMPLATE/feature_request.yml) and include:
 
 - Problem statement
 - Proposed solution
