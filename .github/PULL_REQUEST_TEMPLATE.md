@@ -32,9 +32,9 @@ Fixes #(issue_number)
 **Test Instructions:**
 <!-- Provide step-by-step instructions for testing this change -->
 
-1. 
-2. 
-3. 
+1.
+2.
+3.
 
 ## 📱 Screenshots (if applicable)
 
@@ -42,7 +42,7 @@ Fixes #(issue_number)
 
 | Before | After |
 |--------|-------|
-| ![Before](url) | ![After](url) |
+| Before image | After image |
 
 ## ✅ Checklist
 

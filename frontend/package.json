@@ -7,11 +7,11 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "lint": "NODE_PATH=../node_modules:../backend/node_modules ESLINT_USE_FLAT_CONFIG=false eslint src --ext .js,.jsx,.ts,.tsx --resolve-plugins-relative-to ..",
-    "lint:fix": "NODE_PATH=../node_modules:../backend/node_modules ESLINT_USE_FLAT_CONFIG=false eslint src --ext .js,.jsx,.ts,.tsx --resolve-plugins-relative-to .. --fix",
-    "test": "NODE_PATH=../node_modules:./node_modules TS_NODE_TRANSPILE_ONLY=1 TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\",\"esModuleInterop\":true,\"moduleResolution\":\"node\"}' node -r ts-node/register ./tests/run-tests.ts",
-    "test:ui": "NODE_PATH=../node_modules:./node_modules TS_NODE_TRANSPILE_ONLY=1 TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\",\"esModuleInterop\":true,\"moduleResolution\":\"node\"}' node -r ts-node/register ./tests/run-tests.ts",
-    "test:coverage": "NODE_PATH=../node_modules:./node_modules TS_NODE_TRANSPILE_ONLY=1 TS_NODE_COMPILER_OPTIONS='{\"module\":\"commonjs\",\"esModuleInterop\":true,\"moduleResolution\":\"node\"}' node -r ts-node/register ./tests/run-tests.ts",
+    "lint": "eslint src --ext .js,.jsx,.ts,.tsx --resolve-plugins-relative-to ..",
+    "lint:fix": "npm run lint -- --fix",
+    "test": "ts-node --transpile-only --project tsconfig.tests.json tests/run-tests.ts",
+    "test:ui": "npm test",
+    "test:coverage": "npm test",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
@@ -26,7 +26,7 @@
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.76.0",
     "react-redux": "^8.1.3",
-    "react-router-dom": "^6.8.0",
+    "react-router-dom": "^7.11.0",
     "yup": "^1.7.1"
   },
   "devDependencies": {
@@ -34,18 +34,19 @@
     "@types/react-dom": "^18.0.0",
     "@typescript-eslint/eslint-plugin": "^5.52.0",
     "@typescript-eslint/parser": "^5.52.0",
-    "@vitejs/plugin-react": "^3.1.0",
-    "@vitest/ui": "^0.28.0",
+    "@vitejs/plugin-react": "^6.0.5",
+    "@vitest/ui": "^4.1.10",
     "c8": "^7.12.0",
     "eslint": "^8.34.0",
     "eslint-plugin-react": "^7.32.0",
     "eslint-plugin-react-hooks": "^4.6.0",
+    "ts-node": "^10.9.2",
     "typescript": "^4.9.0",
-    "vite": "^4.1.0",
-    "vitest": "^0.28.0"
+    "vite": "^8.2.0",
+    "vitest": "^4.1.10"
   },
   "engines": {
-    "node": ">=18.0.0",
-    "npm": ">=8.0.0"
+    "node": ">=22.0.0",
+    "npm": ">=10.0.0"
   }
 }

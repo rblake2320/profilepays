@@ -12,28 +12,28 @@ class CompletionProofDto {
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  screenshots?: string[];
+    screenshots?: string[];
 
   @IsOptional()
   @IsUrl()
-  videoUrl?: string;
+    videoUrl?: string;
 
   @IsOptional()
   @IsUrl()
-  socialPostUrl?: string;
+    socialPostUrl?: string;
 
   @IsOptional()
   @IsString()
-  description?: string;
+    description?: string;
 }
 
 export class CompleteCampaignDto {
   @IsOptional()
   @ValidateNested()
   @Type(() => CompletionProofDto)
-  proof?: CompletionProofDto;
+    proof?: CompletionProofDto;
 
   @IsOptional()
   @IsString()
-  notes?: string;
+    notes?: string;
 }

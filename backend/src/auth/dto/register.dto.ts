@@ -5,29 +5,29 @@ import { UserType } from '../../database/entities/user.entity';
 export class RegisterDto {
   @ApiProperty({ example: 'user@example.com' })
   @IsEmail()
-  email: string;
+    email: string;
 
   @ApiProperty({ example: 'SecurePass123!', minLength: 8 })
   @IsString()
   @MinLength(8)
-  password: string;
+    password: string;
 
   @ApiProperty({ enum: UserType, example: UserType.MEMBER })
   @IsEnum(UserType)
-  userType: UserType;
+    userType: UserType;
 
   @ApiPropertyOptional({ example: 'Jane' })
   @IsOptional()
   @IsString()
-  firstName?: string;
+    firstName?: string;
 
   @ApiPropertyOptional({ example: 'Doe' })
   @IsOptional()
   @IsString()
-  lastName?: string;
+    lastName?: string;
 
   @ApiPropertyOptional({ example: 'Acme Corp' })
   @IsOptional()
   @IsString()
-  companyName?: string;
+    companyName?: string;
 }

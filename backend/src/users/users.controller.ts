@@ -75,11 +75,11 @@ export class UsersController {
   })
   async updateProfile(
     @CurrentUser() user: CurrentUserData,
-    @Body() updateProfileDto: UpdateProfileDto,
+    @Body() updateProfileDto: UpdateProfileDto
   ) {
     const updatedUser = await this.usersService.updateProfile(
       user.id,
-      updateProfileDto,
+      updateProfileDto
     );
 
     this.logger.log(`Profile updated for user: ${user.email}`);
@@ -140,7 +140,7 @@ export class UsersController {
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
     @Query('search') search?: string,
-    @CurrentUser() currentUser?: CurrentUserData,
+    @CurrentUser() currentUser?: CurrentUserData
   ) {
     const result = await this.usersService.findUsers(page, limit, search);
 

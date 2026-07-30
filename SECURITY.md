@@ -132,7 +132,7 @@ ProfilePays aims to comply with:
 ## Security Resources
 
 - [OWASP Top 10](https://owasp.org/www-project-top-ten/)
-- [Node.js Security Best Practices](https://nodejs.org/en/docs/guides/security/)
+- [Node.js Security Best Practices](https://nodejs.org/en/learn/getting-started/security-best-practices)
 - [React Security Best Practices](https://snyk.io/blog/10-react-security-best-practices/)
 - [NestJS Security](https://docs.nestjs.com/security/authentication)
 

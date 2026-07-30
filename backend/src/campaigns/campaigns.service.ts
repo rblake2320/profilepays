@@ -18,13 +18,13 @@ export class CampaignsService {
     @InjectRepository(CampaignParticipation)
     private participationRepository: Repository<CampaignParticipation>,
     @InjectRepository(User)
-    private userRepository: Repository<User>,
+    private userRepository: Repository<User>
   ) {}
 
   async create(createCampaignDto: CreateCampaignDto, advertiserId: string): Promise<Campaign> {
     // Verify user is an advertiser
     const advertiser = await this.userRepository.findOne({
-      where: { id: advertiserId, isActive: true }
+      where: { id: advertiserId, isActive: true },
     });
 
     if (!advertiser) {
@@ -195,7 +195,10 @@ export class CampaignsService {
   async findOne(id: string, userId?: string): Promise<any> {
     const campaign = await this.campaignRepository.findOne({
       where: { id },
-      relations: ['advertiser', 'participations', 'participations.user'],
+      relations: {
+        advertiser: true,
+        participations: { user: true },
+      },
     });
 
     if (!campaign) {
@@ -271,7 +274,7 @@ export class CampaignsService {
   async remove(id: string, advertiserId: string): Promise<void> {
     const campaign = await this.campaignRepository.findOne({
       where: { id, advertiserId },
-      relations: ['participations'],
+      relations: { participations: true },
     });
 
     if (!campaign) {
@@ -293,7 +296,7 @@ export class CampaignsService {
   async joinCampaign(campaignId: string, userId: string, joinDto: JoinCampaignDto): Promise<CampaignParticipation> {
     const campaign = await this.campaignRepository.findOne({
       where: { id: campaignId },
-      relations: ['participations'],
+      relations: { participations: true },
     });
 
     if (!campaign) {
@@ -344,7 +347,7 @@ export class CampaignsService {
   async completeCampaign(participationId: string, userId: string, completeDto: CompleteCampaignDto): Promise<CampaignParticipation> {
     const participation = await this.participationRepository.findOne({
       where: { id: participationId, userId },
-      relations: ['campaign'],
+      relations: { campaign: true },
     });
 
     if (!participation) {
@@ -371,7 +374,7 @@ export class CampaignsService {
 
     const participations = await this.participationRepository.find({
       where: whereClause,
-      relations: ['campaign', 'campaign.advertiser'],
+      relations: { campaign: { advertiser: true } },
       order: { createdAt: 'DESC' },
     });
 
@@ -417,7 +420,7 @@ export class CampaignsService {
 
     const campaigns = await this.campaignRepository.find({
       where: whereClause,
-      relations: ['participations'],
+      relations: { participations: true },
       order: { createdAt: 'DESC' },
     });
 
@@ -432,7 +435,7 @@ export class CampaignsService {
   async getCampaignAnalytics(campaignId: string, advertiserId: string) {
     const campaign = await this.campaignRepository.findOne({
       where: { id: campaignId, advertiserId },
-      relations: ['participations'],
+      relations: { participations: true },
     });
 
     if (!campaign) {
@@ -476,7 +479,9 @@ export class CampaignsService {
       p => p.status === ParticipationStatus.COMPLETED && p.startTime && p.endTime
     );
 
-    if (completedParticipations.length === 0) return null;
+    if (completedParticipations.length === 0) {
+      return null;
+    }
 
     const totalMinutes = completedParticipations.reduce((sum, p) => {
       const duration = p.endTime!.getTime() - p.startTime!.getTime();

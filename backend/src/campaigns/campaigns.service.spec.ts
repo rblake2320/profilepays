@@ -56,7 +56,10 @@ describe('CampaignsService', () => {
     isActive: true,
   } as User;
 
-  const mockCampaign: Campaign = {
+  const mockCampaign: Campaign & {
+    canUserJoin: jest.Mock;
+    toResponseObject: jest.Mock;
+  } = {
     id: '123e4567-e89b-12d3-a456-426614174002',
     title: 'Test Campaign',
     description: 'Test Description',
@@ -127,7 +130,7 @@ describe('CampaignsService', () => {
       const result = await service.create(createDto, mockAdvertiser.id);
 
       expect(mockUserRepository.findOne).toHaveBeenCalledWith({
-        where: { id: mockAdvertiser.id, isActive: true }
+        where: { id: mockAdvertiser.id, isActive: true },
       });
       expect(mockCampaignRepository.create).toHaveBeenCalledWith({
         ...createDto,
@@ -193,7 +196,7 @@ describe('CampaignsService', () => {
 
       expect(mockCampaignRepository.findOne).toHaveBeenCalledWith({
         where: { id: mockCampaign.id },
-        relations: ['participations'],
+        relations: { participations: true },
       });
       expect(mockUserRepository.findOne).toHaveBeenCalledWith({ where: { id: mockUser.id } });
       expect(mockCampaign.canUserJoin).toHaveBeenCalledWith(mockUser);

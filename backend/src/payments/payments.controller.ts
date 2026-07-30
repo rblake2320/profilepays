@@ -37,7 +37,7 @@ export class PaymentsController {
   @ApiOperation({ summary: '[Advertiser] Create payment intent to fund campaign' })
   async createPaymentIntent(
     @CurrentUser() user: User,
-    @Body('amount') amount: number,
+    @Body('amount') amount: number
   ) {
     return this.paymentsService.createPaymentIntent(user.id, amount);
   }
@@ -48,7 +48,7 @@ export class PaymentsController {
   @ApiOperation({ summary: 'Subscribe to a plan tier' })
   async subscribe(
     @CurrentUser() user: User,
-    @Body('tier') tier: SubscriptionTier,
+    @Body('tier') tier: SubscriptionTier
   ) {
     return this.paymentsService.createSubscription(user.id, tier);
   }
@@ -68,7 +68,7 @@ export class PaymentsController {
   @ApiOperation({ summary: 'Stripe webhook endpoint' })
   async handleWebhook(
     @Req() req: RawBodyRequest<Request>,
-    @Headers('stripe-signature') signature: string,
+    @Headers('stripe-signature') signature: string
   ) {
     await this.paymentsService.handleWebhook(req.rawBody!, signature);
     return { received: true };

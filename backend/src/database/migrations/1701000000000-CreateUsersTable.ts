@@ -41,7 +41,7 @@ export class CreateUsersTable1701000000000 implements MigrationInterface {
             name: 'user_role',
             type: 'enum',
             enum: ['member', 'advertiser', 'admin'],
-            default: "'member'",
+            default: '\'member\'',
             isNullable: false,
           },
           {
@@ -112,7 +112,7 @@ export class CreateUsersTable1701000000000 implements MigrationInterface {
           },
         ],
       }),
-      true,
+      true
     );
 
     // Create indexes

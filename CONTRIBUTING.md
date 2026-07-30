@@ -256,13 +256,14 @@ npm run migration:run
 ## Getting Help
 
 - 📖 Check the [README](README.md) and documentation
-- 💬 Open a [Discussion](https://github.com/rblake2320/profilepays/discussions) for questions
+- 💬 Open an issue for project questions
 - 🐛 Create an [Issue](https://github.com/rblake2320/profilepays/issues) for bugs
 - 📧 Contact maintainers directly for security issues
 
 ## Recognition
 
 Contributors will be recognized in:
+
 - README contributors section
 - Release notes
 - Annual contributor appreciation posts

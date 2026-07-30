@@ -29,7 +29,7 @@ export class PaymentsService {
 
   constructor(
     @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
+    private readonly userRepository: Repository<User>
   ) {
     const stripeKey = process.env.STRIPE_SECRET_KEY;
     if (stripeKey && stripeKey !== 'sk_test_fake_key') {
@@ -39,7 +39,7 @@ export class PaymentsService {
 
   async createPaymentIntent(
     advertiserId: string,
-    amountUsd: number,
+    amountUsd: number
   ): Promise<{ clientSecret: string; platformFee: number; escrowAmount: number }> {
     if (!this.stripe) {
       throw new BadRequestException('Payment processing not configured');
@@ -86,7 +86,7 @@ export class PaymentsService {
 
   async createSubscription(
     userId: string,
-    tier: SubscriptionTier,
+    tier: SubscriptionTier
   ): Promise<{ subscriptionId: string; clientSecret?: string }> {
     if (!this.stripe) {
       // In dev mode without Stripe, just update the tier
@@ -95,7 +95,9 @@ export class PaymentsService {
     }
 
     const user = await this.userRepository.findOneBy({ id: userId });
-    if (!user) throw new NotFoundException('User not found');
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
 
     let customerId = user.stripeCustomerId;
     if (!customerId) {
@@ -137,12 +139,14 @@ export class PaymentsService {
 
   async requestPayout(userId: string): Promise<{ amount: number; message: string }> {
     const user = await this.userRepository.findOneBy({ id: userId });
-    if (!user) throw new NotFoundException('User not found');
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
 
     const balance = Number(user.walletBalance);
     if (balance < MINIMUM_PAYOUT) {
       throw new BadRequestException(
-        `Minimum payout is $${MINIMUM_PAYOUT}. Current balance: $${balance.toFixed(2)}`,
+        `Minimum payout is $${MINIMUM_PAYOUT}. Current balance: $${balance.toFixed(2)}`
       );
     }
 
@@ -162,10 +166,14 @@ export class PaymentsService {
   }
 
   async handleWebhook(payload: Buffer, signature: string): Promise<void> {
-    if (!this.stripe) return;
+    if (!this.stripe) {
+      return;
+    }
 
     const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
-    if (!webhookSecret) return;
+    if (!webhookSecret) {
+      return;
+    }
 
     let event: Stripe.Event;
     try {
@@ -191,13 +199,13 @@ export class PaymentsService {
     minimumPayout: number;
     tierFees: Record<string, number>;
     subscriptionPrices: Record<string, number>;
-  } {
+    } {
     return {
       platformFeeRate: PLATFORM_FEE_RATE,
       minimumPayout: MINIMUM_PAYOUT,
       tierFees: TRANSACTION_FEE_RATES as Record<string, number>,
       subscriptionPrices: Object.fromEntries(
-        Object.entries(SUBSCRIPTION_PRICES).map(([k, v]) => [k, v / 100]),
+        Object.entries(SUBSCRIPTION_PRICES).map(([k, v]) => [k, v / 100])
       ),
     };
   }

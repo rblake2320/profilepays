@@ -5,6 +5,7 @@ A production-ready NestJS backend API for ProfilePays with comprehensive authent
 ## Features
 
 ### 🔐 Authentication & Security
+
 - JWT-based authentication with refresh tokens
 - Password hashing with bcrypt (12 rounds)
 - Email verification system
@@ -14,6 +15,7 @@ A production-ready NestJS backend API for ProfilePays with comprehensive authent
 - Role-based access control (RBAC)
 
 ### 📊 User Management
+
 - User registration and login
 - Profile management
 - User roles (Member, Advertiser, Admin)
@@ -21,6 +23,7 @@ A production-ready NestJS backend API for ProfilePays with comprehensive authent
 - User statistics and admin endpoints
 
 ### 🛡️ Security Features
+
 - HTTP-only refresh token cookies
 - Automatic token cleanup
 - Session management
@@ -48,12 +51,14 @@ A production-ready NestJS backend API for ProfilePays with comprehensive authent
 ### Installation
 
 1. **Install dependencies**
+
    ```bash
    cd backend
    npm install
    ```
 
 2. **Database Setup**
+
    ```bash
    # Create database
    createdb profilepays
@@ -65,6 +70,7 @@ A production-ready NestJS backend API for ProfilePays with comprehensive authent
    ```
 
 3. **Environment Configuration**
+
    ```bash
    # Copy environment template
    cp .env.example .env
@@ -74,21 +80,23 @@ A production-ready NestJS backend API for ProfilePays with comprehensive authent
    ```
 
 4. **Database Migration**
+
    ```bash
    # Run migrations
    npm run migration:run
    ```
 
 5. **Start Development Server**
+
    ```bash
    npm run start:dev
    ```
 
-   The API will be available at http://localhost:3001
+   The API will be available at <http://localhost:3001>
 
 6. **View API Documentation**
 
-   Swagger docs: http://localhost:3001/api/docs
+   Swagger docs: <http://localhost:3001/api/docs>
 
 ## Environment Variables
 
@@ -116,6 +124,7 @@ THROTTLE_LIMIT=10
 ## API Endpoints
 
 ### Authentication
+
 - `POST /api/auth/signup` - Register new user
 - `POST /api/auth/login` - User login
 - `POST /api/auth/logout` - Logout current session
@@ -126,6 +135,7 @@ THROTTLE_LIMIT=10
 - `GET /api/auth/me` - Get current user from token
 
 ### User Management
+
 - `GET /api/users/me` - Get current user profile
 - `PUT /api/users/me` - Update user profile
 - `DELETE /api/users/me` - Deactivate account
@@ -135,6 +145,7 @@ THROTTLE_LIMIT=10
 ## Database Schema
 
 ### Users Table
+
 ```sql
 - id (UUID, Primary Key)
 - email (Unique, Not Null)
@@ -148,6 +159,7 @@ THROTTLE_LIMIT=10
 ```
 
 ### Refresh Tokens Table
+
 ```sql
 - id (UUID, Primary Key)
 - token (Unique, Not Null)
@@ -219,21 +231,25 @@ src/
 ## Security Features
 
 ### Password Security
+
 - Minimum 8 characters
 - Must contain uppercase, lowercase, number, and special character
 - Hashed with bcrypt (12 rounds)
 
 ### Token Management
+
 - Access tokens: 15 minutes expiration
 - Refresh tokens: 7 days expiration
 - Automatic cleanup of expired tokens
 - Device tracking with IP and User-Agent
 
 ### Rate Limiting
+
 - 10 requests per minute per IP
 - Configurable via environment variables
 
 ### Data Validation
+
 - Input sanitization
 - SQL injection prevention
 - XSS protection
@@ -242,6 +258,7 @@ src/
 ## Production Deployment
 
 ### Environment Setup
+
 ```env
 NODE_ENV=production
 JWT_SECRET=generate-strong-secret-key
@@ -249,12 +266,14 @@ DB_PASSWORD=strong-production-password
 ```
 
 ### Build and Start
+
 ```bash
 npm run build
 npm run start:prod
 ```
 
 ### Database Migration
+
 ```bash
 npm run migration:run
 ```
@@ -262,6 +281,7 @@ npm run migration:run
 ## Development
 
 ### Code Style
+
 ```bash
 # Format code
 npm run format
@@ -282,6 +302,7 @@ npm run lint
 ## API Authentication
 
 ### Registration
+
 ```javascript
 POST /api/auth/signup
 Content-Type: application/json
@@ -296,6 +317,7 @@ Content-Type: application/json
 ```
 
 ### Login
+
 ```javascript
 POST /api/auth/login
 Content-Type: application/json
@@ -307,6 +329,7 @@ Content-Type: application/json
 ```
 
 ### Using Protected Endpoints
+
 ```javascript
 GET /api/users/me
 Authorization: Bearer <access_token>
@@ -327,6 +350,7 @@ The API returns consistent error responses:
 ## Support
 
 For issues and questions:
+
 - Check the API documentation at `/api/docs`
 - Review the test files for usage examples
 - Check environment variable configuration

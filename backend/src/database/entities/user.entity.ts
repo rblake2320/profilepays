@@ -25,35 +25,35 @@ export enum SubscriptionTier {
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+    id: string;
 
   @Column({ unique: true })
-  email: string;
+    email: string;
 
   @Column({ name: 'password_hash' })
-  passwordHash: string;
+    passwordHash: string;
 
   // Use varchar for cross-DB compatibility (enum not supported in SQLite)
   @Column({ name: 'user_type', type: 'varchar', length: 20 })
-  userType: UserType;
+    userType: UserType;
 
   @Column({ name: 'first_name', nullable: true })
-  firstName: string;
+    firstName: string;
 
   @Column({ name: 'last_name', nullable: true })
-  lastName: string;
+    lastName: string;
 
   @Column({ name: 'phone_number', nullable: true })
-  phoneNumber: string;
+    phoneNumber: string;
 
   @Column({ name: 'is_email_verified', default: false })
-  isEmailVerified: boolean;
+    isEmailVerified: boolean;
 
   @Column({ name: 'is_phone_verified', default: false })
-  isPhoneVerified: boolean;
+    isPhoneVerified: boolean;
 
   @Column({ name: 'is_active', default: true })
-  isActive: boolean;
+    isActive: boolean;
 
   @Column({
     name: 'subscription_tier',
@@ -62,29 +62,29 @@ export class User {
     default: SubscriptionTier.BASIC,
     nullable: true,
   })
-  subscriptionTier: SubscriptionTier;
+    subscriptionTier: SubscriptionTier;
 
   @Column({ name: 'stripe_customer_id', nullable: true })
-  stripeCustomerId: string;
+    stripeCustomerId: string;
 
   @Column({ name: 'paypal_email', nullable: true })
-  paypalEmail: string;
+    paypalEmail: string;
 
   @Column({ name: 'wallet_balance', type: 'real', default: 0 })
-  walletBalance: number;
+    walletBalance: number;
 
   @Column({ name: 'company_name', nullable: true })
-  companyName: string;
+    companyName: string;
 
   @OneToMany(() => Campaign, (campaign) => campaign.advertiser)
-  campaigns: Campaign[];
+    campaigns: Campaign[];
 
   @OneToMany(() => Participation, (participation) => participation.member)
-  participations: Participation[];
+    participations: Participation[];
 
   @CreateDateColumn({ name: 'created_at' })
-  createdAt: Date;
+    createdAt: Date;
 
   @UpdateDateColumn({ name: 'updated_at' })
-  updatedAt: Date;
+    updatedAt: Date;
 }

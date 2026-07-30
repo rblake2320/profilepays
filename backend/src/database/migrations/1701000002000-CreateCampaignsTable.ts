@@ -39,7 +39,7 @@ export class CreateCampaignsTable1701000002000 implements MigrationInterface {
             name: 'brand_color',
             type: 'varchar',
             length: '7',
-            default: "'#000000'",
+            default: '\'#000000\'',
           },
           {
             name: 'payout_usd',
@@ -69,7 +69,7 @@ export class CreateCampaignsTable1701000002000 implements MigrationInterface {
               'travel',
               'other',
             ],
-            default: "'other'",
+            default: '\'other\'',
           },
           {
             name: 'network',
@@ -97,7 +97,7 @@ export class CreateCampaignsTable1701000002000 implements MigrationInterface {
             name: 'status',
             type: 'enum',
             enum: ['draft', 'active', 'paused', 'completed', 'cancelled'],
-            default: "'draft'",
+            default: '\'draft\'',
           },
           {
             name: 'max_participants',
@@ -176,7 +176,7 @@ export class CreateCampaignsTable1701000002000 implements MigrationInterface {
           },
         ],
       }),
-      true,
+      true
     );
 
     // Create indexes

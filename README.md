@@ -9,6 +9,7 @@ ProfilePays is a social-advertising platform concept that would pay users for te
 ## Project Vision
 
 ### Planned Tech Stack
+
 | Layer        | Planned Technology | Rationale |
 |--------------|-------------------|-----------|
 | Front-end    | React + Redux Toolkit, Material-UI, Axios, React Router, React Hook Form | Component-based UI and strong ecosystem |
@@ -19,6 +20,7 @@ ProfilePays is a social-advertising platform concept that would pay users for te
 | Container    | Docker (+ optional K8s) | Consistent deployment |
 
 ### Planned Features
+
 * Multi-step user & business onboarding  
 * Campaign marketplace with earnings tracking  
 * Tier-based subscription & reward system  
@@ -29,11 +31,11 @@ ProfilePays is a social-advertising platform concept that would pay users for te
 ## Repository Structure
 
 This repository contains:
-- 📋 Project documentation and planning
-- 🔧 GitHub templates (issues, PRs)
-- ⚙️ CI/CD workflow templates
-- 📝 Contributing guidelines
-- 📄 License and legal documents
+* 📋 Project documentation and planning
+* 🔧 GitHub templates (issues, PRs)
+* ⚙️ CI/CD workflow templates
+* 📝 Contributing guidelines
+* 📄 License and legal documents
 
 ## Development Setup (Future)
 
@@ -62,6 +64,7 @@ docker compose up --build
 ## Testing Strategy (Future)
 
 The planned testing approach includes:
+
 * **Jest + SuperTest** for back-end unit / integration testing
 * **React Testing Library + Jest** for front-end components
 * **Cypress** for end-to-end testing

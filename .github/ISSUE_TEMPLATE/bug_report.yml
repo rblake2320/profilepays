@@ -8,7 +8,7 @@ body:
     attributes:
       value: |
         Thanks for taking the time to fill out this bug report! 🐛
-        
+
   - type: checkboxes
     id: prerequisites
     attributes:
@@ -19,7 +19,7 @@ body:
           required: true
         - label: I have read the contributing guidelines
           required: true
-          
+
   - type: textarea
     id: what-happened
     attributes:
@@ -28,7 +28,7 @@ body:
       placeholder: Describe what happened and what you expected to happen
     validations:
       required: true
-      
+
   - type: textarea
     id: steps
     attributes:
@@ -41,7 +41,7 @@ body:
         4. See error
     validations:
       required: true
-      
+
   - type: textarea
     id: expected
     attributes:
@@ -49,7 +49,7 @@ body:
       description: What you expected to happen
     validations:
       required: true
-      
+
   - type: textarea
     id: actual
     attributes:
@@ -57,7 +57,7 @@ body:
       description: What actually happened instead
     validations:
       required: true
-      
+
   - type: dropdown
     id: area
     attributes:
@@ -75,7 +75,7 @@ body:
         - Other
     validations:
       required: true
-      
+
   - type: dropdown
     id: severity
     attributes:
@@ -88,7 +88,7 @@ body:
         - Critical - Application unusable, data loss, or security issue
     validations:
       required: true
-      
+
   - type: textarea
     id: environment
     attributes:
@@ -99,20 +99,20 @@ body:
         - Browser: [e.g. Chrome 96, Firefox 95, Safari 15]
         - Node.js Version: [e.g. 18.12.0]
         - Application Version: [e.g. 1.2.3]
-      
+
   - type: textarea
     id: logs
     attributes:
       label: Error Logs
       description: Please copy and paste any relevant log output
       render: shell
-      
+
   - type: textarea
     id: screenshots
     attributes:
       label: Screenshots
       description: If applicable, add screenshots to help explain your problem
-      
+
   - type: textarea
     id: additional
     attributes:

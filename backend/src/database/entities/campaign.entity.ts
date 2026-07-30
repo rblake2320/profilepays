@@ -23,77 +23,77 @@ export enum CampaignStatus {
 @Entity('campaigns')
 export class Campaign {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+    id: string;
 
   @Column({ name: 'advertiser_id' })
-  advertiserId: string;
+    advertiserId: string;
 
   @ManyToOne(() => User, (user) => user.campaigns)
   @JoinColumn({ name: 'advertiser_id' })
-  advertiser: User;
+    advertiser: User;
 
   @Column()
-  title: string;
+    title: string;
 
   @Column({ type: 'text', nullable: true })
-  description: string;
+    description: string;
 
   @Column({ name: 'image_url', nullable: true })
-  imageUrl: string;
+    imageUrl: string;
 
   @Column({ type: 'real' })
-  budget: number;
+    budget: number;
 
   @Column({ name: 'budget_spent', type: 'real', default: 0 })
-  budgetSpent: number;
+    budgetSpent: number;
 
   @Column({ name: 'payout_per_swap', type: 'real' })
-  payoutPerSwap: number;
+    payoutPerSwap: number;
 
   @Column({ name: 'duration_hours', type: 'int' })
-  durationHours: number;
+    durationHours: number;
 
   @Column({ name: 'max_participants', type: 'int', nullable: true })
-  maxParticipants: number;
+    maxParticipants: number;
 
   // varchar for cross-DB compatibility
   @Column({ type: 'varchar', length: 30, default: CampaignStatus.DRAFT })
-  status: CampaignStatus;
+    status: CampaignStatus;
 
   // Targeting
   @Column({ name: 'target_country', nullable: true })
-  targetCountry: string;
+    targetCountry: string;
 
   @Column({ name: 'target_state', nullable: true })
-  targetState: string;
+    targetState: string;
 
   @Column({ name: 'target_min_age', type: 'int', nullable: true })
-  targetMinAge: number;
+    targetMinAge: number;
 
   @Column({ name: 'target_max_age', type: 'int', nullable: true })
-  targetMaxAge: number;
+    targetMaxAge: number;
 
   @Column({ name: 'target_min_followers', type: 'int', nullable: true })
-  targetMinFollowers: number;
+    targetMinFollowers: number;
 
   @Column({ name: 'target_platforms', type: 'simple-array', nullable: true })
-  targetPlatforms: string[];
+    targetPlatforms: string[];
 
   @Column({ name: 'industry', nullable: true })
-  industry: string;
+    industry: string;
 
   @Column({ name: 'starts_at', nullable: true })
-  startsAt: Date;
+    startsAt: Date;
 
   @Column({ name: 'ends_at', nullable: true })
-  endsAt: Date;
+    endsAt: Date;
 
   @OneToMany(() => Participation, (participation) => participation.campaign)
-  participations: Participation[];
+    participations: Participation[];
 
   @CreateDateColumn({ name: 'created_at' })
-  createdAt: Date;
+    createdAt: Date;
 
   @UpdateDateColumn({ name: 'updated_at' })
-  updatedAt: Date;
+    updatedAt: Date;
 }

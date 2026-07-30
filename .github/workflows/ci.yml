@@ -5,82 +5,64 @@ on:
   push:
     branches: [main]
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  # Documentation and template validation
   docs:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
-      
-      - name: Check README links
+      - uses: actions/checkout@v6
+
+      - name: Check Markdown links
         uses: gaurav-nelson/github-action-markdown-link-check@v1
         with:
-          use-quiet-mode: 'yes'
-          
-      - name: Lint markdown files
-        uses: DavidAnson/markdownlint-cli2-action@v16
+          use-quiet-mode: "yes"
+          config-file: "mlc_config.json"
+
+      - name: Lint Markdown files
+        uses: DavidAnson/markdownlint-cli2-action@v23
         with:
-          globs: '**/*.md'
-          
+          globs: "**/*.md"
+
       - name: Validate GitHub templates
         run: |
-          # Check that all referenced templates exist
-          if [ -f ".github/PULL_REQUEST_TEMPLATE.md" ]; then
-            echo "✓ PR template exists"
-          else
-            echo "✗ PR template missing" && exit 1
-          fi
-          
-          if [ -d ".github/ISSUE_TEMPLATE" ]; then
-            echo "✓ Issue templates exist"
-          else
-            echo "✗ Issue templates missing" && exit 1
-          fi
+          test -f ".github/PULL_REQUEST_TEMPLATE.md"
+          test -d ".github/ISSUE_TEMPLATE"
 
-  # Future: Backend testing (when code is implemented)
   backend:
     runs-on: ubuntu-latest
-    if: ${{ false }}  # Disabled until backend code exists
-    defaults:
-      run:
-        working-directory: backend
-    strategy:
-      matrix:
-        node: [20.x, 18.x]
+    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
         with:
-          node-version: ${{ matrix.node }}
-          cache: 'npm'
-          cache-dependency-path: 'backend/package-lock.json'
-      - run: npm ci
-      - run: npm run lint
-      - run: npm test -- --coverage
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
-        with:
-          directory: ./backend/coverage
+          node-version: "24.x"
+          cache: "npm"
+          cache-dependency-path: "package-lock.json"
+      - run: npm ci --ignore-scripts
+      - run: npm run lint:backend
+      - run: npm run type-check:backend
+      - run: npm --workspace backend test -- --runInBand
+      - run: npm run build:backend
 
-  # Future: Frontend testing (when code is implemented)
   frontend:
     runs-on: ubuntu-latest
-    if: ${{ false }}  # Disabled until frontend code exists
-    defaults:
-      run:
-        working-directory: frontend
+    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
         with:
-          node-version: '20.x'
-          cache: 'npm'
-          cache-dependency-path: 'frontend/package-lock.json'
-      - run: npm ci
-      - run: npm run lint
-      - run: npm run test -- --coverage
-      - run: npm run build
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
-        with:
-          directory: ./frontend/coverage
+          node-version: "24.x"
+          cache: "npm"
+          cache-dependency-path: "package-lock.json"
+      - run: npm ci --ignore-scripts
+      - run: npm run lint:frontend
+      - run: npm run type-check:frontend
+      - run: npm run test:frontend
+      - run: npm run build:frontend

@@ -73,7 +73,7 @@ export class AuthController {
   async signup(
     @Body() signupDto: SignupDto,
     @Req() req: Request,
-    @Res({ passthrough: true }) res: Response,
+    @Res({ passthrough: true }) res: Response
   ): Promise<AuthResponse> {
     const ipAddress = req.ip || req.connection.remoteAddress || 'unknown';
     const userAgent = req.headers['user-agent'] || 'unknown';
@@ -81,7 +81,7 @@ export class AuthController {
     const authResponse = await this.authService.signup(
       signupDto,
       ipAddress,
-      userAgent,
+      userAgent
     );
 
     // Set refresh token as HTTP-only cookie
@@ -130,7 +130,7 @@ export class AuthController {
   async login(
     @Body() loginDto: LoginDto,
     @Req() req: Request,
-    @Res({ passthrough: true }) res: Response,
+    @Res({ passthrough: true }) res: Response
   ): Promise<AuthResponse> {
     const ipAddress = req.ip || req.connection.remoteAddress || 'unknown';
     const userAgent = req.headers['user-agent'] || 'unknown';
@@ -138,7 +138,7 @@ export class AuthController {
     const authResponse = await this.authService.login(
       loginDto,
       ipAddress,
-      userAgent,
+      userAgent
     );
 
     // Set refresh token as HTTP-only cookie
@@ -181,7 +181,7 @@ export class AuthController {
   async refreshToken(
     @Body() refreshTokenDto: RefreshTokenDto | null,
     @Req() req: Request,
-    @Res({ passthrough: true }) res: Response,
+    @Res({ passthrough: true }) res: Response
   ): Promise<{ accessToken: string; refreshToken: string }> {
     const ipAddress = req.ip || req.connection.remoteAddress || 'unknown';
     const userAgent = req.headers['user-agent'] || 'unknown';
@@ -198,7 +198,7 @@ export class AuthController {
     const tokens = await this.authService.refreshAccessToken(
       refreshToken,
       ipAddress,
-      userAgent,
+      userAgent
     );
 
     // Set new refresh token as HTTP-only cookie
@@ -225,7 +225,7 @@ export class AuthController {
   async logout(
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
-    @CurrentUser() user: CurrentUserData,
+    @CurrentUser() user: CurrentUserData
   ): Promise<{ message: string }> {
     const refreshToken = req.cookies?.refreshToken;
 
@@ -251,7 +251,7 @@ export class AuthController {
   })
   async logoutAll(
     @CurrentUser() user: CurrentUserData,
-    @Res({ passthrough: true }) res: Response,
+    @Res({ passthrough: true }) res: Response
   ): Promise<{ message: string }> {
     await this.authService.logoutAll(user.id);
 
@@ -276,7 +276,7 @@ export class AuthController {
     description: 'Invalid or expired verification token',
   })
   async verifyEmail(
-    @Query('token') token: string,
+    @Query('token') token: string
   ): Promise<{ message: string }> {
     await this.authService.verifyEmail(token);
 
@@ -303,7 +303,7 @@ export class AuthController {
     description: 'Verification email sent if account exists',
   })
   async resendEmailVerification(
-    @Body() body: { email: string },
+    @Body() body: { email: string }
   ): Promise<{ message: string }> {
     await this.authService.resendEmailVerification(body.email);
 

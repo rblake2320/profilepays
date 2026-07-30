@@ -8,7 +8,7 @@ body:
     attributes:
       value: |
         Thanks for taking the time to suggest a new feature! ✨
-        
+
   - type: checkboxes
     id: prerequisites
     attributes:
@@ -21,7 +21,7 @@ body:
           required: true
         - label: This is not a bug report (use the bug template instead)
           required: true
-          
+
   - type: textarea
     id: summary
     attributes:
@@ -30,7 +30,7 @@ body:
       placeholder: One sentence summary of the feature
     validations:
       required: true
-      
+
   - type: textarea
     id: problem
     attributes:
@@ -39,7 +39,7 @@ body:
       placeholder: As a [user type], I want [functionality] so that [benefit/value]
     validations:
       required: true
-      
+
   - type: textarea
     id: solution
     attributes:
@@ -48,14 +48,14 @@ body:
       placeholder: Describe how you envision this feature working
     validations:
       required: true
-      
+
   - type: textarea
     id: alternatives
     attributes:
       label: Alternative Solutions
       description: What other approaches have you considered?
       placeholder: Describe any alternative solutions or features you've considered
-      
+
   - type: dropdown
     id: area
     attributes:
@@ -72,7 +72,7 @@ body:
         - Other
     validations:
       required: true
-      
+
   - type: dropdown
     id: priority
     attributes:
@@ -85,7 +85,7 @@ body:
         - Critical - Required for MVP/launch
     validations:
       required: true
-      
+
   - type: dropdown
     id: complexity
     attributes:
@@ -97,7 +97,7 @@ body:
         - Complex - Significant effort, multiple components affected
         - Major - Large feature, architectural changes needed
         - Unknown - Not sure about complexity
-        
+
   - type: textarea
     id: acceptance
     attributes:
@@ -109,13 +109,13 @@ body:
         - [ ] Criterion 3
     validations:
       required: true
-      
+
   - type: textarea
     id: mockups
     attributes:
       label: Mockups/Screenshots
       description: If applicable, add mockups or screenshots to help explain the feature
-      
+
   - type: textarea
     id: additional
     attributes:
