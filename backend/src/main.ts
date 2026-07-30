@@ -34,7 +34,7 @@ async function bootstrap() {
       whitelist: true,
       forbidNonWhitelisted: true,
       disableErrorMessages: nodeEnv === 'production',
-    }),
+    })
   );
 
   // Global prefix

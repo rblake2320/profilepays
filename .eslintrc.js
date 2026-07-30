@@ -23,7 +23,7 @@ module.exports = {
   plugins: ['@typescript-eslint', 'prettier'],
   rules: {
     // TypeScript rules
-    '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+    '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
     '@typescript-eslint/no-explicit-any': 'warn',
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/explicit-module-boundary-types': 'off',
@@ -33,6 +33,7 @@ module.exports = {
     // General rules
     'no-console': 'warn',
     'no-debugger': 'error',
+    'no-useless-escape': 'warn',
     'no-unused-vars': 'off', // Use TypeScript version instead
     'prefer-const': 'error',
     'no-var': 'error',

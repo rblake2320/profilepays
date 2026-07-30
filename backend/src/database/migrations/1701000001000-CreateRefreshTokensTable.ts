@@ -60,7 +60,7 @@ export class CreateRefreshTokensTable1701000001000 implements MigrationInterface
           },
         ],
       }),
-      true,
+      true
     );
 
     // Create foreign key

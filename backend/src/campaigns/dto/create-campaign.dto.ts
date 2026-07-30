@@ -24,126 +24,126 @@ class CampaignRequirementsDto {
   @IsOptional()
   @IsNumber()
   @IsPositive()
-  minFollowers?: number;
+    minFollowers?: number;
 
   @IsOptional()
   @IsNumber()
   @Min(13)
   @Max(100)
-  minAge?: number;
+    minAge?: number;
 
   @IsOptional()
   @IsNumber()
   @Min(13)
   @Max(100)
-  maxAge?: number;
+    maxAge?: number;
 
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
   @ArrayMaxSize(50)
-  targetCountries?: string[];
+    targetCountries?: string[];
 
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
   @ArrayMaxSize(10)
-  targetGenders?: string[];
+    targetGenders?: string[];
 
   @IsOptional()
   @IsBoolean()
-  verificationRequired?: boolean;
+    verificationRequired?: boolean;
 }
 
 export class CreateCampaignDto {
   @IsString()
   @IsNotEmpty()
   @Transform(({ value }) => value.trim())
-  title: string;
+    title: string;
 
   @IsString()
   @IsNotEmpty()
   @Transform(({ value }) => value.trim())
-  description: string;
+    description: string;
 
   @IsString()
   @IsNotEmpty()
   @Transform(({ value }) => value.trim())
-  brandName: string;
+    brandName: string;
 
   @IsOptional()
   @IsUrl()
-  brandLogo?: string;
+    brandLogo?: string;
 
   @IsOptional()
   @IsHexColor()
-  brandColor?: string = '#000000';
+    brandColor?: string = '#000000';
 
   @IsNumber({ maxDecimalPlaces: 2 })
   @IsPositive()
   @Min(0.01)
   @Max(10000)
-  payoutUSD: number;
+    payoutUSD: number;
 
   @IsNumber()
   @IsPositive()
   @Min(1)
   @Max(10080) // Max 1 week in minutes
-  durationMinutes: number;
+    durationMinutes: number;
 
   @IsEnum(CampaignCategory)
-  category: CampaignCategory;
+    category: CampaignCategory;
 
   @IsOptional()
   @IsEnum(SocialNetwork)
-  network?: SocialNetwork;
+    network?: SocialNetwork;
 
   @IsOptional()
   @IsBoolean()
-  featured?: boolean = false;
+    featured?: boolean = false;
 
   @IsOptional()
   @IsNumber()
   @IsPositive()
   @Min(1)
   @Max(100000)
-  maxParticipants?: number;
+    maxParticipants?: number;
 
   @IsOptional()
   @ValidateNested()
   @Type(() => CampaignRequirementsDto)
-  requirements?: CampaignRequirementsDto;
+    requirements?: CampaignRequirementsDto;
 
   @IsOptional()
   @IsUrl()
-  campaignUrl?: string;
+    campaignUrl?: string;
 
   @IsOptional()
   @IsString()
-  instructions?: string;
+    instructions?: string;
 
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
   @ArrayMaxSize(20)
-  tags?: string[];
+    tags?: string[];
 
   @IsOptional()
   @IsISO8601()
-  startDate?: string;
+    startDate?: string;
 
   @IsOptional()
   @IsISO8601()
-  endDate?: string;
+    endDate?: string;
 
   @IsOptional()
   @IsNumber({ maxDecimalPlaces: 2 })
   @IsPositive()
   @Min(1)
   @Max(1000000)
-  totalBudget?: number;
+    totalBudget?: number;
 
   @IsOptional()
   @IsBoolean()
-  approvalRequired?: boolean = false;
+    approvalRequired?: boolean = false;
 }

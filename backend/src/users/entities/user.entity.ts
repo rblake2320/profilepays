@@ -20,21 +20,21 @@ export enum UserRole {
 @Index(['email'], { unique: true })
 export class User {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+    id: string;
 
   @Column({ unique: true, length: 255 })
   @Index()
-  email: string;
+    email: string;
 
   @Column({ name: 'password_hash' })
   @Exclude()
-  passwordHash: string;
+    passwordHash: string;
 
   @Column({ name: 'first_name', length: 100 })
-  firstName: string;
+    firstName: string;
 
   @Column({ name: 'last_name', length: 100 })
-  lastName: string;
+    lastName: string;
 
   @Column({
     type: 'enum',
@@ -42,23 +42,23 @@ export class User {
     default: UserRole.MEMBER,
     name: 'user_role',
   })
-  userRole: UserRole;
+    userRole: UserRole;
 
   @Column({ name: 'profile_image', nullable: true })
-  profileImage?: string;
+    profileImage?: string;
 
   @Column({ name: 'phone_number', nullable: true, length: 20 })
-  phoneNumber?: string;
+    phoneNumber?: string;
 
   @Column({ name: 'date_of_birth', type: 'date', nullable: true })
-  dateOfBirth?: Date;
+    dateOfBirth?: Date;
 
   @Column({ default: false, name: 'is_verified' })
-  isVerified: boolean;
+    isVerified: boolean;
 
   @Column({ nullable: true, name: 'email_verification_token' })
   @Exclude()
-  emailVerificationToken?: string;
+    emailVerificationToken?: string;
 
   @Column({
     nullable: true,
@@ -66,11 +66,11 @@ export class User {
     type: 'timestamp',
   })
   @Exclude()
-  emailVerificationExpires?: Date;
+    emailVerificationExpires?: Date;
 
   @Column({ nullable: true, name: 'password_reset_token' })
   @Exclude()
-  passwordResetToken?: string;
+    passwordResetToken?: string;
 
   @Column({
     nullable: true,
@@ -78,29 +78,29 @@ export class User {
     type: 'timestamp',
   })
   @Exclude()
-  passwordResetExpires?: Date;
+    passwordResetExpires?: Date;
 
   @Column({ default: true, name: 'is_active' })
-  isActive: boolean;
+    isActive: boolean;
 
   @Column({ nullable: true, name: 'last_login_at', type: 'timestamp' })
-  lastLoginAt?: Date;
+    lastLoginAt?: Date;
 
   @CreateDateColumn({ name: 'created_at' })
-  createdAt: Date;
+    createdAt: Date;
 
   @UpdateDateColumn({ name: 'updated_at' })
-  updatedAt: Date;
+    updatedAt: Date;
 
   // Relationships
   @OneToMany(() => RefreshToken, (token) => token.user)
-  refreshTokens: RefreshToken[];
+    refreshTokens: RefreshToken[];
 
   @OneToMany('Campaign', (campaign: any) => campaign.advertiser)
-  campaigns: any[];
+    campaigns: any[];
 
   @OneToMany('CampaignParticipation', (participation: any) => participation.user)
-  participations: any[];
+    participations: any[];
 
   // Virtual properties
   get fullName(): string {

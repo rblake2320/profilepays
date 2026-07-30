@@ -28,10 +28,20 @@ export default defineConfig(({ mode }) => {
       sourcemap: false,
       rollupOptions: {
         output: {
-          manualChunks: {
-            vendor: ['react', 'react-dom'],
-            mui: ['@mui/material', '@mui/icons-material'],
-            redux: ['@reduxjs/toolkit', 'react-redux'],
+          manualChunks(id) {
+            if (!id.includes('node_modules')) {
+              return undefined;
+            }
+            if (id.includes('@mui')) {
+              return 'mui';
+            }
+            if (id.includes('@reduxjs') || id.includes('react-redux')) {
+              return 'redux';
+            }
+            if (id.includes('react')) {
+              return 'vendor';
+            }
+            return undefined;
           },
         },
       },

@@ -16,7 +16,7 @@ export async function seedCampaigns(dataSource: DataSource): Promise<void> {
 
   // Create test advertiser if doesn't exist
   let advertiser = await userRepository.findOne({
-    where: { email: 'advertiser@example.com' }
+    where: { email: 'advertiser@example.com' },
   });
 
   if (!advertiser) {

@@ -32,7 +32,9 @@ const AdSelectionPage = () => {
   }, []);
 
   const handleParticipate = async () => {
-    if (!selectedId) return;
+    if (!selectedId) {
+      return;
+    }
     try {
       setParticipating(true);
       await campaignsApi.participate(selectedId, 'instagram');

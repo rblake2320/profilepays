@@ -9,15 +9,15 @@ import { Type } from 'class-transformer';
 class JoinCampaignMetadataDto {
   @IsOptional()
   @IsString()
-  userMessage?: string;
+    userMessage?: string;
 
   @IsOptional()
   @IsString()
-  referralSource?: string;
+    referralSource?: string;
 
   @IsOptional()
   @IsObject()
-  socialProfiles?: {
+    socialProfiles?: {
     instagram?: string;
     tiktok?: string;
     youtube?: string;
@@ -35,5 +35,5 @@ export class JoinCampaignDto {
   @IsOptional()
   @ValidateNested()
   @Type(() => JoinCampaignMetadataDto)
-  metadata?: JoinCampaignMetadataDto;
+    metadata?: JoinCampaignMetadataDto;
 }

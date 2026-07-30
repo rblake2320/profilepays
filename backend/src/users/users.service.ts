@@ -16,7 +16,7 @@ export class UsersService {
 
   constructor(
     @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
+    private readonly userRepository: Repository<User>
   ) {}
 
   async findById(id: string): Promise<User | null> {
@@ -43,7 +43,7 @@ export class UsersService {
 
   async updateProfile(
     userId: string,
-    updateProfileDto: UpdateProfileDto,
+    updateProfileDto: UpdateProfileDto
   ): Promise<User> {
     const user = await this.findById(userId);
 
@@ -95,9 +95,9 @@ export class UsersService {
   }
 
   async findUsers(
-    page: number = 1,
-    limit: number = 10,
-    search?: string,
+    page = 1,
+    limit = 10,
+    search?: string
   ): Promise<{ users: User[]; total: number; page: number; totalPages: number }> {
     const query = this.userRepository.createQueryBuilder('user')
       .where('user.isActive = :isActive', { isActive: true });

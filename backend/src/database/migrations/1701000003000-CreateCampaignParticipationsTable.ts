@@ -27,7 +27,7 @@ export class CreateCampaignParticipationsTable1701000003000 implements Migration
             name: 'status',
             type: 'enum',
             enum: ['pending', 'active', 'completed', 'cancelled', 'rejected', 'expired'],
-            default: "'pending'",
+            default: '\'pending\'',
           },
           {
             name: 'earnings_usd',
@@ -108,7 +108,7 @@ export class CreateCampaignParticipationsTable1701000003000 implements Migration
           },
         ],
       }),
-      true,
+      true
     );
 
     // Create unique constraint for user-campaign combination

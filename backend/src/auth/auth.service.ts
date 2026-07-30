@@ -41,13 +41,13 @@ export class AuthService {
     @InjectRepository(RefreshToken)
     private readonly refreshTokenRepository: Repository<RefreshToken>,
     private readonly jwtService: JwtService,
-    private readonly configService: ConfigService,
+    private readonly configService: ConfigService
   ) {}
 
   async signup(
     signupDto: SignupDto,
     ipAddress: string,
-    userAgent: string,
+    userAgent: string
   ): Promise<AuthResponse> {
     const { email, password, firstName, lastName, userRole, phoneNumber, dateOfBirth } = signupDto;
 
@@ -92,7 +92,7 @@ export class AuthService {
     const { accessToken, refreshToken } = await this.generateTokens(
       savedUser,
       ipAddress,
-      userAgent,
+      userAgent
     );
 
     // TODO: Send verification email
@@ -115,7 +115,7 @@ export class AuthService {
   async login(
     loginDto: LoginDto,
     ipAddress: string,
-    userAgent: string,
+    userAgent: string
   ): Promise<AuthResponse> {
     const { email, password } = loginDto;
 
@@ -144,7 +144,7 @@ export class AuthService {
     const { accessToken, refreshToken } = await this.generateTokens(
       user,
       ipAddress,
-      userAgent,
+      userAgent
     );
 
     return {
@@ -164,11 +164,11 @@ export class AuthService {
   async refreshAccessToken(
     refreshTokenString: string,
     ipAddress: string,
-    userAgent: string,
+    userAgent: string
   ): Promise<{ accessToken: string; refreshToken: string }> {
     const refreshTokenRecord = await this.refreshTokenRepository.findOne({
       where: { token: refreshTokenString },
-      relations: ['user'],
+      relations: { user: true },
     });
 
     if (!refreshTokenRecord || !refreshTokenRecord.isValid()) {
@@ -184,7 +184,7 @@ export class AuthService {
     const { accessToken, refreshToken } = await this.generateTokens(
       refreshTokenRecord.user,
       ipAddress,
-      userAgent,
+      userAgent
     );
 
     this.logger.log(`Tokens refreshed for user: ${refreshTokenRecord.user.email}`);
@@ -202,14 +202,14 @@ export class AuthService {
       refreshTokenRecord.revokedAt = new Date();
       await this.refreshTokenRepository.save(refreshTokenRecord);
 
-      this.logger.log(`User logged out, refresh token revoked`);
+      this.logger.log('User logged out, refresh token revoked');
     }
   }
 
   async logoutAll(userId: string): Promise<void> {
     await this.refreshTokenRepository.update(
       { userId, isRevoked: false },
-      { isRevoked: true, revokedAt: new Date() },
+      { isRevoked: true, revokedAt: new Date() }
     );
 
     this.logger.log(`All sessions revoked for user: ${userId}`);
@@ -218,7 +218,7 @@ export class AuthService {
   private async generateTokens(
     user: User,
     ipAddress: string,
-    userAgent: string,
+    userAgent: string
   ): Promise<{ accessToken: string; refreshToken: string }> {
     // JWT payload
     const payload: JwtPayload = {

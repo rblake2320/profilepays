@@ -1,6 +1,6 @@
 // Frontend utility tests for ProfilePays
 import { render } from '@testing-library/react';
-import { describe, test, expect } from '@jest/globals';
+import { describe, test, expect, jest } from '@jest/globals';
 
 // Sample utility functions to test
 const formatCurrency = (amount: number): string => {

@@ -1,32 +1,21 @@
-# ─── Stage 1: Build ────────────────────────────────────────────────────────────
-FROM node:22-alpine AS builder
+FROM node:24-alpine AS builder
 
 WORKDIR /app
-
-# Accept build arg for API URL
 ARG VITE_API_URL=http://localhost:3000/api/v1
 ENV VITE_API_URL=$VITE_API_URL
 
-# Copy package files and install dependencies
-COPY package*.json ./
-RUN npm ci --legacy-peer-deps
+COPY package.json package-lock.json ./
+COPY backend/package.json backend/package.json
+COPY frontend/package.json frontend/package.json
+RUN npm ci --ignore-scripts
 
-# Copy source and build
-COPY . .
-RUN npm run build
+COPY frontend frontend
+RUN npm run build:frontend
 
-# ─── Stage 2: Production (Nginx) ───────────────────────────────────────────────
-FROM nginx:1.27-alpine AS production
+FROM nginx:1.29-alpine AS production
 
-# Remove default nginx config
-RUN rm /etc/nginx/conf.d/default.conf
-
-# Copy custom nginx config
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-
-# Copy built assets from builder
-COPY --from=builder /app/dist /usr/share/nginx/html
-
+COPY frontend/nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=builder /app/frontend/dist /usr/share/nginx/html
 EXPOSE 80
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \

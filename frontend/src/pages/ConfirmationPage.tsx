@@ -17,7 +17,9 @@ const ConfirmationPage = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!campaignId) return;
+    if (!campaignId) {
+      return;
+    }
     const fetchCampaign = async () => {
       try {
         const data = await campaignsApi.getById(campaignId);

@@ -7,6 +7,7 @@ The Campaign Marketplace is the core feature of ProfilePays that enables adverti
 ## Database Schema
 
 ### Campaign Entity
+
 ```typescript
 interface Campaign {
   id: string;
@@ -41,6 +42,7 @@ interface Campaign {
 ```
 
 ### Campaign Participation Entity
+
 ```typescript
 interface CampaignParticipation {
   id: string;
@@ -120,11 +122,13 @@ enum ParticipationStatus {
 ### Public Endpoints
 
 #### Get All Campaigns
+
 ```http
 GET /api/campaigns?page=1&limit=20&search=nike&category=lifestyle&featured=true
 ```
 
 **Query Parameters:**
+
 - `search?: string` - Search in title, description, brand name
 - `category?: CampaignCategory` - Filter by category
 - `network?: SocialNetwork` - Filter by social network
@@ -142,6 +146,7 @@ GET /api/campaigns?page=1&limit=20&search=nike&category=lifestyle&featured=true
 - `sortOrder?: 'ASC' | 'DESC'` - Sort order (default: DESC)
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -202,16 +207,19 @@ GET /api/campaigns?page=1&limit=20&search=nike&category=lifestyle&featured=true
 ```
 
 #### Get Featured Campaigns
+
 ```http
 GET /api/campaigns/featured?limit=10
 ```
 
 #### Get Campaign Details
+
 ```http
 GET /api/campaigns/:id
 ```
 
 **Response (includes user-specific data if authenticated):**
+
 ```json
 {
   "success": true,
@@ -239,12 +247,14 @@ GET /api/campaigns/:id
 ### Authenticated User Endpoints
 
 #### Join Campaign
+
 ```http
 POST /api/campaigns/:id/join
 Authorization: Bearer <jwt_token>
 ```
 
 **Body:**
+
 ```json
 {
   "metadata": {
@@ -259,6 +269,7 @@ Authorization: Bearer <jwt_token>
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -277,12 +288,14 @@ Authorization: Bearer <jwt_token>
 ```
 
 #### Complete Campaign
+
 ```http
 POST /api/campaigns/participations/:id/complete
 Authorization: Bearer <jwt_token>
 ```
 
 **Body:**
+
 ```json
 {
   "proof": {
@@ -296,15 +309,18 @@ Authorization: Bearer <jwt_token>
 ```
 
 #### Get My Campaigns
+
 ```http
 GET /api/campaigns/my-campaigns?status=active
 Authorization: Bearer <jwt_token>
 ```
 
 **Query Parameters:**
+
 - `status?: ParticipationStatus` - Filter by participation status
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -335,12 +351,14 @@ Authorization: Bearer <jwt_token>
 ```
 
 #### Get My Earnings
+
 ```http
 GET /api/campaigns/my-earnings
 Authorization: Bearer <jwt_token>
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -358,12 +376,14 @@ Authorization: Bearer <jwt_token>
 ### Advertiser Endpoints
 
 #### Create Campaign
+
 ```http
 POST /api/campaigns
 Authorization: Bearer <jwt_token>
 ```
 
 **Body:**
+
 ```json
 {
   "title": "Nike Air Max Promotion",
@@ -395,24 +415,28 @@ Authorization: Bearer <jwt_token>
 ```
 
 #### Update Campaign
+
 ```http
 PUT /api/campaigns/:id
 Authorization: Bearer <jwt_token>
 ```
 
 #### Delete Campaign
+
 ```http
 DELETE /api/campaigns/:id
 Authorization: Bearer <jwt_token>
 ```
 
 #### Get Advertiser Dashboard
+
 ```http
 GET /api/campaigns/advertiser-dashboard
 Authorization: Bearer <jwt_token>
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -435,12 +459,14 @@ Authorization: Bearer <jwt_token>
 ```
 
 #### Get Campaign Analytics
+
 ```http
 GET /api/campaigns/:id/analytics
 Authorization: Bearer <jwt_token>
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -461,6 +487,7 @@ Authorization: Bearer <jwt_token>
 ```
 
 #### Approve/Reject Participation (for approval-required campaigns)
+
 ```http
 PATCH /api/campaigns/participations/:id/approve
 Authorization: Bearer <jwt_token>
@@ -487,6 +514,7 @@ Authorization: Bearer <jwt_token>
 ### Admin Endpoints
 
 #### Bulk Operations
+
 ```http
 PATCH /api/campaigns/bulk/status
 Authorization: Bearer <jwt_token>
@@ -514,6 +542,7 @@ Authorization: Bearer <jwt_token>
 ## Business Logic
 
 ### Campaign Eligibility
+
 The system automatically checks if a user can join a campaign based on:
 
 1. **Campaign Status**: Must be active
@@ -524,17 +553,21 @@ The system automatically checks if a user can join a campaign based on:
 6. **Previous Participation**: Users cannot join the same campaign twice
 
 ### Automatic Campaign Management
+
 - **Expiration**: Active participations are automatically expired when time runs out
 - **Completion**: Campaigns are automatically marked as completed when end date is reached
 - **Budget Tracking**: Spent budget is tracked automatically when users are paid
 
 ### Earnings Calculation
+
 - Base earnings equal the campaign payout
 - Earnings can be adjusted during approval process for approval-required campaigns
 - Payments are tracked separately from earnings for accounting purposes
 
 ### Search and Discovery
+
 The system provides advanced filtering and search capabilities:
+
 - Full-text search across title, description, and brand name
 - Category and network filtering
 - Payout and duration range filtering
@@ -545,18 +578,21 @@ The system provides advanced filtering and search capabilities:
 ## Security Features
 
 ### Authorization
+
 - **Public Access**: Campaign browsing and details
 - **User Access**: Joining campaigns, viewing earnings
 - **Advertiser Access**: Creating and managing campaigns
 - **Admin Access**: Bulk operations and system management
 
 ### Validation
+
 - Comprehensive input validation using class-validator
 - Business rule validation (dates, budgets, requirements)
 - SQL injection protection through TypeORM
 - Rate limiting through NestJS throttler
 
 ### Data Protection
+
 - Sensitive user data is excluded from public responses
 - JWT-based authentication for all protected endpoints
 - Role-based access control for different user types
@@ -564,17 +600,20 @@ The system provides advanced filtering and search capabilities:
 ## Performance Optimizations
 
 ### Database Indexing
+
 - Composite indexes on frequently queried combinations
 - Individual indexes on filter fields
 - Foreign key indexes for joins
 
 ### Query Optimization
+
 - Selective field loading for list views
 - Eager loading for related data when needed
 - Pagination to limit result sets
 - Query builders for complex filtering
 
 ### Caching Strategy
+
 - Campaign list caching for public endpoints
 - User-specific data caching for dashboard views
 - Analytics result caching for advertiser dashboards
@@ -582,19 +621,24 @@ The system provides advanced filtering and search capabilities:
 ## Integration Points
 
 ### Payment Processing
+
 The campaign system is designed to integrate with payment processors:
+
 - Earnings tracking separate from payment processing
 - Payment status tracking for reconciliation
 - Bulk payment processing capabilities
 
 ### Notification System
+
 Integration points for notifications:
+
 - Campaign join confirmations
 - Campaign completion reminders
 - Payment processing notifications
 - Campaign status updates
 
 ### Analytics and Reporting
+
 - Built-in analytics for campaign performance
 - Earnings summaries for users
 - Conversion tracking and optimization metrics
@@ -605,6 +649,7 @@ Integration points for notifications:
 The API uses standard HTTP status codes and provides detailed error messages:
 
 ### Common Error Responses
+
 ```json
 {
   "success": false,
@@ -619,6 +664,7 @@ The API uses standard HTTP status codes and provides detailed error messages:
 ```
 
 ### Status Codes
+
 - `200` - Success
 - `201` - Created
 - `400` - Bad Request (validation errors)
@@ -632,6 +678,7 @@ The API uses standard HTTP status codes and provides detailed error messages:
 ## Testing
 
 The system includes comprehensive tests:
+
 - Unit tests for service methods
 - Integration tests for API endpoints
 - E2E tests for complete workflows
@@ -640,6 +687,7 @@ The system includes comprehensive tests:
 ## Deployment Considerations
 
 ### Environment Variables
+
 ```env
 DB_HOST=localhost
 DB_PORT=5432
@@ -651,13 +699,17 @@ NODE_ENV=production
 ```
 
 ### Database Migrations
+
 Run migrations before deployment:
+
 ```bash
 npm run migration:run
 ```
 
 ### Seed Data
+
 Optional seed data for development:
+
 ```bash
 npm run seed:run
 ```

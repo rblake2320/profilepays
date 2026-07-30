@@ -36,7 +36,7 @@ export class CampaignsController {
   @Roles(UserRole.ADVERTISER, UserRole.ADMIN)
   async create(
     @Body() createCampaignDto: CreateCampaignDto,
-    @CurrentUser() user: User,
+    @CurrentUser() user: User
   ) {
     const campaign = await this.campaignsService.create(createCampaignDto, user.id);
     return {
@@ -73,7 +73,7 @@ export class CampaignsController {
   @UseGuards(JwtAuthGuard)
   async getMyCampaigns(
     @CurrentUser() user: User,
-    @Query('status') status?: ParticipationStatus,
+    @Query('status') status?: ParticipationStatus
   ) {
     const campaigns = await this.campaignsService.getUserCampaigns(user.id, status);
     return {
@@ -110,7 +110,7 @@ export class CampaignsController {
   @Public()
   async findOne(
     @Param('id', ParseUUIDPipe) id: string,
-    @CurrentUser() user?: User,
+    @CurrentUser() user?: User
   ) {
     const campaign = await this.campaignsService.findOne(id, user?.id);
     return {
@@ -125,7 +125,7 @@ export class CampaignsController {
   @Roles(UserRole.ADVERTISER, UserRole.ADMIN)
   async getCampaignAnalytics(
     @Param('id', ParseUUIDPipe) id: string,
-    @CurrentUser() user: User,
+    @CurrentUser() user: User
   ) {
     const analytics = await this.campaignsService.getCampaignAnalytics(id, user.id);
     return {
@@ -141,7 +141,7 @@ export class CampaignsController {
   async update(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() updateCampaignDto: UpdateCampaignDto,
-    @CurrentUser() user: User,
+    @CurrentUser() user: User
   ) {
     const campaign = await this.campaignsService.update(id, updateCampaignDto, user.id);
     return {
@@ -157,7 +157,7 @@ export class CampaignsController {
   @HttpCode(HttpStatus.NO_CONTENT)
   async remove(
     @Param('id', ParseUUIDPipe) id: string,
-    @CurrentUser() user: User,
+    @CurrentUser() user: User
   ) {
     await this.campaignsService.remove(id, user.id);
     return {
@@ -171,7 +171,7 @@ export class CampaignsController {
   async joinCampaign(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() joinCampaignDto: JoinCampaignDto,
-    @CurrentUser() user: User,
+    @CurrentUser() user: User
   ) {
     const participation = await this.campaignsService.joinCampaign(id, user.id, joinCampaignDto);
     return {
@@ -186,12 +186,12 @@ export class CampaignsController {
   async completeCampaign(
     @Param('id', ParseUUIDPipe) participationId: string,
     @Body() completeCampaignDto: CompleteCampaignDto,
-    @CurrentUser() user: User,
+    @CurrentUser() user: User
   ) {
     const participation = await this.campaignsService.completeCampaign(
       participationId,
       user.id,
-      completeCampaignDto,
+      completeCampaignDto
     );
     return {
       success: true,
@@ -204,7 +204,7 @@ export class CampaignsController {
   @UseGuards(JwtAuthGuard)
   async startCampaign(
     @Param('id', ParseUUIDPipe) participationId: string,
-    @CurrentUser() user: User,
+    @CurrentUser() user: User
   ) {
     // This would be implemented to manually start a campaign if needed
     // For now, campaigns auto-start when joined
@@ -219,7 +219,7 @@ export class CampaignsController {
     @Param('id', ParseUUIDPipe) participationId: string,
     @Body('earnings') earnings: number,
     @CurrentUser() user: User,
-    @Body('notes') notes?: string,
+    @Body('notes') notes?: string
   ) {
     // Implementation would go here for approving completed campaigns
     return {
@@ -234,7 +234,7 @@ export class CampaignsController {
   async rejectParticipation(
     @Param('id', ParseUUIDPipe) participationId: string,
     @Body('reason') reason: string,
-    @CurrentUser() user: User,
+    @CurrentUser() user: User
   ) {
     // Implementation would go here for rejecting completed campaigns
     return {
@@ -272,7 +272,7 @@ export class CampaignsController {
   @Roles(UserRole.ADMIN)
   async bulkUpdateStatus(
     @Body('campaignIds') campaignIds: string[],
-    @Body('status') status: string,
+    @Body('status') status: string
   ) {
     // Implementation would go here for bulk status updates
     return {
@@ -286,7 +286,7 @@ export class CampaignsController {
   @Roles(UserRole.ADMIN)
   async bulkFeatureCampaigns(
     @Body('campaignIds') campaignIds: string[],
-    @Body('featured') featured: boolean,
+    @Body('featured') featured: boolean
   ) {
     // Implementation would go here for bulk featuring
     return {

@@ -1,42 +1,30 @@
-# ─── Stage 1: Build ────────────────────────────────────────────────────────────
-FROM node:22-alpine AS builder
+FROM node:24-alpine AS builder
 
 WORKDIR /app
+COPY package.json package-lock.json ./
+COPY backend/package.json backend/package.json
+COPY frontend/package.json frontend/package.json
+RUN npm ci --ignore-scripts
 
-# Install NestJS CLI globally
-RUN npm install -g @nestjs/cli
+COPY backend backend
+RUN npm run build:backend
 
-# Copy package files and install dependencies
-COPY package*.json ./
-RUN npm ci --legacy-peer-deps
+FROM node:24-alpine AS production
 
-# Copy source and build
-COPY . .
-RUN nest build
-
-# ─── Stage 2: Production ───────────────────────────────────────────────────────
-FROM node:22-alpine AS production
-
+ENV NODE_ENV=production
 WORKDIR /app
 
-# Install curl for healthcheck
 RUN apk add --no-cache curl
+COPY package.json package-lock.json ./
+COPY backend/package.json backend/package.json
+COPY frontend/package.json frontend/package.json
+RUN npm ci --omit=dev --ignore-scripts --workspace backend
 
-# Copy package files and install only production deps
-COPY package*.json ./
-RUN npm ci --only=production --legacy-peer-deps
-
-# Copy built artifacts from builder
-COPY --from=builder /app/dist ./dist
-
-# Non-root user for security
-RUN addgroup -g 1001 -S nodejs && adduser -S nestjs -u 1001
-USER nestjs
-
+COPY --from=builder /app/backend/dist backend/dist
+USER node
 EXPOSE 3000
 
-# Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
   CMD curl -f http://localhost:3000/api/v1/campaigns/stats || exit 1
 
-CMD ["node", "dist/src/main.js"]
+CMD ["node", "backend/dist/src/main.js"]

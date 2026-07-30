@@ -16,47 +16,47 @@ export class CampaignFilterDto {
   @IsOptional()
   @IsString()
   @Transform(({ value }) => value.trim())
-  search?: string;
+    search?: string;
 
   @IsOptional()
   @IsEnum(CampaignCategory)
-  category?: CampaignCategory;
+    category?: CampaignCategory;
 
   @IsOptional()
   @IsEnum(SocialNetwork)
-  network?: SocialNetwork;
+    network?: SocialNetwork;
 
   @IsOptional()
   @IsEnum(CampaignStatus)
-  status?: CampaignStatus;
+    status?: CampaignStatus;
 
   @IsOptional()
   @IsNumber()
   @IsPositive()
   @Min(0.01)
   @Type(() => Number)
-  minPayout?: number;
+    minPayout?: number;
 
   @IsOptional()
   @IsNumber()
   @IsPositive()
   @Min(0.01)
   @Type(() => Number)
-  maxPayout?: number;
+    maxPayout?: number;
 
   @IsOptional()
   @IsNumber()
   @IsPositive()
   @Min(1)
   @Type(() => Number)
-  minDuration?: number;
+    minDuration?: number;
 
   @IsOptional()
   @IsNumber()
   @IsPositive()
   @Min(1)
   @Type(() => Number)
-  maxDuration?: number;
+    maxDuration?: number;
 
   @IsOptional()
   @IsBoolean()
@@ -66,7 +66,7 @@ export class CampaignFilterDto {
     }
     return Boolean(value);
   })
-  featured?: boolean;
+    featured?: boolean;
 
   @IsOptional()
   @IsBoolean()
@@ -76,7 +76,7 @@ export class CampaignFilterDto {
     }
     return Boolean(value);
   })
-  hasSpots?: boolean;
+    hasSpots?: boolean;
 
   @IsOptional()
   @IsArray()
@@ -87,7 +87,7 @@ export class CampaignFilterDto {
     }
     return Array.isArray(value) ? value : [];
   })
-  tags?: string[];
+    tags?: string[];
 
   // Pagination
   @IsOptional()
@@ -96,27 +96,27 @@ export class CampaignFilterDto {
   @Min(1)
   @Max(100)
   @Type(() => Number)
-  limit?: number = 20;
+    limit?: number = 20;
 
   @IsOptional()
   @IsNumber()
   @Min(0)
   @Type(() => Number)
-  offset?: number = 0;
+    offset?: number = 0;
 
   @IsOptional()
   @IsNumber()
   @IsPositive()
   @Min(1)
   @Type(() => Number)
-  page?: number = 1;
+    page?: number = 1;
 
   // Sorting
   @IsOptional()
   @IsString()
-  sortBy?: 'createdAt' | 'payoutUSD' | 'durationMinutes' | 'title' | 'endDate' = 'createdAt';
+    sortBy?: 'createdAt' | 'payoutUSD' | 'durationMinutes' | 'title' | 'endDate' = 'createdAt';
 
   @IsOptional()
   @IsString()
-  sortOrder?: 'ASC' | 'DESC' = 'DESC';
+    sortOrder?: 'ASC' | 'DESC' = 'DESC';
 }

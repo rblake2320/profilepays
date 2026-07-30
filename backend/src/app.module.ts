@@ -22,10 +22,12 @@ import { CampaignParticipation } from './campaigns/entities/campaign-participati
     }),
 
     // Rate Limiting
-    ThrottlerModule.forRoot({
-      ttl: 60,
-      limit: 10,
-    }),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60_000,
+        limit: 10,
+      },
+    ]),
 
     // Database
     TypeOrmModule.forRootAsync({

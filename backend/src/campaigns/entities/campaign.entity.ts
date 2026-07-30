@@ -54,61 +54,61 @@ export enum SocialNetwork {
 @Index(['payoutUSD', 'status'])
 export class Campaign {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+    id: string;
 
   @Column({ length: 255 })
-  title: string;
+    title: string;
 
   @Column({ type: 'text' })
-  description: string;
+    description: string;
 
   @Column({ name: 'brand_name', length: 255 })
-  brandName: string;
+    brandName: string;
 
   @Column({ name: 'brand_logo', nullable: true })
-  brandLogo?: string;
+    brandLogo?: string;
 
   @Column({ name: 'brand_color', length: 7, default: '#000000' })
-  brandColor: string;
+    brandColor: string;
 
   @Column({ name: 'payout_usd', type: 'decimal', precision: 10, scale: 2 })
-  payoutUSD: number;
+    payoutUSD: number;
 
   @Column({ name: 'duration_minutes', type: 'integer' })
-  durationMinutes: number;
+    durationMinutes: number;
 
   @Column({
     type: 'enum',
     enum: CampaignCategory,
     default: CampaignCategory.OTHER,
   })
-  category: CampaignCategory;
+    category: CampaignCategory;
 
   @Column({
     type: 'enum',
     enum: SocialNetwork,
     nullable: true,
   })
-  network?: SocialNetwork;
+    network?: SocialNetwork;
 
   @Column({ default: false })
-  featured: boolean;
+    featured: boolean;
 
   @Column({
     type: 'enum',
     enum: CampaignStatus,
     default: CampaignStatus.DRAFT,
   })
-  status: CampaignStatus;
+    status: CampaignStatus;
 
   @Column({ name: 'max_participants', type: 'integer', nullable: true })
-  maxParticipants?: number;
+    maxParticipants?: number;
 
   @Column({ name: 'current_participants', type: 'integer', default: 0 })
-  currentParticipants: number;
+    currentParticipants: number;
 
   @Column({ name: 'requirements', type: 'json', nullable: true })
-  requirements?: {
+    requirements?: {
     minFollowers?: number;
     minAge?: number;
     maxAge?: number;
@@ -118,45 +118,45 @@ export class Campaign {
   };
 
   @Column({ name: 'campaign_url', nullable: true })
-  campaignUrl?: string;
+    campaignUrl?: string;
 
   @Column({ name: 'instructions', type: 'text', nullable: true })
-  instructions?: string;
+    instructions?: string;
 
   @Column({ name: 'tags', type: 'simple-array', nullable: true })
-  tags?: string[];
+    tags?: string[];
 
   @Column({ name: 'start_date', type: 'timestamp', nullable: true })
-  startDate?: Date;
+    startDate?: Date;
 
   @Column({ name: 'end_date', type: 'timestamp', nullable: true })
-  endDate?: Date;
+    endDate?: Date;
 
   @Column({ name: 'total_budget', type: 'decimal', precision: 12, scale: 2, nullable: true })
-  totalBudget?: number;
+    totalBudget?: number;
 
   @Column({ name: 'spent_budget', type: 'decimal', precision: 12, scale: 2, default: 0 })
-  spentBudget: number;
+    spentBudget: number;
 
   @Column({ name: 'approval_required', default: false })
-  approvalRequired: boolean;
+    approvalRequired: boolean;
 
   @CreateDateColumn({ name: 'created_at' })
-  createdAt: Date;
+    createdAt: Date;
 
   @UpdateDateColumn({ name: 'updated_at' })
-  updatedAt: Date;
+    updatedAt: Date;
 
   // Relationships
   @ManyToOne(() => User, { nullable: false })
   @JoinColumn({ name: 'advertiser_id' })
-  advertiser: User;
+    advertiser: User;
 
   @Column({ name: 'advertiser_id' })
-  advertiserId: string;
+    advertiserId: string;
 
   @OneToMany(() => CampaignParticipation, (participation) => participation.campaign)
-  participations: CampaignParticipation[];
+    participations: CampaignParticipation[];
 
   // Virtual properties
   get isFull(): boolean {

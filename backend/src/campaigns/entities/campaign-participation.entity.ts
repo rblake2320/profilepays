@@ -29,26 +29,26 @@ export enum ParticipationStatus {
 @Index(['startTime', 'endTime'])
 export class CampaignParticipation {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+    id: string;
 
   @Column({ name: 'start_time', type: 'timestamp', nullable: true })
-  startTime?: Date;
+    startTime?: Date;
 
   @Column({ name: 'end_time', type: 'timestamp', nullable: true })
-  endTime?: Date;
+    endTime?: Date;
 
   @Column({
     type: 'enum',
     enum: ParticipationStatus,
     default: ParticipationStatus.PENDING,
   })
-  status: ParticipationStatus;
+    status: ParticipationStatus;
 
   @Column({ name: 'earnings_usd', type: 'decimal', precision: 10, scale: 2, default: 0 })
-  earningsUSD: number;
+    earningsUSD: number;
 
   @Column({ name: 'completion_proof', type: 'json', nullable: true })
-  completionProof?: {
+    completionProof?: {
     screenshots?: string[];
     videoUrl?: string;
     socialPostUrl?: string;
@@ -57,52 +57,52 @@ export class CampaignParticipation {
   };
 
   @Column({ name: 'approval_notes', type: 'text', nullable: true })
-  approvalNotes?: string;
+    approvalNotes?: string;
 
   @Column({ name: 'rejection_reason', type: 'text', nullable: true })
-  rejectionReason?: string;
+    rejectionReason?: string;
 
   @Column({ name: 'duration_actual_minutes', type: 'integer', nullable: true })
-  durationActualMinutes?: number;
+    durationActualMinutes?: number;
 
   @Column({ name: 'progress_percentage', type: 'integer', default: 0 })
-  progressPercentage: number;
+    progressPercentage: number;
 
   @Column({ name: 'milestones_completed', type: 'json', nullable: true })
-  milestonesCompleted?: string[];
+    milestonesCompleted?: string[];
 
   @Column({ name: 'payment_processed', default: false })
-  paymentProcessed: boolean;
+    paymentProcessed: boolean;
 
   @Column({ name: 'payment_processed_at', type: 'timestamp', nullable: true })
-  paymentProcessedAt?: Date;
+    paymentProcessedAt?: Date;
 
   @Column({ name: 'reminder_sent', default: false })
-  reminderSent: boolean;
+    reminderSent: boolean;
 
   @Column({ name: 'reminder_sent_at', type: 'timestamp', nullable: true })
-  reminderSentAt?: Date;
+    reminderSentAt?: Date;
 
   @CreateDateColumn({ name: 'created_at' })
-  createdAt: Date;
+    createdAt: Date;
 
   @UpdateDateColumn({ name: 'updated_at' })
-  updatedAt: Date;
+    updatedAt: Date;
 
   // Relationships
   @ManyToOne(() => User, { nullable: false })
   @JoinColumn({ name: 'user_id' })
-  user: User;
+    user: User;
 
   @Column({ name: 'user_id' })
-  userId: string;
+    userId: string;
 
   @ManyToOne(() => Campaign, (campaign) => campaign.participations, { nullable: false })
   @JoinColumn({ name: 'campaign_id' })
-  campaign: Campaign;
+    campaign: Campaign;
 
   @Column({ name: 'campaign_id' })
-  campaignId: string;
+    campaignId: string;
 
   // Virtual properties
   get isActive(): boolean {
@@ -118,14 +118,18 @@ export class CampaignParticipation {
   }
 
   get timeRemaining(): number | null {
-    if (!this.endTime) return null;
+    if (!this.endTime) {
+      return null;
+    }
     const now = new Date();
     const remaining = this.endTime.getTime() - now.getTime();
     return Math.max(0, Math.floor(remaining / (1000 * 60))); // minutes
   }
 
   get isExpired(): boolean {
-    if (!this.endTime) return false;
+    if (!this.endTime) {
+      return false;
+    }
     return new Date() > this.endTime;
   }
 
@@ -134,7 +138,9 @@ export class CampaignParticipation {
   }
 
   get actualDurationHours(): number | null {
-    if (!this.startTime || !this.endTime) return null;
+    if (!this.startTime || !this.endTime) {
+      return null;
+    }
     const diff = this.endTime.getTime() - this.startTime.getTime();
     return Math.round((diff / (1000 * 60 * 60)) * 100) / 100; // hours with 2 decimal precision
   }

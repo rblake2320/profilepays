@@ -112,6 +112,7 @@ profilepays/
 ## 🔧 Technology Stack
 
 ### Frontend
+
 - **Framework**: React 18 with TypeScript
 - **State Management**: Redux Toolkit
 - **UI Library**: Material-UI (MUI)
@@ -122,6 +123,7 @@ profilepays/
 - **Testing**: Jest + React Testing Library + Cypress
 
 ### Backend
+
 - **Framework**: NestJS with TypeScript
 - **Database**: PostgreSQL with TypeORM
 - **Authentication**: JWT + Passport.js
@@ -131,6 +133,7 @@ profilepays/
 - **File Storage**: AWS S3 or Cloudinary
 
 ### DevOps & Infrastructure
+
 - **Containerization**: Docker + Docker Compose
 - **CI/CD**: GitHub Actions
 - **Cloud Platform**: AWS or DigitalOcean
@@ -185,18 +188,21 @@ campaign_participations (
 ## 🔐 Security Considerations
 
 ### Authentication & Authorization
+
 - JWT-based authentication
 - Role-based access control (RBAC)
 - OAuth2 integration (Google, Facebook, GitHub)
 - Two-factor authentication (planned)
 
 ### Data Protection
+
 - Encryption at rest and in transit
 - GDPR compliance measures
 - PCI DSS compliance for payments
 - Regular security audits
 
 ### API Security
+
 - Rate limiting
 - Input validation and sanitization
 - CORS configuration
@@ -205,17 +211,20 @@ campaign_participations (
 ## 🚀 Deployment Strategy
 
 ### Development Environment
+
 ```bash
 # Local development with Docker Compose
 docker-compose -f docker-compose.dev.yml up
 ```
 
 ### Staging Environment
+
 - Automated deployment on merge to `develop` branch
 - Feature branch deployments for testing
 - Database migrations and seeders
 
 ### Production Environment
+
 - Blue-green deployment strategy
 - Database backups and monitoring
 - CDN for static assets
@@ -224,12 +233,14 @@ docker-compose -f docker-compose.dev.yml up
 ## 📈 Performance Considerations
 
 ### Frontend Optimization
+
 - Code splitting and lazy loading
 - Image optimization and compression
 - Service worker for caching
 - Bundle size monitoring
 
 ### Backend Optimization
+
 - Database query optimization
 - Redis caching layer
 - API response compression
@@ -238,12 +249,14 @@ docker-compose -f docker-compose.dev.yml up
 ## 🧪 Testing Strategy
 
 ### Frontend Testing
+
 - Unit tests for utilities and hooks
 - Component tests with React Testing Library
 - Integration tests for user flows
 - E2E tests with Cypress
 
 ### Backend Testing
+
 - Unit tests for services and utilities
 - Integration tests for API endpoints
 - Database tests with test containers
@@ -252,12 +265,14 @@ docker-compose -f docker-compose.dev.yml up
 ## 📦 Package Management
 
 ### Dependency Management
+
 - Use exact versions for production dependencies
 - Regular dependency updates and security scans
 - Separate dev and production dependencies
 - Lock files committed to repository
 
 ### Build Optimization
+
 - Multi-stage Docker builds
 - Build caching strategies
 - Asset optimization and compression
