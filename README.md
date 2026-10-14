@@ -4,7 +4,9 @@
 
 ProfilePays is a social-advertising platform concept that would pay users for temporarily swapping their profile pictures with brand-sponsored images while giving businesses self-service tooling to launch targeted campaigns.
 
-> **Note**: This repository currently contains project documentation, templates, and planning materials. The actual application code will be developed in separate repositories or branches.
+> **Status**: This repository contains frontend and backend application source as well as planning
+> materials. The complete placement, verification, restoration, and settlement workflow is proposed
+> in [ProfilePays workflow v1](docs/PROFILEPAYS-WORKFLOW-V1.md); it is not yet an implemented lifecycle.
 
 ## Project Vision
 
@@ -29,39 +31,42 @@ ProfilePays is a social-advertising platform concept that would pay users for te
 ## Repository Structure
 
 This repository contains:
+- Frontend and backend source under `frontend/` and `backend/`
+- The [workflow specification and implementation mapping](docs/PROFILEPAYS-WORKFLOW-V1.md)
 - 📋 Project documentation and planning
 - 🔧 GitHub templates (issues, PRs)
 - ⚙️ CI/CD workflow templates
 - 📝 Contributing guidelines
 - 📄 License and legal documents
 
-## Development Setup (Future)
+## Development Setup
 
-When the codebase is implemented, the setup will follow this structure:
+The source checkout has this structure. These commands are setup guidance, not a verified
+end-to-end deployment receipt:
 
 ```bash
 # Clone the repository
 git clone https://github.com/rblake2320/profilepays.git
 cd profilepays
 
-# Frontend setup (when implemented)
+# Frontend setup
 cd frontend
 npm install
 npm run dev
 
-# Backend setup (when implemented)  
+# Backend setup
 cd ../backend
 npm install
 cp .env.example .env
 npm run start:dev
 
-# Docker setup (when implemented)
+# Docker setup
 docker compose up --build
 ```
 
-## Testing Strategy (Future)
+## Testing Strategy
 
-The planned testing approach includes:
+The intended testing approach includes:
 * **Jest + SuperTest** for back-end unit / integration testing
 * **React Testing Library + Jest** for front-end components
 * **Cypress** for end-to-end testing
