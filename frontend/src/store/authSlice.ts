@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { authApi, LoginPayload, RegisterPayload } from '../api/auth';
+import { authError } from '../utils/authError';
 
 export type SubscriptionTier = 'basic' | 'standard' | 'premium' | 'elite';
 
@@ -43,7 +44,7 @@ export const registerUser = createAsyncThunk(
     try {
       return await authApi.register(payload);
     } catch (err: any) {
-      return rejectWithValue(err.response?.data?.message || 'Registration failed');
+      return rejectWithValue(authError(err, 'We could not create your account. Please try again.'));
     }
   },
 );
@@ -54,7 +55,7 @@ export const loginUser = createAsyncThunk(
     try {
       return await authApi.login(payload);
     } catch (err: any) {
-      return rejectWithValue(err.response?.data?.message || 'Login failed');
+      return rejectWithValue(authError(err, 'We could not sign you in. Please try again.').message);
     }
   },
 );
@@ -110,7 +111,7 @@ const authSlice = createSlice({
       })
       .addCase(registerUser.rejected, (state, action) => {
         state.isLoading = false;
-        state.error = action.payload as string;
+        state.error = (action.payload as {message?:string})?.message || 'We could not create your account. Please try again.';
       });
 
     // Login

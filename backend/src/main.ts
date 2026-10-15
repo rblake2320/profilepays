@@ -1,5 +1,5 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe, Logger } from '@nestjs/common';
+import { Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import cookieParser from 'cookie-parser';
@@ -9,6 +9,7 @@ import { existsSync } from 'fs';
 import { resolve } from 'path';
 
 import { AppModule } from './app.module';
+import { inputValidationPipe } from './common/input-validation';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
@@ -45,12 +46,7 @@ async function bootstrap() {
 
   // Global validation pipe
   app.useGlobalPipes(
-    new ValidationPipe({
-      transform: true,
-      whitelist: true,
-      forbidNonWhitelisted: true,
-      disableErrorMessages: nodeEnv === 'production',
-    }),
+    inputValidationPipe(),
   );
 
   // Global prefix

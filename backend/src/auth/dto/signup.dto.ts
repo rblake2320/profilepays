@@ -11,9 +11,12 @@ import {
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { UserRole } from '../../users/entities/user.entity';
+import { Transform } from 'class-transformer';
+import { PASSWORD_MIN, PASSWORD_MAX, PASSWORD_PATTERN, PASSWORD_HELP, NAME_PATTERN, NAME_HELP, trimText } from '../signup-policy';
 
 export class SignupDto {
   @ApiProperty({ example: 'john.doe@example.com', description: 'User email address' })
+  @Transform(({ value }) => trimText(value))
   @IsEmail({}, { message: 'Please provide a valid email address' })
   @MaxLength(255, { message: 'Email must not exceed 255 characters' })
   email: string;
@@ -24,25 +27,25 @@ export class SignupDto {
     minLength: 8
   })
   @IsString()
-  @MinLength(8, { message: 'Password must be at least 8 characters long' })
-  @MaxLength(128, { message: 'Password must not exceed 128 characters' })
-  @Matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/, {
-    message: 'Password must contain at least one uppercase letter, one lowercase letter, one number and one special character',
-  })
+  @MinLength(PASSWORD_MIN, { message: 'Password must be at least 8 characters long' })
+  @MaxLength(PASSWORD_MAX, { message: 'Password must not exceed 128 characters' })
+  @Matches(PASSWORD_PATTERN, { message: PASSWORD_HELP })
   password: string;
 
   @ApiProperty({ example: 'John', description: 'User first name' })
+  @Transform(({ value }) => trimText(value))
   @IsString()
   @MinLength(1, { message: 'First name is required' })
   @MaxLength(100, { message: 'First name must not exceed 100 characters' })
-  @Matches(/^[a-zA-Z\s'-]+$/, { message: 'First name can only contain letters, spaces, hyphens and apostrophes' })
+  @Matches(NAME_PATTERN, { message: `First name: ${NAME_HELP}` })
   firstName: string;
 
   @ApiProperty({ example: 'Doe', description: 'User last name' })
+  @Transform(({ value }) => trimText(value))
   @IsString()
   @MinLength(1, { message: 'Last name is required' })
   @MaxLength(100, { message: 'Last name must not exceed 100 characters' })
-  @Matches(/^[a-zA-Z\s'-]+$/, { message: 'Last name can only contain letters, spaces, hyphens and apostrophes' })
+  @Matches(NAME_PATTERN, { message: `Last name: ${NAME_HELP}` })
   lastName: string;
 
   @ApiPropertyOptional({

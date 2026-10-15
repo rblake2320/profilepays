@@ -24,26 +24,9 @@ import {
 } from '@mui/material';
 import { useAppDispatch, useAppSelector } from '../hooks/redux';
 import { registerUser, clearError } from '../store/authSlice';
+import { PASSWORD_HELP } from '../../../backend/src/auth/signup-policy';
+import { signupSchema as schema } from '../validation/signup';
 
-const schema = yup.object({
-  email: yup.string().email('Invalid email').required('Email is required'),
-  password: yup
-    .string()
-    .min(8, 'Password must be at least 8 characters')
-    .required('Password is required'),
-  confirmPassword: yup
-    .string()
-    .oneOf([yup.ref('password')], 'Passwords must match')
-    .required('Please confirm your password'),
-  userType: yup.string().oneOf(['member', 'advertiser']).required('Please select account type'),
-  firstName: yup.string().required('First name is required'),
-  lastName: yup.string().required('Last name is required'),
-  companyName: yup.string().when('userType', {
-    is: 'advertiser',
-    then: (s) => s.required('Company name is required for advertisers'),
-    otherwise: (s) => s.optional(),
-  }),
-});
 
 type FormData = yup.InferType<typeof schema>;
 
@@ -60,6 +43,7 @@ const RegisterPage = () => {
     handleSubmit,
     watch,
     control,
+    setError,
     formState: { errors },
   } = useForm<FormData>({
     resolver: yupResolver(schema),
@@ -78,9 +62,19 @@ const RegisterPage = () => {
     return () => { dispatch(clearError()); };
   }, [dispatch]);
 
-  const onSubmit = (data: FormData) => {
+  const onSubmit = async (data: FormData) => {
     const { confirmPassword, ...payload } = data;
-    dispatch(registerUser(payload as any));
+    try {
+      await dispatch(registerUser(payload as any)).unwrap();
+    } catch (failure: any) {
+      let focused = false;
+      for (const [name, message] of Object.entries(failure?.fieldErrors || {})) {
+        if (['email', 'password', 'firstName', 'lastName'].includes(name) && typeof message === 'string') {
+          setError(name as keyof FormData, { type: 'server', message }, { shouldFocus: !focused });
+          focused = true;
+        }
+      }
+    }
   };
 
   return (
@@ -103,7 +97,7 @@ const RegisterPage = () => {
               </Alert>
             )}
 
-            <Box component="form" onSubmit={handleSubmit(onSubmit)}>
+            <Box component="form" noValidate onSubmit={handleSubmit(onSubmit)}>
               <Stack spacing={2}>
                 {/* Account type selector */}
                 <Controller
@@ -134,6 +128,7 @@ const RegisterPage = () => {
                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
                   <TextField
                     label="First name"
+                    autoComplete="given-name"
                     fullWidth
                     error={!!errors.firstName}
                     helperText={errors.firstName?.message}
@@ -141,6 +136,7 @@ const RegisterPage = () => {
                   />
                   <TextField
                     label="Last name"
+                    autoComplete="family-name"
                     fullWidth
                     error={!!errors.lastName}
                     helperText={errors.lastName?.message}
@@ -163,6 +159,7 @@ const RegisterPage = () => {
                   type="email"
                   fullWidth
                   autoComplete="email"
+                  inputProps={{ autoCapitalize: 'none', spellCheck: false, inputMode: 'email' }}
                   error={!!errors.email}
                   helperText={errors.email?.message}
                   {...register('email')}
@@ -173,7 +170,7 @@ const RegisterPage = () => {
                   fullWidth
                   autoComplete="new-password"
                   error={!!errors.password}
-                  helperText={errors.password?.message}
+                  helperText={errors.password?.message || PASSWORD_HELP}
                   {...register('password')}
                 />
                 <TextField
