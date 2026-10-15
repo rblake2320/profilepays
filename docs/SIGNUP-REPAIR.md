@@ -1,6 +1,6 @@
 # Signup repair — 2026-10-15
 
-Shipped release: `78950f9` at https://profilepays.ultrarag.app/register.
+Shipped release: `cfecac2` at https://profilepays.ultrarag.app/register. Signup behavior is from `78950f9`; the final follow-up corrects the form's input sizing.
 
 The owner reported an unexplained Bad Request on iPhone. The exact input rejected on that phone was not captured and no password was requested. The same failure was reproduced in the real registration form with `José O’Neil` and a password satisfying the old policy. Separate live API probes returned the same generic 400 for email whitespace and incomplete password composition.
 
@@ -11,6 +11,8 @@ Production `ValidationPipe` suppressed all validation reasons. The browser only 
 The form and DTO now use `backend/src/auth/signup-policy.ts` for the same password and name rules. Password guidance appears before submission: 8–128 characters, uppercase and lowercase Latin letters, a number, and a symbol such as `!`, `#`, or `-`. Passwords are never trimmed. Email/name whitespace is normalized; Unicode names and curly apostrophes are accepted. Signup and login both normalize email whitespace.
 
 The production pipe returns field messages without submitted values or DTO objects. The signup form focuses and annotates rejected fields, retains entries, and displays useful duplicate-account, network and rate-limit feedback. Error arrays become readable text. Public administrator creation and unknown privilege fields remain rejected.
+
+Final visual inspection found `.pp-main input` styles overriding MUI's box sizing and padding, collapsing input fields to 26px. Dashboard rules now exclude MUI input, radio and button components. This applies to both registration and login. The mobile layout retest records actual input heights and document width; the earlier screenshot showing the cramped fields was not accepted as the final handoff.
 
 ## Verification and escape analysis
 

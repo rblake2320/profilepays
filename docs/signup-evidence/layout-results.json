@@ -1,0 +1,34 @@
+{
+  "release": "cfecac2",
+  "outcome": "Worked",
+  "beforeHeight": 26,
+  "documentWidth": 375,
+  "inputs": [
+    {
+      "boxSizing": "content-box",
+      "height": 56,
+      "name": "firstName"
+    },
+    {
+      "boxSizing": "content-box",
+      "height": 56,
+      "name": "lastName"
+    },
+    {
+      "boxSizing": "content-box",
+      "height": 56,
+      "name": "email"
+    },
+    {
+      "boxSizing": "content-box",
+      "height": 56,
+      "name": "password"
+    },
+    {
+      "boxSizing": "content-box",
+      "height": 56,
+      "name": "confirmPassword"
+    }
+  ],
+  "viewport": 390
+}
