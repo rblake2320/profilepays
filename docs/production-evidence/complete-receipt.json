@@ -1,0 +1,642 @@
+{
+  "placement": {
+    "id": "f39ec2d1-0721-4478-9c95-468091c7cf31",
+    "campaign_id": "bc3d0f5f-8a9d-445c-bd80-fd8bbfa6be19",
+    "user_id": "13fc7617-73c0-473a-b57a-0b2351731b3c",
+    "destination_id": "63bd15c8-421e-4334-a11c-6d9e23c069a8",
+    "command_key": "793c04ee-7984-4517-acd6-918630ea9861",
+    "state": "ended",
+    "record": {
+      "award": 100,
+      "terms": {
+        "brand": "Test sponsor",
+        "title": "Production complete 1792084168485",
+        "reward": 100,
+        "version": 1,
+        "assetKey": "sha256-fc5e4b098f64d89ae4f967fb99d3efb44c4be4dbe4238305116c642048675373",
+        "capacity": 1,
+        "category": "Community",
+        "currency": "TEST_CREDIT",
+        "maxGapMs": 12000,
+        "sampleMs": 2000,
+        "windowEnd": 1792688968490,
+        "description": "A temporary sponsored profile image.",
+        "imageSha256": "fc5e4b098f64d89ae4f967fb99d3efb44c4be4dbe4238305116c642048675373",
+        "cancelPolicy": "participant_zero_sponsor_prorated",
+        "consentVersion": "static-test-v1",
+        "durationSeconds": 45,
+        "coverageRequired": 0.98
+      },
+      "endsAt": 1792084214310,
+      "consent": "static-test-v1",
+      "original": {
+        "key": "d7d3e530-9b0b-4b54-a162-31dbc7445f3a",
+        "username": "live_countdown_test",
+        "profileId": "d7d3e530-9b0b-4b54-a162-31dbc7445f3a"
+      },
+      "startsAt": 1792084169310,
+      "coveredMs": 45000,
+      "lastError": null,
+      "nextCheck": 1792084214310,
+      "stoppedAt": 1792084214310,
+      "assessment": "eligible",
+      "requiredMs": 45000,
+      "settlement": "credited_test_only",
+      "stopReason": "deadline",
+      "consentedAt": 1792084168719,
+      "restoration": "restored",
+      "maxObservedGapMs": 2736
+    },
+    "created_at": "2026-10-15T17:09:28.716Z",
+    "sponsor_id": "c3f6c13b-5f8e-4ef4-87f2-52119f02559a"
+  },
+  "observations": [
+    {
+      "id": "1",
+      "placement_id": "f39ec2d1-0721-4478-9c95-468091c7cf31",
+      "at_ms": "1792084169310",
+      "kind": "valid",
+      "evidence": {
+        "normal": {
+          "key": "d7d3e530-9b0b-4b54-a162-31dbc7445f3a",
+          "username": "live_countdown_test",
+          "profileId": "d7d3e530-9b0b-4b54-a162-31dbc7445f3a"
+        },
+        "placement": {
+          "id": "f39ec2d1-0721-4478-9c95-468091c7cf31",
+          "endsAt": null,
+          "assetKey": "sha256-fc5e4b098f64d89ae4f967fb99d3efb44c4be4dbe4238305116c642048675373",
+          "assetUrl": "/api/profilepays/assets/sha256-fc5e4b098f64d89ae4f967fb99d3efb44c4be4dbe4238305116c642048675373",
+          "startsAt": null,
+          "disclosure": "Sponsored test placement • test credits only",
+          "leaseUntil": 1792084198857
+        },
+        "observedAt": 1792084169069,
+        "imageSha256": "fc5e4b098f64d89ae4f967fb99d3efb44c4be4dbe4238305116c642048675373"
+      }
+    },
+    {
+      "id": "2",
+      "placement_id": "f39ec2d1-0721-4478-9c95-468091c7cf31",
+      "at_ms": "1792084170000",
+      "kind": "valid",
+      "evidence": {
+        "normal": {
+          "key": "d7d3e530-9b0b-4b54-a162-31dbc7445f3a",
+          "username": "live_countdown_test",
+          "profileId": "d7d3e530-9b0b-4b54-a162-31dbc7445f3a"
+        },
+        "placement": {
+          "id": "f39ec2d1-0721-4478-9c95-468091c7cf31",
+          "endsAt": 1792084214310,
+          "assetKey": "sha256-fc5e4b098f64d89ae4f967fb99d3efb44c4be4dbe4238305116c642048675373",
+          "assetUrl": "/api/profilepays/assets/sha256-fc5e4b098f64d89ae4f967fb99d3efb44c4be4dbe4238305116c642048675373",
+          "startsAt": 1792084169310,
+          "disclosure": "Sponsored test placement • test credits only",
+          "leaseUntil": 1792084214310
+        },
+        "observedAt": 1792084169477,
+        "imageSha256": "fc5e4b098f64d89ae4f967fb99d3efb44c4be4dbe4238305116c642048675373"
+      }
+    },
+    {
+      "id": "3",
+      "placement_id": "f39ec2d1-0721-4478-9c95-468091c7cf31",
+      "at_ms": "1792084172481",
+      "kind": "valid",
+      "evidence": {
+        "normal": {
+          "key": "d7d3e530-9b0b-4b54-a162-31dbc7445f3a",
+          "username": "live_countdown_test",
+          "profileId": "d7d3e530-9b0b-4b54-a162-31dbc7445f3a"
+        },
+        "placement": {
+          "id": "f39ec2d1-0721-4478-9c95-468091c7cf31",
+          "endsAt": 1792084214310,
+          "assetKey": "sha256-fc5e4b098f64d89ae4f967fb99d3efb44c4be4dbe4238305116c642048675373",
+          "assetUrl": "/api/profilepays/assets/sha256-fc5e4b098f64d89ae4f967fb99d3efb44c4be4dbe4238305116c642048675373",
+          "startsAt": 1792084169310,
+          "disclosure": "Sponsored test placement • test credits only",
+          "leaseUntil": 1792084214310
+        },
+        "observedAt": 1792084171909,
+        "imageSha256": "fc5e4b098f64d89ae4f967fb99d3efb44c4be4dbe4238305116c642048675373"
+      }
+    },
+    {
+      "id": "4",
+      "placement_id": "f39ec2d1-0721-4478-9c95-468091c7cf31",
+      "at_ms": "1792084174982",
+      "kind": "valid",
+      "evidence": {
+        "normal": {
+          "key": "d7d3e530-9b0b-4b54-a162-31dbc7445f3a",
+          "username": "live_countdown_test",
+          "profileId": "d7d3e530-9b0b-4b54-a162-31dbc7445f3a"
+        },
+        "placement": {
+          "id": "f39ec2d1-0721-4478-9c95-468091c7cf31",
+          "endsAt": 1792084214310,
+          "assetKey": "sha256-fc5e4b098f64d89ae4f967fb99d3efb44c4be4dbe4238305116c642048675373",
+          "assetUrl": "/api/profilepays/assets/sha256-fc5e4b098f64d89ae4f967fb99d3efb44c4be4dbe4238305116c642048675373",
+          "startsAt": 1792084169310,
+          "disclosure": "Sponsored test placement • test credits only",
+          "leaseUntil": 1792084214310
+        },
+        "observedAt": 1792084174455,
+        "imageSha256": "fc5e4b098f64d89ae4f967fb99d3efb44c4be4dbe4238305116c642048675373"
+      }
+    },
+    {
+      "id": "5",
+      "placement_id": "f39ec2d1-0721-4478-9c95-468091c7cf31",
+      "at_ms": "1792084177539",
+      "kind": "valid",
+      "evidence": {
+        "normal": {
+          "key": "d7d3e530-9b0b-4b54-a162-31dbc7445f3a",
+          "username": "live_countdown_test",
+          "profileId": "d7d3e530-9b0b-4b54-a162-31dbc7445f3a"
+        },
+        "placement": {
+          "id": "f39ec2d1-0721-4478-9c95-468091c7cf31",
+          "endsAt": 1792084214310,
+          "assetKey": "sha256-fc5e4b098f64d89ae4f967fb99d3efb44c4be4dbe4238305116c642048675373",
+          "assetUrl": "/api/profilepays/assets/sha256-fc5e4b098f64d89ae4f967fb99d3efb44c4be4dbe4238305116c642048675373",
+          "startsAt": 1792084169310,
+          "disclosure": "Sponsored test placement • test credits only",
+          "leaseUntil": 1792084214310
+        },
+        "observedAt": 1792084176998,
+        "imageSha256": "fc5e4b098f64d89ae4f967fb99d3efb44c4be4dbe4238305116c642048675373"
+      }
+    },
+    {
+      "id": "6",
+      "placement_id": "f39ec2d1-0721-4478-9c95-468091c7cf31",
+      "at_ms": "1792084180106",
+      "kind": "valid",
+      "evidence": {
+        "normal": {
+          "key": "d7d3e530-9b0b-4b54-a162-31dbc7445f3a",
+          "username": "live_countdown_test",
+          "profileId": "d7d3e530-9b0b-4b54-a162-31dbc7445f3a"
+        },
+        "placement": {
+          "id": "f39ec2d1-0721-4478-9c95-468091c7cf31",
+          "endsAt": 1792084214310,
+          "assetKey": "sha256-fc5e4b098f64d89ae4f967fb99d3efb44c4be4dbe4238305116c642048675373",
+          "assetUrl": "/api/profilepays/assets/sha256-fc5e4b098f64d89ae4f967fb99d3efb44c4be4dbe4238305116c642048675373",
+          "startsAt": 1792084169310,
+          "disclosure": "Sponsored test placement • test credits only",
+          "leaseUntil": 1792084214310
+        },
+        "observedAt": 1792084179580,
+        "imageSha256": "fc5e4b098f64d89ae4f967fb99d3efb44c4be4dbe4238305116c642048675373"
+      }
+    },
+    {
+      "id": "7",
+      "placement_id": "f39ec2d1-0721-4478-9c95-468091c7cf31",
+      "at_ms": "1792084182626",
+      "kind": "valid",
+      "evidence": {
+        "normal": {
+          "key": "d7d3e530-9b0b-4b54-a162-31dbc7445f3a",
+          "username": "live_countdown_test",
+          "profileId": "d7d3e530-9b0b-4b54-a162-31dbc7445f3a"
+        },
+        "placement": {
+          "id": "f39ec2d1-0721-4478-9c95-468091c7cf31",
+          "endsAt": 1792084214310,
+          "assetKey": "sha256-fc5e4b098f64d89ae4f967fb99d3efb44c4be4dbe4238305116c642048675373",
+          "assetUrl": "/api/profilepays/assets/sha256-fc5e4b098f64d89ae4f967fb99d3efb44c4be4dbe4238305116c642048675373",
+          "startsAt": 1792084169310,
+          "disclosure": "Sponsored test placement • test credits only",
+          "leaseUntil": 1792084214310
+        },
+        "observedAt": 1792084182113,
+        "imageSha256": "fc5e4b098f64d89ae4f967fb99d3efb44c4be4dbe4238305116c642048675373"
+      }
+    },
+    {
+      "id": "8",
+      "placement_id": "f39ec2d1-0721-4478-9c95-468091c7cf31",
+      "at_ms": "1792084185203",
+      "kind": "valid",
+      "evidence": {
+        "normal": {
+          "key": "d7d3e530-9b0b-4b54-a162-31dbc7445f3a",
+          "username": "live_countdown_test",
+          "profileId": "d7d3e530-9b0b-4b54-a162-31dbc7445f3a"
+        },
+        "placement": {
+          "id": "f39ec2d1-0721-4478-9c95-468091c7cf31",
+          "endsAt": 1792084214310,
+          "assetKey": "sha256-fc5e4b098f64d89ae4f967fb99d3efb44c4be4dbe4238305116c642048675373",
+          "assetUrl": "/api/profilepays/assets/sha256-fc5e4b098f64d89ae4f967fb99d3efb44c4be4dbe4238305116c642048675373",
+          "startsAt": 1792084169310,
+          "disclosure": "Sponsored test placement • test credits only",
+          "leaseUntil": 1792084214310
+        },
+        "observedAt": 1792084184680,
+        "imageSha256": "fc5e4b098f64d89ae4f967fb99d3efb44c4be4dbe4238305116c642048675373"
+      }
+    },
+    {
+      "id": "9",
+      "placement_id": "f39ec2d1-0721-4478-9c95-468091c7cf31",
+      "at_ms": "1792084187728",
+      "kind": "valid",
+      "evidence": {
+        "normal": {
+          "key": "d7d3e530-9b0b-4b54-a162-31dbc7445f3a",
+          "username": "live_countdown_test",
+          "profileId": "d7d3e530-9b0b-4b54-a162-31dbc7445f3a"
+        },
+        "placement": {
+          "id": "f39ec2d1-0721-4478-9c95-468091c7cf31",
+          "endsAt": 1792084214310,
+          "assetKey": "sha256-fc5e4b098f64d89ae4f967fb99d3efb44c4be4dbe4238305116c642048675373",
+          "assetUrl": "/api/profilepays/assets/sha256-fc5e4b098f64d89ae4f967fb99d3efb44c4be4dbe4238305116c642048675373",
+          "startsAt": 1792084169310,
+          "disclosure": "Sponsored test placement • test credits only",
+          "leaseUntil": 1792084214310
+        },
+        "observedAt": 1792084187219,
+        "imageSha256": "fc5e4b098f64d89ae4f967fb99d3efb44c4be4dbe4238305116c642048675373"
+      }
+    },
+    {
+      "id": "10",
+      "placement_id": "f39ec2d1-0721-4478-9c95-468091c7cf31",
+      "at_ms": "1792084190464",
+      "kind": "valid",
+      "evidence": {
+        "normal": {
+          "key": "d7d3e530-9b0b-4b54-a162-31dbc7445f3a",
+          "username": "live_countdown_test",
+          "profileId": "d7d3e530-9b0b-4b54-a162-31dbc7445f3a"
+        },
+        "placement": {
+          "id": "f39ec2d1-0721-4478-9c95-468091c7cf31",
+          "endsAt": 1792084214310,
+          "assetKey": "sha256-fc5e4b098f64d89ae4f967fb99d3efb44c4be4dbe4238305116c642048675373",
+          "assetUrl": "/api/profilepays/assets/sha256-fc5e4b098f64d89ae4f967fb99d3efb44c4be4dbe4238305116c642048675373",
+          "startsAt": 1792084169310,
+          "disclosure": "Sponsored test placement • test credits only",
+          "leaseUntil": 1792084214310
+        },
+        "observedAt": 1792084189787,
+        "imageSha256": "fc5e4b098f64d89ae4f967fb99d3efb44c4be4dbe4238305116c642048675373"
+      }
+    },
+    {
+      "id": "11",
+      "placement_id": "f39ec2d1-0721-4478-9c95-468091c7cf31",
+      "at_ms": "1792084192869",
+      "kind": "valid",
+      "evidence": {
+        "normal": {
+          "key": "d7d3e530-9b0b-4b54-a162-31dbc7445f3a",
+          "username": "live_countdown_test",
+          "profileId": "d7d3e530-9b0b-4b54-a162-31dbc7445f3a"
+        },
+        "placement": {
+          "id": "f39ec2d1-0721-4478-9c95-468091c7cf31",
+          "endsAt": 1792084214310,
+          "assetKey": "sha256-fc5e4b098f64d89ae4f967fb99d3efb44c4be4dbe4238305116c642048675373",
+          "assetUrl": "/api/profilepays/assets/sha256-fc5e4b098f64d89ae4f967fb99d3efb44c4be4dbe4238305116c642048675373",
+          "startsAt": 1792084169310,
+          "disclosure": "Sponsored test placement • test credits only",
+          "leaseUntil": 1792084214310
+        },
+        "observedAt": 1792084192333,
+        "imageSha256": "fc5e4b098f64d89ae4f967fb99d3efb44c4be4dbe4238305116c642048675373"
+      }
+    },
+    {
+      "id": "12",
+      "placement_id": "f39ec2d1-0721-4478-9c95-468091c7cf31",
+      "at_ms": "1792084195466",
+      "kind": "valid",
+      "evidence": {
+        "normal": {
+          "key": "d7d3e530-9b0b-4b54-a162-31dbc7445f3a",
+          "username": "live_countdown_test",
+          "profileId": "d7d3e530-9b0b-4b54-a162-31dbc7445f3a"
+        },
+        "placement": {
+          "id": "f39ec2d1-0721-4478-9c95-468091c7cf31",
+          "endsAt": 1792084214310,
+          "assetKey": "sha256-fc5e4b098f64d89ae4f967fb99d3efb44c4be4dbe4238305116c642048675373",
+          "assetUrl": "/api/profilepays/assets/sha256-fc5e4b098f64d89ae4f967fb99d3efb44c4be4dbe4238305116c642048675373",
+          "startsAt": 1792084169310,
+          "disclosure": "Sponsored test placement • test credits only",
+          "leaseUntil": 1792084214310
+        },
+        "observedAt": 1792084194895,
+        "imageSha256": "fc5e4b098f64d89ae4f967fb99d3efb44c4be4dbe4238305116c642048675373"
+      }
+    },
+    {
+      "id": "13",
+      "placement_id": "f39ec2d1-0721-4478-9c95-468091c7cf31",
+      "at_ms": "1792084198024",
+      "kind": "valid",
+      "evidence": {
+        "normal": {
+          "key": "d7d3e530-9b0b-4b54-a162-31dbc7445f3a",
+          "username": "live_countdown_test",
+          "profileId": "d7d3e530-9b0b-4b54-a162-31dbc7445f3a"
+        },
+        "placement": {
+          "id": "f39ec2d1-0721-4478-9c95-468091c7cf31",
+          "endsAt": 1792084214310,
+          "assetKey": "sha256-fc5e4b098f64d89ae4f967fb99d3efb44c4be4dbe4238305116c642048675373",
+          "assetUrl": "/api/profilepays/assets/sha256-fc5e4b098f64d89ae4f967fb99d3efb44c4be4dbe4238305116c642048675373",
+          "startsAt": 1792084169310,
+          "disclosure": "Sponsored test placement • test credits only",
+          "leaseUntil": 1792084214310
+        },
+        "observedAt": 1792084197460,
+        "imageSha256": "fc5e4b098f64d89ae4f967fb99d3efb44c4be4dbe4238305116c642048675373"
+      }
+    },
+    {
+      "id": "14",
+      "placement_id": "f39ec2d1-0721-4478-9c95-468091c7cf31",
+      "at_ms": "1792084200545",
+      "kind": "valid",
+      "evidence": {
+        "normal": {
+          "key": "d7d3e530-9b0b-4b54-a162-31dbc7445f3a",
+          "username": "live_countdown_test",
+          "profileId": "d7d3e530-9b0b-4b54-a162-31dbc7445f3a"
+        },
+        "placement": {
+          "id": "f39ec2d1-0721-4478-9c95-468091c7cf31",
+          "endsAt": 1792084214310,
+          "assetKey": "sha256-fc5e4b098f64d89ae4f967fb99d3efb44c4be4dbe4238305116c642048675373",
+          "assetUrl": "/api/profilepays/assets/sha256-fc5e4b098f64d89ae4f967fb99d3efb44c4be4dbe4238305116c642048675373",
+          "startsAt": 1792084169310,
+          "disclosure": "Sponsored test placement • test credits only",
+          "leaseUntil": 1792084214310
+        },
+        "observedAt": 1792084200021,
+        "imageSha256": "fc5e4b098f64d89ae4f967fb99d3efb44c4be4dbe4238305116c642048675373"
+      }
+    },
+    {
+      "id": "15",
+      "placement_id": "f39ec2d1-0721-4478-9c95-468091c7cf31",
+      "at_ms": "1792084203066",
+      "kind": "valid",
+      "evidence": {
+        "normal": {
+          "key": "d7d3e530-9b0b-4b54-a162-31dbc7445f3a",
+          "username": "live_countdown_test",
+          "profileId": "d7d3e530-9b0b-4b54-a162-31dbc7445f3a"
+        },
+        "placement": {
+          "id": "f39ec2d1-0721-4478-9c95-468091c7cf31",
+          "endsAt": 1792084214310,
+          "assetKey": "sha256-fc5e4b098f64d89ae4f967fb99d3efb44c4be4dbe4238305116c642048675373",
+          "assetUrl": "/api/profilepays/assets/sha256-fc5e4b098f64d89ae4f967fb99d3efb44c4be4dbe4238305116c642048675373",
+          "startsAt": 1792084169310,
+          "disclosure": "Sponsored test placement • test credits only",
+          "leaseUntil": 1792084214310
+        },
+        "observedAt": 1792084202558,
+        "imageSha256": "fc5e4b098f64d89ae4f967fb99d3efb44c4be4dbe4238305116c642048675373"
+      }
+    },
+    {
+      "id": "16",
+      "placement_id": "f39ec2d1-0721-4478-9c95-468091c7cf31",
+      "at_ms": "1792084205656",
+      "kind": "valid",
+      "evidence": {
+        "normal": {
+          "key": "d7d3e530-9b0b-4b54-a162-31dbc7445f3a",
+          "username": "live_countdown_test",
+          "profileId": "d7d3e530-9b0b-4b54-a162-31dbc7445f3a"
+        },
+        "placement": {
+          "id": "f39ec2d1-0721-4478-9c95-468091c7cf31",
+          "endsAt": 1792084214310,
+          "assetKey": "sha256-fc5e4b098f64d89ae4f967fb99d3efb44c4be4dbe4238305116c642048675373",
+          "assetUrl": "/api/profilepays/assets/sha256-fc5e4b098f64d89ae4f967fb99d3efb44c4be4dbe4238305116c642048675373",
+          "startsAt": 1792084169310,
+          "disclosure": "Sponsored test placement • test credits only",
+          "leaseUntil": 1792084214310
+        },
+        "observedAt": 1792084205122,
+        "imageSha256": "fc5e4b098f64d89ae4f967fb99d3efb44c4be4dbe4238305116c642048675373"
+      }
+    },
+    {
+      "id": "17",
+      "placement_id": "f39ec2d1-0721-4478-9c95-468091c7cf31",
+      "at_ms": "1792084208209",
+      "kind": "valid",
+      "evidence": {
+        "normal": {
+          "key": "d7d3e530-9b0b-4b54-a162-31dbc7445f3a",
+          "username": "live_countdown_test",
+          "profileId": "d7d3e530-9b0b-4b54-a162-31dbc7445f3a"
+        },
+        "placement": {
+          "id": "f39ec2d1-0721-4478-9c95-468091c7cf31",
+          "endsAt": 1792084214310,
+          "assetKey": "sha256-fc5e4b098f64d89ae4f967fb99d3efb44c4be4dbe4238305116c642048675373",
+          "assetUrl": "/api/profilepays/assets/sha256-fc5e4b098f64d89ae4f967fb99d3efb44c4be4dbe4238305116c642048675373",
+          "startsAt": 1792084169310,
+          "disclosure": "Sponsored test placement • test credits only",
+          "leaseUntil": 1792084214310
+        },
+        "observedAt": 1792084207702,
+        "imageSha256": "fc5e4b098f64d89ae4f967fb99d3efb44c4be4dbe4238305116c642048675373"
+      }
+    },
+    {
+      "id": "18",
+      "placement_id": "f39ec2d1-0721-4478-9c95-468091c7cf31",
+      "at_ms": "1792084210789",
+      "kind": "valid",
+      "evidence": {
+        "normal": {
+          "key": "d7d3e530-9b0b-4b54-a162-31dbc7445f3a",
+          "username": "live_countdown_test",
+          "profileId": "d7d3e530-9b0b-4b54-a162-31dbc7445f3a"
+        },
+        "placement": {
+          "id": "f39ec2d1-0721-4478-9c95-468091c7cf31",
+          "endsAt": 1792084214310,
+          "assetKey": "sha256-fc5e4b098f64d89ae4f967fb99d3efb44c4be4dbe4238305116c642048675373",
+          "assetUrl": "/api/profilepays/assets/sha256-fc5e4b098f64d89ae4f967fb99d3efb44c4be4dbe4238305116c642048675373",
+          "startsAt": 1792084169310,
+          "disclosure": "Sponsored test placement • test credits only",
+          "leaseUntil": 1792084214310
+        },
+        "observedAt": 1792084210238,
+        "imageSha256": "fc5e4b098f64d89ae4f967fb99d3efb44c4be4dbe4238305116c642048675373"
+      }
+    },
+    {
+      "id": "19",
+      "placement_id": "f39ec2d1-0721-4478-9c95-468091c7cf31",
+      "at_ms": "1792084213345",
+      "kind": "valid",
+      "evidence": {
+        "normal": {
+          "key": "d7d3e530-9b0b-4b54-a162-31dbc7445f3a",
+          "username": "live_countdown_test",
+          "profileId": "d7d3e530-9b0b-4b54-a162-31dbc7445f3a"
+        },
+        "placement": {
+          "id": "f39ec2d1-0721-4478-9c95-468091c7cf31",
+          "endsAt": 1792084214310,
+          "assetKey": "sha256-fc5e4b098f64d89ae4f967fb99d3efb44c4be4dbe4238305116c642048675373",
+          "assetUrl": "/api/profilepays/assets/sha256-fc5e4b098f64d89ae4f967fb99d3efb44c4be4dbe4238305116c642048675373",
+          "startsAt": 1792084169310,
+          "disclosure": "Sponsored test placement • test credits only",
+          "leaseUntil": 1792084214310
+        },
+        "observedAt": 1792084212783,
+        "imageSha256": "fc5e4b098f64d89ae4f967fb99d3efb44c4be4dbe4238305116c642048675373"
+      }
+    },
+    {
+      "id": "20",
+      "placement_id": "f39ec2d1-0721-4478-9c95-468091c7cf31",
+      "at_ms": "1792084214310",
+      "kind": "valid_expiry",
+      "evidence": {
+        "id": "f39ec2d1-0721-4478-9c95-468091c7cf31",
+        "endsAt": 1792084214310,
+        "normal": {
+          "key": "d7d3e530-9b0b-4b54-a162-31dbc7445f3a",
+          "username": "live_countdown_test",
+          "profileId": "d7d3e530-9b0b-4b54-a162-31dbc7445f3a"
+        },
+        "stopped": false,
+        "startsAt": 1792084169310,
+        "leaseUntil": 1792084214310,
+        "observedAt": 1792084214318,
+        "originalMatches": true
+      }
+    }
+  ],
+  "events": [
+    {
+      "id": "1",
+      "placement_id": "f39ec2d1-0721-4478-9c95-468091c7cf31",
+      "at_ms": "1792084168721",
+      "type": "reserved",
+      "detail": {
+        "terms": {
+          "brand": "Test sponsor",
+          "title": "Production complete 1792084168485",
+          "reward": 100,
+          "version": 1,
+          "assetKey": "sha256-fc5e4b098f64d89ae4f967fb99d3efb44c4be4dbe4238305116c642048675373",
+          "capacity": 1,
+          "category": "Community",
+          "currency": "TEST_CREDIT",
+          "maxGapMs": 12000,
+          "sampleMs": 2000,
+          "windowEnd": 1792688968490,
+          "description": "A temporary sponsored profile image.",
+          "imageSha256": "fc5e4b098f64d89ae4f967fb99d3efb44c4be4dbe4238305116c642048675373",
+          "cancelPolicy": "participant_zero_sponsor_prorated",
+          "consentVersion": "static-test-v1",
+          "durationSeconds": 45,
+          "coverageRequired": 0.98
+        },
+        "consent": "static-test-v1",
+        "original": {
+          "key": "d7d3e530-9b0b-4b54-a162-31dbc7445f3a",
+          "username": "live_countdown_test",
+          "profileId": "d7d3e530-9b0b-4b54-a162-31dbc7445f3a"
+        }
+      }
+    },
+    {
+      "id": "2",
+      "placement_id": "f39ec2d1-0721-4478-9c95-468091c7cf31",
+      "at_ms": "1792084169710",
+      "type": "active",
+      "detail": {
+        "endsAt": 1792084214310,
+        "startsAt": 1792084169310,
+        "independentReadback": {
+          "normal": {
+            "key": "d7d3e530-9b0b-4b54-a162-31dbc7445f3a",
+            "username": "live_countdown_test",
+            "profileId": "d7d3e530-9b0b-4b54-a162-31dbc7445f3a"
+          },
+          "placement": {
+            "id": "f39ec2d1-0721-4478-9c95-468091c7cf31",
+            "endsAt": null,
+            "assetKey": "sha256-fc5e4b098f64d89ae4f967fb99d3efb44c4be4dbe4238305116c642048675373",
+            "assetUrl": "/api/profilepays/assets/sha256-fc5e4b098f64d89ae4f967fb99d3efb44c4be4dbe4238305116c642048675373",
+            "startsAt": null,
+            "disclosure": "Sponsored test placement • test credits only",
+            "leaseUntil": 1792084198857
+          },
+          "observedAt": 1792084169069,
+          "imageSha256": "fc5e4b098f64d89ae4f967fb99d3efb44c4be4dbe4238305116c642048675373"
+        }
+      }
+    },
+    {
+      "id": "3",
+      "placement_id": "f39ec2d1-0721-4478-9c95-468091c7cf31",
+      "at_ms": "1792084214867",
+      "type": "restoration_confirmed",
+      "detail": {
+        "outcome": "restored",
+        "readback": {
+          "normal": {
+            "key": "d7d3e530-9b0b-4b54-a162-31dbc7445f3a",
+            "username": "live_countdown_test",
+            "profileId": "d7d3e530-9b0b-4b54-a162-31dbc7445f3a"
+          },
+          "placement": null,
+          "observedAt": 1792084214520
+        }
+      }
+    },
+    {
+      "id": "4",
+      "placement_id": "f39ec2d1-0721-4478-9c95-468091c7cf31",
+      "at_ms": "1792084214872",
+      "type": "assessment",
+      "detail": {
+        "award": 100,
+        "decision": "eligible",
+        "coveredMs": 45000,
+        "settlement": "credited_test_only"
+      }
+    }
+  ],
+  "ledger": [
+    {
+      "id": "1",
+      "placement_id": "f39ec2d1-0721-4478-9c95-468091c7cf31",
+      "account": "campaign:bc3d0f5f-8a9d-445c-bd80-fd8bbfa6be19",
+      "amount": -100,
+      "currency": "TEST_CREDIT",
+      "created_at": "2026-10-15T17:10:14.545Z"
+    },
+    {
+      "id": "2",
+      "placement_id": "f39ec2d1-0721-4478-9c95-468091c7cf31",
+      "account": "participant:13fc7617-73c0-473a-b57a-0b2351731b3c",
+      "amount": 100,
+      "currency": "TEST_CREDIT",
+      "created_at": "2026-10-15T17:10:14.545Z"
+    }
+  ]
+}
