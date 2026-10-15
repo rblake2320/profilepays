@@ -1,0 +1,85 @@
+{
+  "started": "2026-10-15T19:25:58.286Z",
+  "dashboardOrigin": "https://profilepays.ultrarag.app",
+  "profile": "https://aihangout.ai/profile/live_countdown_test",
+  "olderPost": "https://aihangout.ai/problem/290",
+  "checks": [
+    {
+      "outcome": "Worked",
+      "scenario": "Original production profile and both older post avatars are the existing live countdown",
+      "measurement": {
+        "profileId": "d7d3e530-9b0b-4b54-a162-31dbc7445f3a",
+        "oldAvatars": 2
+      }
+    },
+    {
+      "outcome": "Worked",
+      "scenario": "complete: opt-in updates already-open profile, older question and answer, and mobile WebKit",
+      "measurement": {
+        "placementId": "ccbb4ac5-0668-439b-b800-23e18eb5dbf1",
+        "updateMs": 1718,
+        "oldAvatars": 2,
+        "imageHash": "sha256-fc5e4b098f64d89ae4f967fb99d3efb44c4be4dbe4238305116c642048675373"
+      }
+    },
+    {
+      "outcome": "Worked",
+      "scenario": "Time zone and device-clock change keep the server-controlled placement active",
+      "measurement": {
+        "zone": "Asia/Tokyo",
+        "clockShiftHours": 24,
+        "physicalPhone": false
+      }
+    },
+    {
+      "outcome": "Worked",
+      "scenario": "complete: verified settlement and original countdown restored without reload",
+      "measurement": {
+        "placementId": "ccbb4ac5-0668-439b-b800-23e18eb5dbf1",
+        "coveredMs": 45000,
+        "requiredMs": 45000,
+        "award": 100,
+        "ledgerEntries": 2,
+        "restoreMs": null,
+        "movingFrames": 3,
+        "observations": 20
+      }
+    },
+    {
+      "outcome": "Worked",
+      "scenario": "early-stop: opt-in updates already-open profile, older question and answer, and mobile WebKit",
+      "measurement": {
+        "placementId": "9601cdb2-5748-4355-a585-53324acc225f",
+        "updateMs": 3143,
+        "oldAvatars": 2,
+        "imageHash": "sha256-fc5e4b098f64d89ae4f967fb99d3efb44c4be4dbe4238305116c642048675373"
+      }
+    },
+    {
+      "outcome": "Worked",
+      "scenario": "early-stop: verified settlement and original countdown restored without reload",
+      "measurement": {
+        "placementId": "9601cdb2-5748-4355-a585-53324acc225f",
+        "coveredMs": 5335,
+        "requiredMs": 120000,
+        "award": 0,
+        "ledgerEntries": 2,
+        "restoreMs": 3127,
+        "movingFrames": 2,
+        "observations": 4
+      }
+    },
+    {
+      "outcome": "Worked",
+      "scenario": "Test-credit balance equals 100 completed-placement credits plus zero early-removal credits",
+      "measurement": {}
+    },
+    {
+      "outcome": "Worked",
+      "scenario": "Cleanup revoked the temporary grant and preserved the original production profile",
+      "measurement": {}
+    }
+  ],
+  "errors": [],
+  "finished": "2026-10-15T19:27:25.190Z"
+}

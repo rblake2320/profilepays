@@ -1,0 +1,44 @@
+{
+  "checkedAt": "2026-10-15T19:28:26.626Z",
+  "origin": "https://profilepays.ultrarag.app",
+  "checks": [
+    {
+      "outcome": "Worked",
+      "scenario": "HTTPS dashboard deep links load"
+    },
+    {
+      "outcome": "Worked",
+      "scenario": "Both built-in campaign previews are served byte-for-byte from the dashboard origin"
+    },
+    {
+      "outcome": "Worked",
+      "scenario": "Private API requires authentication; missing API/assets and dotfiles do not become dashboard pages"
+    },
+    {
+      "outcome": "Worked",
+      "scenario": "Unrelated browser origins are not granted CORS access; security headers present"
+    },
+    {
+      "outcome": "Worked",
+      "scenario": "Participant cannot create sponsor campaigns; public signup cannot create administrators"
+    },
+    {
+      "outcome": "Worked",
+      "scenario": "Completed and early-stop receipts persist with a reconciled 200-credit balance"
+    }
+  ],
+  "offers": [
+    {
+      "id": "e6c1aec9-c82d-4761-9dcb-70d1026a02f2",
+      "title": "iPhone live test — complete",
+      "durationSeconds": 60,
+      "url": "https://profilepays.ultrarag.app/confirmation?campaign=e6c1aec9-c82d-4761-9dcb-70d1026a02f2"
+    },
+    {
+      "id": "75d83177-bb60-4ba8-8e83-e53c0fd59350",
+      "title": "iPhone live test — stop early",
+      "durationSeconds": 120,
+      "url": "https://profilepays.ultrarag.app/confirmation?campaign=75d83177-bb60-4ba8-8e83-e53c0fd59350"
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "checkedAt": "2026-10-15T19:28:50.063Z",
+  "url": "https://profilepays.ultrarag.app/marketplace",
+  "viewport": 390,
+  "documentWidth": 375,
+  "images": [
+    {
+      "path": "/assets/green-aa403a15.png",
+      "decodedWidth": 256
+    },
+    {
+      "path": "/assets/blue-f48d0daf.png",
+      "decodedWidth": 256
+    }
+  ],
+  "physicalIPhone": false,
+  "outcome": "Worked"
+}
