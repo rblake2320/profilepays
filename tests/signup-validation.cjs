@@ -40,6 +40,7 @@ async function rejects(body,field){
     [{response:{status:400,data:{fieldErrors:{email:'Enter a valid email address'}}}},'valid email'],
     [{response:{status:409,data:{message:'An account with this email already exists'}}},'already exists'],
     [{response:{status:400,data:{message:['First issue','Second issue']}}},'First issue Second issue'],
+    [{response:{status:429,data:{message:'ThrottlerException: Too Many Requests'}}},'wait a minute'],
     [{},'connection'],
   ]){assert.ok(authError(err,'Failed').message.includes(needle));checks++;}
   assert.equal(await signupSchema.isValid({...base,userType:'member',confirmPassword:'mismatch'}),false);checks++;
