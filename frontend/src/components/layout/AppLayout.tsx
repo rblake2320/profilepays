@@ -26,7 +26,7 @@ import { useAppDispatch, useAppSelector } from '../../hooks/redux';
 import { logout } from '../../store/authSlice';
 
 const navigationLinks = [
-  { label: 'Home', path: '/' },
+  { label: 'Placements', path: '/placements' },
   { label: 'How It Works', path: '/how-it-works' },
   { label: 'About', path: '/about' },
 ];
@@ -201,7 +201,7 @@ const AppLayout = () => {
                   {user.userType === 'member' && (
                     <MenuItem>
                       <Typography variant="body2">
-                        Wallet: ${Number(user.walletBalance || 0).toFixed(2)}
+                        Test-credit pilot · no cash value
                       </Typography>
                     </MenuItem>
                   )}
@@ -261,17 +261,11 @@ const AppLayout = () => {
             spacing={2}
           >
             <Typography variant="body2" color="text.secondary">
-              © {new Date().getFullYear()} ProfilePays. Turn your profile into profit.
+              © {new Date().getFullYear()} ProfilePays. Test-credit pilot · no cash value.
             </Typography>
             <Stack direction="row" spacing={2}>
-              <Link component={RouterLink} to="/privacy" variant="body2" color="text.secondary" underline="hover">
-                Privacy
-              </Link>
-              <Link component={RouterLink} to="/terms" variant="body2" color="text.secondary" underline="hover">
-                Terms
-              </Link>
-              <Link href="mailto:support@profilepays.com" variant="body2" color="text.secondary" underline="hover">
-                Contact
+              <Link component={RouterLink} to="/how-it-works" variant="body2" color="text.secondary" underline="hover">
+                How the test works
               </Link>
             </Stack>
           </Stack>

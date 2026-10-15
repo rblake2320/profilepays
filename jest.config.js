@@ -52,7 +52,7 @@ module.exports = {
       moduleFileExtensions: ['ts', 'js', 'json'],
       transform: {
         '^.+\\.(ts)$': ['ts-jest', {
-          tsconfig: { esModuleInterop: true },
+          tsconfig: { esModuleInterop: true, experimentalDecorators: true, emitDecoratorMetadata: true },
         }],
         '^.+\\.(js)$': 'babel-jest',
       },

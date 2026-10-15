@@ -2,6 +2,7 @@ import {
   IsEmail,
   IsString,
   IsEnum,
+  IsIn,
   MinLength,
   MaxLength,
   IsOptional,
@@ -51,7 +52,7 @@ export class SignupDto {
     default: UserRole.MEMBER
   })
   @IsOptional()
-  @IsEnum(UserRole, { message: 'Invalid user role' })
+  @IsIn([UserRole.MEMBER, UserRole.ADVERTISER], { message: 'Invalid signup role' })
   userRole?: UserRole = UserRole.MEMBER;
 
   @ApiPropertyOptional({

@@ -1,0 +1,64 @@
+{
+  "at": "2026-10-15T04:38:48.632Z",
+  "runtime": {
+    "pp": "http://127.0.0.1:8931/api",
+    "ai": "http://127.0.0.1:8932/api"
+  },
+  "results": [
+    {
+      "scenario": "Consent → destination verification → timed expiry → restoration → exactly-once test credits",
+      "outcome": "Worked",
+      "measurement": {
+        "durationMs": 15000,
+        "coveredMs": 15000,
+        "award": 100,
+        "ledgerEntries": 2,
+        "placementId": "edb513d8-3eb2-4b3e-bf6c-0bb1a615f361"
+      }
+    },
+    {
+      "scenario": "Access controls, exact consent, no admin signup or self approval",
+      "outcome": "Worked",
+      "measurement": {
+        "unauthenticated": 401,
+        "otherDestination": 404,
+        "otherReceipt": 404,
+        "invalidConsent": 400,
+        "adminSignup": 400,
+        "selfReview": 403
+      }
+    },
+    {
+      "scenario": "Participant cancellation restores and earns zero",
+      "outcome": "Worked",
+      "measurement": {
+        "award": 0
+      }
+    },
+    {
+      "scenario": "Sponsor cancellation credits only sampled coverage",
+      "outcome": "Worked",
+      "measurement": {
+        "award": 16,
+        "coveredMs": 5071
+      }
+    },
+    {
+      "scenario": "Concurrent claim of last slot cannot overspend",
+      "outcome": "Worked",
+      "measurement": {
+        "winners": 1,
+        "spent": 100,
+        "budget": 100
+      }
+    },
+    {
+      "scenario": "Revocation removes image and holds ambiguous settlement",
+      "outcome": "Worked",
+      "measurement": {
+        "restoration": "restored",
+        "settlement": "review_hold"
+      }
+    }
+  ]
+}

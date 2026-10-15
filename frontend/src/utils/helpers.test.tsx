@@ -1,6 +1,15 @@
 // Frontend utility tests for ProfilePays
 import { render } from '@testing-library/react';
-import { describe, test, expect } from '@jest/globals';
+import { describe, test, expect, jest } from '@jest/globals';
+
+declare global {
+  var testUtils: {
+    createMockUser: () => {id: string; email: string; name: string; userType: string};
+    createMockCampaign: () => {id: string; title: string; description: string; budget: number; status: string};
+    createMockStore: <T>(state: T) => {getState: () => T};
+    mockApiResponse: <T>(data: T, status?: number) => {data: T; status: number};
+  };
+}
 
 // Sample utility functions to test
 const formatCurrency = (amount: number): string => {

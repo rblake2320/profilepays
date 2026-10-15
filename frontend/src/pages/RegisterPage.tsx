@@ -36,8 +36,8 @@ const schema = yup.object({
     .oneOf([yup.ref('password')], 'Passwords must match')
     .required('Please confirm your password'),
   userType: yup.string().oneOf(['member', 'advertiser']).required('Please select account type'),
-  firstName: yup.string().optional(),
-  lastName: yup.string().optional(),
+  firstName: yup.string().required('First name is required'),
+  lastName: yup.string().required('Last name is required'),
   companyName: yup.string().when('userType', {
     is: 'advertiser',
     then: (s) => s.required('Company name is required for advertisers'),
@@ -116,7 +116,7 @@ const RegisterPage = () => {
                         <FormControlLabel
                           value="member"
                           control={<Radio color="success" />}
-                          label="Member (earn money)"
+                          label="Participant (test credits)"
                         />
                         <FormControlLabel
                           value="advertiser"

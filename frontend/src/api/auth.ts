@@ -29,15 +29,17 @@ export interface AuthResponse {
   };
 }
 
+function normalize(data:any):AuthResponse { return {...data,user:{...data.user,userType:data.user.userRole}}; }
+
 export const authApi = {
   register: (payload: RegisterPayload) =>
-    apiClient.post<AuthResponse>('/auth/register', payload).then((r) => r.data),
+    apiClient.post('/auth/signup', {email:payload.email,password:payload.password,firstName:payload.firstName,lastName:payload.lastName,userRole:payload.userType}).then((r) => normalize(r.data)),
 
   login: (payload: LoginPayload) =>
-    apiClient.post<AuthResponse>('/auth/login', payload).then((r) => r.data),
+    apiClient.post('/auth/login', payload).then((r) => normalize(r.data)),
 
   getMe: () =>
-    apiClient.get<AuthResponse['user']>('/auth/me').then((r) => r.data),
+    apiClient.get('/users/me').then((r) => normalize({user:r.data}).user),
 
   refresh: (refreshToken: string) =>
     apiClient.post<{ accessToken: string }>('/auth/refresh', { refreshToken }).then((r) => r.data),

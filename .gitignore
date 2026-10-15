@@ -85,3 +85,5 @@ secrets/
 *.zip
 *.dmg
 backend/.env
+
+.local/

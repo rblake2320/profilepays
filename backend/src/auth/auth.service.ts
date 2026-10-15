@@ -221,12 +221,11 @@ export class AuthService {
     userAgent: string,
   ): Promise<{ accessToken: string; refreshToken: string }> {
     // JWT payload
-    const payload: JwtPayload = {
+    const payload: Omit<JwtPayload, 'exp'> = {
       sub: user.id,
       email: user.email,
       userRole: user.userRole,
       iat: Math.floor(Date.now() / 1000),
-      exp: Math.floor(Date.now() / 1000) + 60 * 15, // 15 minutes
     };
 
     // Generate access token

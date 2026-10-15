@@ -1,0 +1,54 @@
+{
+  "at": "2026-10-15T04:37:07.910Z",
+  "results": [
+    {
+      "outcome": "Worked",
+      "scenario": "AIHangout restores independently while ProfilePays is offline",
+      "measurement": {
+        "elapsedMs": 120343,
+        "leaseUntil": 1792038988250,
+        "contractEnd": 1792039018127
+      }
+    },
+    {
+      "outcome": "Worked",
+      "scenario": "Two restarted reconcilers preserve evidence gap and do not self-award",
+      "measurement": {
+        "settlement": "review_hold",
+        "ledgerEntries": 0
+      }
+    },
+    {
+      "outcome": "Worked",
+      "scenario": "Independent operator resolves hold exactly once",
+      "measurement": {
+        "award": 0,
+        "ledgerEntries": 2,
+        "duplicate": 409
+      }
+    },
+    {
+      "outcome": "Worked",
+      "scenario": "Owner change wins over automatic restoration",
+      "measurement": {
+        "preservedProfileId": "3555d89f-8608-4f5c-a97e-737bd770be3e",
+        "award": 0
+      }
+    },
+    {
+      "outcome": "Worked",
+      "scenario": "Cancellation after the deadline cannot reduce an earned award",
+      "measurement": {
+        "award": 100
+      }
+    },
+    {
+      "outcome": "Worked",
+      "scenario": "Wrong PNG bytes prevent automatic reward and trigger review",
+      "measurement": {
+        "ledgerBeforeReview": 0,
+        "restoration": "restored"
+      }
+    }
+  ]
+}

@@ -6,7 +6,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { CampaignsModule } from './campaigns/campaigns.module';
-import { DatabaseModule } from './database/database.module';
+import { PlacementsModule } from './placements/placements.module';
 
 import { User } from './users/entities/user.entity';
 import { RefreshToken } from './auth/entities/refresh-token.entity';
@@ -38,18 +38,19 @@ import { CampaignParticipation } from './campaigns/entities/campaign-participati
         password: configService.get('DB_PASSWORD'),
         database: configService.get('DB_NAME', 'profilepays'),
         entities: [User, RefreshToken, Campaign, CampaignParticipation],
-        synchronize: configService.get('NODE_ENV') === 'development',
-        migrations: ['src/database/migrations/*.ts'],
+        synchronize: false,
+        migrationsRun: configService.get('PLACEMENT_MIGRATE') === 'true',
+        migrations: [__dirname + '/database/migrations/*.js'],
         logging: configService.get('NODE_ENV') === 'development',
       }),
       inject: [ConfigService],
     }),
 
     // Application modules
-    DatabaseModule,
+    PlacementsModule,
     AuthModule,
     UsersModule,
-    CampaignsModule,
+    // Legacy campaign endpoints are superseded by the guarded placement lifecycle.
   ],
   controllers: [],
   providers: [],

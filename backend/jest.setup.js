@@ -90,35 +90,7 @@ global.testUtils = {
   }),
 };
 
-// Mock TypeORM decorators and utilities
-jest.mock('typeorm', () => ({
-  Entity: () => () => {},
-  PrimaryGeneratedColumn: () => () => {},
-  Column: () => () => {},
-  CreateDateColumn: () => () => {},
-  UpdateDateColumn: () => () => {},
-  ManyToOne: () => () => {},
-  OneToMany: () => () => {},
-  JoinColumn: () => () => {},
-  Repository: class MockRepository {},
-  getRepository: jest.fn(),
-  createConnection: jest.fn(),
-}));
-
-// Mock NestJS decorators
-jest.mock('@nestjs/common', () => ({
-  ...jest.requireActual('@nestjs/common'),
-  Injectable: () => () => {},
-  Controller: () => () => {},
-  Get: () => () => {},
-  Post: () => () => {},
-  Put: () => () => {},
-  Delete: () => () => {},
-  Param: () => () => {},
-  Body: () => () => {},
-  Query: () => () => {},
-  UseGuards: () => () => {},
-}));
+// Keep real Nest/TypeORM metadata. Individual tests supply repository doubles.
 
 // Clean up after each test
 afterEach(() => {

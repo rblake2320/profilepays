@@ -10,7 +10,7 @@ function getBaseUrl(): string {
   if (typeof process !== 'undefined' && process.env.VITE_API_URL) {
     return process.env.VITE_API_URL;
   }
-  return 'http://localhost:3000/api/v1';
+  return '/api';
 }
 
 // Vite replaces this at build time via define config
@@ -44,13 +44,15 @@ apiClient.interceptors.request.use(
   (error) => Promise.reject(error),
 );
 
+// Coalesce concurrent expiry responses; refresh tokens rotate on every successful refresh.
+let pendingRefresh: Promise<string> | null = null;
 // Response interceptor: handle 401 and refresh token
 apiClient.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
     const originalRequest = error.config as any;
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (error.response?.status === 401 && originalRequest && !originalRequest._retry && !originalRequest.url?.includes('/auth/')) {
       originalRequest._retry = true;
 
       const refreshToken = typeof localStorage !== 'undefined'
@@ -59,11 +61,15 @@ apiClient.interceptors.response.use(
 
       if (refreshToken) {
         try {
-          const { data } = await axios.post(`${BASE_URL}/auth/refresh`, { refreshToken });
-          if (typeof localStorage !== 'undefined') {
-            localStorage.setItem('accessToken', data.accessToken);
+          if (!pendingRefresh) {
+            pendingRefresh = axios.post(`${BASE_URL}/auth/refresh`, { refreshToken }).then(({data})=>{
+              localStorage.setItem('accessToken', data.accessToken);
+              localStorage.setItem('refreshToken', data.refreshToken);
+              return data.accessToken as string;
+            }).finally(()=>{pendingRefresh=null});
           }
-          originalRequest.headers.Authorization = `Bearer ${data.accessToken}`;
+          const accessToken=await pendingRefresh;
+          originalRequest.headers.Authorization = `Bearer ${accessToken}`;
           return apiClient(originalRequest);
         } catch {
           // Refresh failed — clear tokens and redirect to login

@@ -53,7 +53,7 @@ async function bootstrap() {
     SwaggerModule.setup('api/docs', app, document);
   }
 
-  await app.listen(port);
+  await app.listen(port, configService.get<string>('HOST', '127.0.0.1'));
   logger.log(`Application is running on: http://localhost:${port}`);
   logger.log(`Environment: ${nodeEnv}`);
 

@@ -4,9 +4,10 @@
 
 ProfilePays is a social-advertising platform concept that would pay users for temporarily swapping their profile pictures with brand-sponsored images while giving businesses self-service tooling to launch targeted campaigns.
 
-> **Status**: This repository contains frontend and backend application source as well as planning
-> materials. The complete placement, verification, restoration, and settlement workflow is proposed
-> in [ProfilePays workflow v1](docs/PROFILEPAYS-WORKFLOW-V1.md); it is not yet an implemented lifecycle.
+> **Status**: The first static-placement lifecycle is implemented for a local AIHangout integration
+> using test credits only. It includes consent, timed assignment, verification, restoration, and
+> a balanced test-credit ledger. See the [local runbook and acceptance evidence](docs/STATIC-PILOT.md).
+> The broader [workflow specification](docs/PROFILEPAYS-WORKFLOW-V1.md) remains the roadmap.
 
 ## Project Vision
 

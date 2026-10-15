@@ -1,0 +1,204 @@
+{
+  "placement": {
+    "id": "60d2ae6b-f101-46af-a165-af6f828f3a3d",
+    "campaign_id": "9ca37f6f-e0c3-4909-8552-b401a2192e07",
+    "user_id": "a0247f44-1505-4b08-be2c-0ea7d6e164ed",
+    "destination_id": "f546344f-18b0-42df-ac9a-e07839eebf46",
+    "command_key": "e96850f0-8273-4761-b20a-7b1abc49c9e3",
+    "state": "ended",
+    "record": {
+      "award": 0,
+      "terms": {
+        "title": "Durable worker loss and lease expiry",
+        "reward": 100,
+        "version": 1,
+        "assetKey": "green",
+        "capacity": 1,
+        "currency": "TEST_CREDIT",
+        "maxGapMs": 12000,
+        "sampleMs": 2000,
+        "windowEnd": 1792643667811,
+        "cancelPolicy": "participant_zero_sponsor_prorated",
+        "consentVersion": "static-test-v1",
+        "durationSeconds": 150,
+        "coverageRequired": 0.98
+      },
+      "endsAt": 1792039018127,
+      "consent": "static-test-v1",
+      "original": {
+        "key": "initial:pp_member_mv915z38",
+        "username": "pp_member_mv915z38",
+        "profileId": null
+      },
+      "startsAt": 1792038868127,
+      "coveredMs": 138,
+      "lastError": null,
+      "nextCheck": 1792038870266,
+      "stoppedAt": 1792038990008,
+      "assessment": "needs_review",
+      "requiredMs": 150000,
+      "settlement": "review_hold",
+      "stopReason": "delivery_failure",
+      "consentedAt": 1792038867875,
+      "restoration": "restored",
+      "maxObservedGapMs": 138
+    },
+    "created_at": "2026-10-15T04:34:27.872Z",
+    "sponsor_id": "aa0c7818-3516-4571-bc39-ac9838b0e5d3"
+  },
+  "observations": [
+    {
+      "id": "73",
+      "placement_id": "60d2ae6b-f101-46af-a165-af6f828f3a3d",
+      "at_ms": "1792038868127",
+      "kind": "valid",
+      "evidence": {
+        "normal": {
+          "key": "initial:pp_member_mv915z38",
+          "username": "pp_member_mv915z38",
+          "profileId": null
+        },
+        "placement": {
+          "id": "60d2ae6b-f101-46af-a165-af6f828f3a3d",
+          "endsAt": null,
+          "assetKey": "green",
+          "assetUrl": "/profilepays/green.png",
+          "startsAt": null,
+          "disclosure": "Sponsored test placement • test credits only",
+          "leaseUntil": 1792038898021
+        },
+        "observedAt": 1792038868049,
+        "imageSha256": "aa403a155df82e5deb669e44fca78852d2dc3530dd0275315e110b573c5425d1"
+      }
+    },
+    {
+      "id": "74",
+      "placement_id": "60d2ae6b-f101-46af-a165-af6f828f3a3d",
+      "at_ms": "1792038868265",
+      "kind": "valid",
+      "evidence": {
+        "normal": {
+          "key": "initial:pp_member_mv915z38",
+          "username": "pp_member_mv915z38",
+          "profileId": null
+        },
+        "placement": {
+          "id": "60d2ae6b-f101-46af-a165-af6f828f3a3d",
+          "endsAt": 1792039018127,
+          "assetKey": "green",
+          "assetUrl": "/profilepays/green.png",
+          "startsAt": 1792038868127,
+          "disclosure": "Sponsored test placement • test credits only",
+          "leaseUntil": 1792038988127
+        },
+        "observedAt": 1792038868174,
+        "imageSha256": "aa403a155df82e5deb669e44fca78852d2dc3530dd0275315e110b573c5425d1"
+      }
+    },
+    {
+      "id": "75",
+      "placement_id": "60d2ae6b-f101-46af-a165-af6f828f3a3d",
+      "at_ms": "1792038990006",
+      "kind": "mismatch",
+      "evidence": {
+        "normal": {
+          "key": "initial:pp_member_mv915z38",
+          "username": "pp_member_mv915z38",
+          "profileId": null
+        },
+        "placement": null,
+        "observedAt": 1792038989995
+      }
+    }
+  ],
+  "events": [
+    {
+      "id": "58",
+      "placement_id": "60d2ae6b-f101-46af-a165-af6f828f3a3d",
+      "at_ms": "1792038867877",
+      "type": "reserved",
+      "detail": {
+        "terms": {
+          "title": "Durable worker loss and lease expiry",
+          "reward": 100,
+          "version": 1,
+          "assetKey": "green",
+          "capacity": 1,
+          "currency": "TEST_CREDIT",
+          "maxGapMs": 12000,
+          "sampleMs": 2000,
+          "windowEnd": 1792643667811,
+          "cancelPolicy": "participant_zero_sponsor_prorated",
+          "consentVersion": "static-test-v1",
+          "durationSeconds": 150,
+          "coverageRequired": 0.98
+        },
+        "consent": "static-test-v1",
+        "original": {
+          "key": "initial:pp_member_mv915z38",
+          "username": "pp_member_mv915z38",
+          "profileId": null
+        }
+      }
+    },
+    {
+      "id": "59",
+      "placement_id": "60d2ae6b-f101-46af-a165-af6f828f3a3d",
+      "at_ms": "1792038868141",
+      "type": "active",
+      "detail": {
+        "endsAt": 1792039018127,
+        "startsAt": 1792038868127,
+        "independentReadback": {
+          "normal": {
+            "key": "initial:pp_member_mv915z38",
+            "username": "pp_member_mv915z38",
+            "profileId": null
+          },
+          "placement": {
+            "id": "60d2ae6b-f101-46af-a165-af6f828f3a3d",
+            "endsAt": null,
+            "assetKey": "green",
+            "assetUrl": "/profilepays/green.png",
+            "startsAt": null,
+            "disclosure": "Sponsored test placement • test credits only",
+            "leaseUntil": 1792038898021
+          },
+          "observedAt": 1792038868049,
+          "imageSha256": "aa403a155df82e5deb669e44fca78852d2dc3530dd0275315e110b573c5425d1"
+        }
+      }
+    },
+    {
+      "id": "60",
+      "placement_id": "60d2ae6b-f101-46af-a165-af6f828f3a3d",
+      "at_ms": "1792038990096",
+      "type": "restoration_confirmed",
+      "detail": {
+        "outcome": "restored",
+        "readback": {
+          "normal": {
+            "key": "initial:pp_member_mv915z38",
+            "username": "pp_member_mv915z38",
+            "profileId": null
+          },
+          "placement": null,
+          "observedAt": 1792038990089
+        }
+      }
+    },
+    {
+      "id": "61",
+      "placement_id": "60d2ae6b-f101-46af-a165-af6f828f3a3d",
+      "at_ms": "1792038990099",
+      "type": "assessment",
+      "detail": {
+        "award": 0,
+        "decision": "needs_review",
+        "coveredMs": 138,
+        "settlement": "review_hold"
+      }
+    }
+  ],
+  "ledger": []
+}

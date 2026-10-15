@@ -182,7 +182,7 @@ describe('CampaignsService', () => {
         toResponseObject: jest.fn().mockReturnValue({}),
       };
 
-      mockCampaign.canUserJoin.mockReturnValue({ canJoin: true });
+      jest.mocked(mockCampaign.canUserJoin).mockReturnValue({ canJoin: true });
       mockCampaignRepository.findOne.mockResolvedValue(mockCampaign);
       mockUserRepository.findOne.mockResolvedValue(mockUser);
       mockParticipationRepository.findOne.mockResolvedValue(null);
@@ -215,7 +215,7 @@ describe('CampaignsService', () => {
     });
 
     it('should throw BadRequestException if user cannot join', async () => {
-      mockCampaign.canUserJoin.mockReturnValue({ canJoin: false, reason: 'Campaign is full' });
+      jest.mocked(mockCampaign.canUserJoin).mockReturnValue({ canJoin: false, reason: 'Campaign is full' });
       mockCampaignRepository.findOne.mockResolvedValue(mockCampaign);
       mockUserRepository.findOne.mockResolvedValue(mockUser);
 
@@ -281,7 +281,7 @@ describe('CampaignsService', () => {
       };
 
       mockCampaignRepository.createQueryBuilder.mockReturnValue(mockQueryBuilder);
-      mockCampaign.toResponseObject.mockReturnValue({ id: mockCampaign.id });
+      jest.mocked(mockCampaign.toResponseObject).mockReturnValue({ id: mockCampaign.id } as ReturnType<Campaign['toResponseObject']>);
 
       const result = await service.findAll(filterDto);
 

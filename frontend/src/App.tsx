@@ -1,14 +1,11 @@
+import PlacementsPage from './pages/PlacementsPage';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { store } from './store';
 import AppLayout from './components/layout/AppLayout';
 import ProtectedRoute from './components/common/ProtectedRoute';
-import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
-import AdvertiserDashboardPage from './pages/AdvertiserDashboardPage';
-import AdSelectionPage from './pages/AdSelectionPage';
-import ConfirmationPage from './pages/ConfirmationPage';
 import HowItWorksPage from './pages/HowItWorksPage';
 import AboutPage from './pages/AboutPage';
 
@@ -17,8 +14,9 @@ const App = () => {
     <Provider store={store}>
       <Routes>
         <Route path="/" element={<AppLayout />}>
+          <Route path="placements" element={<PlacementsPage />} />
           {/* Public routes */}
-          <Route index element={<HomePage />} />
+          <Route index element={<PlacementsPage />} />
           <Route path="login" element={<LoginPage />} />
           <Route path="register" element={<RegisterPage />} />
           <Route path="how-it-works" element={<HowItWorksPage />} />
@@ -29,7 +27,7 @@ const App = () => {
             path="advertisers"
             element={
               <ProtectedRoute allowedRoles={['advertiser', 'admin']}>
-                <AdvertiserDashboardPage />
+                <PlacementsPage />
               </ProtectedRoute>
             }
           />
@@ -39,7 +37,7 @@ const App = () => {
             path="marketplace"
             element={
               <ProtectedRoute allowedRoles={['member', 'admin']}>
-                <AdSelectionPage />
+                <PlacementsPage />
               </ProtectedRoute>
             }
           />
@@ -47,7 +45,7 @@ const App = () => {
             path="confirmation"
             element={
               <ProtectedRoute>
-                <ConfirmationPage />
+                <PlacementsPage />
               </ProtectedRoute>
             }
           />

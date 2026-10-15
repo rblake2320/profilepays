@@ -1,0 +1,55 @@
+{
+  "at": "2026-10-15T04:42:38.172Z",
+  "results": [
+    {
+      "outcome": "Worked",
+      "scenario": "Repeated session refresh preserves access through token rotation",
+      "measurement": {
+        "rotations": 2
+      }
+    },
+    {
+      "outcome": "Worked",
+      "scenario": "A failed image request falls back to the normal profile",
+      "measurement": {
+        "placementId": "7ade3a9d-0ca2-4873-b2b2-a2a91058f65d"
+      }
+    },
+    {
+      "outcome": "Worked",
+      "scenario": "Browser signup prerequisites, sponsor creation, private connection, explicit opt-in",
+      "measurement": {
+        "campaignId": "24de14a1-704d-4012-9162-d4aa3086ea05",
+        "placementId": "7ade3a9d-0ca2-4873-b2b2-a2a91058f65d"
+      }
+    },
+    {
+      "outcome": "Worked",
+      "scenario": "Static PNG renders on profile plus older post and response",
+      "measurement": {
+        "oldAvatars": 2,
+        "assetPixels": 256,
+        "publicViewer": true
+      }
+    },
+    {
+      "outcome": "Worked",
+      "scenario": "Mobile WebKit in Chicago and Tokyo plus desktop time-zone and +24h clock changes",
+      "measurement": {
+        "iphoneEmulation": true,
+        "physicalPhone": false,
+        "placementId": "7ade3a9d-0ca2-4873-b2b2-a2a91058f65d"
+      }
+    },
+    {
+      "outcome": "Worked",
+      "scenario": "Automatic visible restoration and test settlement after actual 35-second interval",
+      "measurement": {
+        "coveredMs": 35000,
+        "award": 100,
+        "ledger": 2
+      }
+    }
+  ],
+  "errors": []
+}
