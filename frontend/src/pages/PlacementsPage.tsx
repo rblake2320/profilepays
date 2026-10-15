@@ -2,6 +2,8 @@ import { useEffect, useMemo, useRef, useState, ReactNode } from 'react';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material';
 import api from '../api/client';
+import bluePreview from '../assets/blue.png';
+import greenPreview from '../assets/green.png';
 import { useAppSelector } from '../hooks/redux';
 const ended = (p: any) => ['ended', 'failed', 'cancelled'].includes(p.state);
 const duration = (n: number) =>
@@ -105,7 +107,7 @@ export default function PlacementsPage() {
   const source = (c: any) =>
     c?.png_base64
       ? `data:image/png;base64,${c.png_base64}`
-      : `/profilepays/${c?.terms?.assetKey || c?.asset_key}.png`;
+      : (c?.terms?.assetKey || c?.asset_key) === 'blue' ? bluePreview : greenPreview;
   const change = (key: string, value: any) => {
     setReview(false);
     setForm(f => ({ ...f, [key]: value }));

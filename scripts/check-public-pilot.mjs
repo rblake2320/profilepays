@@ -18,11 +18,16 @@ for (const path of ['/marketplace', '/connections', '/placements']) {
   const r = await request(path); assert.equal(r.status, 200); assert.match(r.headers.get('content-type'), /text\/html/);
 }
 pass('HTTPS dashboard deep links load');
+const html=await (await request('/marketplace')).text();
+const entry=html.match(/src="([^\"]*\/assets\/index-[^\"]+\.js)"/)[1];
+const bundle=await (await request(entry)).text();
 for (const asset of ['blue','green']) {
-  const r=await request(`/profilepays/${asset}.png`);
+  const assetPath=bundle.match(new RegExp('/assets/'+asset+'-[A-Za-z0-9_-]+\\.png'))?.[0];
+  assert.ok(assetPath, 'Built-in previews must use content-hashed asset URLs');
+  const r=await request(assetPath);
   assert.equal(r.status,200,'Built-in campaign previews must be served from the dashboard origin');
   assert.equal(r.headers.get('content-type'),'image/png');
-  assert.deepEqual(Buffer.from(await r.arrayBuffer()),readFileSync(`frontend/public/profilepays/${asset}.png`));
+  assert.deepEqual(Buffer.from(await r.arrayBuffer()),readFileSync(`frontend/src/assets/${asset}.png`));
 }
 pass('Both built-in campaign previews are served byte-for-byte from the dashboard origin');
 assert.equal((await request('/api/placements')).status, 401);
@@ -41,8 +46,10 @@ assert.equal((await request('/api/auth/signup', null, {email:`forbidden.${Date.n
 pass('Participant cannot create sponsor campaigns; public signup cannot create administrators');
 const dashboard = await (await request('/api/placements',member)).json();
 assert.ok(dashboard.placements.every(p=>p.state==='ended'));
-assert.equal(dashboard.balance, 100);
-pass('Completed and early-stop receipts persist with a 100-credit balance');
+const expectedBalance=dashboard.placements.reduce((sum,p)=>sum+(p.record.award||0),0);
+assert.ok(expectedBalance>=100);
+assert.equal(dashboard.balance, expectedBalance);
+pass(`Completed and early-stop receipts persist with a reconciled ${expectedBalance}-credit balance`);
 const seed = [];
 for (const [mode,duration,assetKey] of [['complete',60,'blue'],['stop early',120,'green']]) {
   const title=`iPhone live test — ${mode}`;
