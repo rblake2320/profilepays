@@ -1,16 +1,17 @@
-// Explicitly authorized live AIHangout test identity; test-credit coordinator stays local.
+// Explicitly authorized live AIHangout test identity; coordinator may be local or the hosted pilot.
 // Never creates public posts. Always revokes the temporary connection in finally.
 import { chromium, webkit, devices } from 'playwright';
 import assert from 'node:assert/strict';
 import { randomUUID, randomBytes, createHash } from 'node:crypto';
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
-const ai='https://aihangout.ai', pp='http://127.0.0.1:8940';
+const ai='https://aihangout.ai', pp=process.env.PROFILEPAYS_TEST_ORIGIN || 'http://127.0.0.1:8940';
+assert.ok(['http://127.0.0.1:8940','https://profilepays.ultrarag.app'].includes(pp),'Unexpected pilot origin');
 const username='live_countdown_test', liveId='d7d3e530-9b0b-4b54-a162-31dbc7445f3a';
-const out='.local/production-static', accountFile=out+'/accounts.json';
+const out=pp.startsWith('https:')?'.local/public-pilot/acceptance':'.local/production-static', accountFile=out+'/accounts.json';
 mkdirSync(out,{recursive:true});
 const password=process.env.LIVE_PROFILE_TEST_PASSWORD;
 assert.ok(password,'Supply LIVE_PROFILE_TEST_PASSWORD in process memory');
-const report={started:new Date().toISOString(),profile:ai+'/profile/'+username,olderPost:ai+'/problem/290',checks:[],errors:[]};
+const report={started:new Date().toISOString(),dashboardOrigin:pp,profile:ai+'/profile/'+username,olderPost:ai+'/problem/290',checks:[],errors:[]};
 const campaigns=[], placements=[];
 let aiToken, accounts, browser, mobile, baseline;
 const pass=(scenario,measurement={})=>{report.checks.push({outcome:'Worked',scenario,measurement});console.log('Worked:',scenario);writeFileSync(out+'/results.json',JSON.stringify(report,null,2));};

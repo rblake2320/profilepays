@@ -32,7 +32,8 @@ async function bootstrap() {
   }
 
   // Security middleware
-  app.use(helmet());
+  const placementOrigin = new URL(configService.get<string>('AIHANGOUT_ORIGIN', 'https://aihangout.ai')).origin;
+  app.use(helmet({ contentSecurityPolicy: { directives: { imgSrc: ["'self'", 'data:', placementOrigin] } } }));
   app.use(cookieParser());
 
   // CORS configuration
