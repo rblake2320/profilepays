@@ -1,0 +1,33 @@
+[
+  {
+    "outcome": "Worked",
+    "scenario": "PNG validation, content hashing, upload deduplication and member upload rejection",
+    "measurement": {
+      "pixels": 128
+    }
+  },
+  {
+    "outcome": "Worked",
+    "scenario": "Campaign ownership and persistent per-user saved offers",
+    "measurement": {
+      "campaignId": "289c5195-7a21-488e-ba11-0d94ef96aff3"
+    }
+  },
+  {
+    "outcome": "Worked",
+    "scenario": "Connector rejects mismatched creative hash",
+    "measurement": {
+      "status": 400
+    }
+  },
+  {
+    "outcome": "Worked",
+    "scenario": "Custom creative renders, pause blocks new enrollment but preserves active placement, timed verification settles and restores",
+    "measurement": {
+      "award": 120,
+      "observations": 8,
+      "restoration": "restored",
+      "placementId": "199ce757-7313-45fc-98da-e2289f414d9f"
+    }
+  }
+]

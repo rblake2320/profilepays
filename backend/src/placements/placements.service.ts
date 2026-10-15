@@ -10,6 +10,7 @@ import {
 } from '@nestjs/common';
 import { DataSource, EntityManager } from 'typeorm';
 import { randomUUID, randomBytes, createCipheriv, createDecipheriv, createHash } from 'crypto';
+const { PNG } = require('pngjs');
 
 const terminal = new Set(['ended', 'failed', 'cancelled']);
 const requireUuid = (v: any) => {
@@ -128,18 +129,31 @@ export class PlacementsService implements OnModuleInit, OnModuleDestroy {
     this.enabled();
     return {
       testCreditsOnly: true,
+      serverNow: Date.now(),
       origin: this.origin,
       minDurationSeconds: process.env.PROFILEPAYS_SHORT_TESTS === 'true' ? 10 : 3600,
       campaigns: await this.db.query(
-        'SELECT id,sponsor_id,terms,budget,reserved,spent,status FROM placement_campaigns ORDER BY created_at DESC'
+        `SELECT c.id,c.sponsor_id,c.terms,c.budget,c.reserved,c.spent,c.status,
+        (SELECT png_base64 FROM placement_creatives a WHERE a.sponsor_id=c.sponsor_id AND a.asset_key=c.terms->>'assetKey') AS png_base64,
+        (SELECT count(*)::integer FROM placements p WHERE p.campaign_id=c.id) AS participants
+        FROM placement_campaigns c ORDER BY c.created_at DESC`
       ),
+      creatives: await this.db.query(
+        'SELECT id,name,asset_key,png_base64 FROM placement_creatives WHERE sponsor_id=$1 ORDER BY created_at DESC',
+        [user.id]
+      ),
+      favorites: (
+        await this.db.query('SELECT campaign_id FROM placement_favorites WHERE user_id=$1', [
+          user.id,
+        ])
+      ).map(r => r.campaign_id),
       destinations: await this.db.query(
         'SELECT id,username FROM placement_destinations WHERE user_id=$1',
         [user.id]
       ),
       placements: await this.db.query(
-        'SELECT p.id,p.campaign_id,p.state,p.record,d.username FROM placements p JOIN placement_destinations d ON d.id=p.destination_id JOIN placement_campaigns c ON c.id=p.campaign_id WHERE p.user_id=$1 OR c.sponsor_id=$1 ORDER BY p.created_at DESC',
-        [user.id]
+        'SELECT p.id,p.user_id,p.campaign_id,p.state,p.record,d.username FROM placements p JOIN placement_destinations d ON d.id=p.destination_id JOIN placement_campaigns c ON c.id=p.campaign_id WHERE p.user_id=$1 OR c.sponsor_id=$1 OR $2=true ORDER BY p.created_at DESC',
+        [user.id, user.userRole === 'admin']
       ),
       balance: Number(
         (
@@ -163,6 +177,9 @@ export class PlacementsService implements OnModuleInit, OnModuleDestroy {
       'reward',
       'budget',
       'capacity',
+      'brand',
+      'description',
+      'category',
     ]);
     requireUuid(b.commandKey);
     const title = clean(b.title, 80),
@@ -170,8 +187,15 @@ export class PlacementsService implements OnModuleInit, OnModuleDestroy {
     for (const k of ['durationSeconds', 'reward', 'budget', 'capacity'])
       if (!Number.isSafeInteger(b[k]) || b[k] <= 0)
         throw new BadRequestException('Positive whole numbers required');
+    let creative;
+    if (!['blue', 'green'].includes(b.assetKey)) {
+      [creative] = await this.db.query(
+        'SELECT * FROM placement_creatives WHERE sponsor_id=$1 AND asset_key=$2',
+        [user.id, b.assetKey]
+      );
+      if (!creative) throw new BadRequestException('Choose a creative from your library');
+    }
     if (
-      !['blue', 'green'].includes(b.assetKey) ||
       b.durationSeconds < (short ? 10 : 3600) ||
       b.durationSeconds > 86400 ||
       b.reward > 10000 ||
@@ -184,6 +208,13 @@ export class PlacementsService implements OnModuleInit, OnModuleDestroy {
     const terms = {
       version: 1,
       title,
+      brand: b.brand === undefined ? 'Test sponsor' : clean(b.brand, 60),
+      description:
+        b.description === undefined
+          ? 'A temporary sponsored profile image.'
+          : clean(b.description, 500),
+      category: b.category === undefined ? 'Community' : clean(b.category, 40),
+      ...(creative ? { imageSha256: creative.asset_key.slice(7) } : {}),
       assetKey: b.assetKey,
       durationSeconds: b.durationSeconds,
       reward: b.reward,
@@ -203,8 +234,26 @@ export class PlacementsService implements OnModuleInit, OnModuleDestroy {
       )
     )[0];
     if (existing) {
-      for (const k of ['title', 'assetKey', 'durationSeconds', 'reward', 'capacity'])
-        if (existing.terms[k] !== terms[k])
+      for (const k of [
+        'title',
+        'assetKey',
+        'durationSeconds',
+        'reward',
+        'capacity',
+        'brand',
+        'description',
+        'category',
+      ])
+        if (
+          (existing.terms[k] ??
+            (
+              {
+                brand: 'Test sponsor',
+                description: 'A temporary sponsored profile image.',
+                category: 'Community',
+              } as any
+            )[k]) !== terms[k]
+        )
           throw new ConflictException('Idempotency key reused with different campaign');
       if (existing.budget !== b.budget) throw new ConflictException('Budget conflict');
       return existing;
@@ -299,6 +348,83 @@ export class PlacementsService implements OnModuleInit, OnModuleDestroy {
       }
     });
   }
+  async uploadCreative(user: any, b: any) {
+    this.enabled();
+    if (!['advertiser', 'admin'].includes(user.userRole))
+      throw new ForbiddenException('Sponsor account required');
+    exact(b, ['name', 'png']);
+    const name = clean(b.name, 80);
+    if (typeof b.png !== 'string' || b.png.length > 95000 || !/^[A-Za-z0-9+/]+={0,2}$/.test(b.png))
+      throw new BadRequestException('Use a PNG image up to 70 KB');
+    let bytes: Buffer;
+    try {
+      const input = Buffer.from(b.png, 'base64');
+      if (
+        input.length < 33 ||
+        input.length > 70000 ||
+        input.subarray(0, 8).toString('hex') !== '89504e470d0a1a0a' ||
+        input.readUInt32BE(16) !== 128 ||
+        input.readUInt32BE(20) !== 128
+      )
+        throw Error();
+      const decoded = PNG.sync.read(input, { checkCRC: true });
+      bytes = PNG.sync.write(decoded, { colorType: 6 });
+    } catch {
+      throw new BadRequestException('Image must be a valid 128 x 128 PNG');
+    }
+    const key = 'sha256-' + createHash('sha256').update(bytes).digest('hex');
+    return this.db.transaction(async m => {
+      await m.query('SELECT id FROM users WHERE id=$1 FOR UPDATE', [user.id]);
+      const [prior] = await m.query(
+        'SELECT id,name,asset_key,png_base64 FROM placement_creatives WHERE sponsor_id=$1 AND asset_key=$2',
+        [user.id, key]
+      );
+      if (prior) return prior;
+      const [{ count }] = await m.query(
+        'SELECT count(*)::integer AS count FROM placement_creatives WHERE sponsor_id=$1',
+        [user.id]
+      );
+      if (count >= 100) throw new ConflictException('Creative library limit reached');
+      return (
+        await m.query(
+          'INSERT INTO placement_creatives(id,sponsor_id,name,asset_key,png_base64) VALUES($1,$2,$3,$4,$5) RETURNING id,name,asset_key,png_base64',
+          [randomUUID(), user.id, name, key, bytes.toString('base64')]
+        )
+      )[0];
+    });
+  }
+  async favorite(user: any, id: string, b: any) {
+    this.enabled();
+    requireUuid(id);
+    exact(b, ['saved']);
+    if (typeof b.saved !== 'boolean') throw new BadRequestException('Saved must be true or false');
+    if (!(await this.db.query('SELECT id FROM placement_campaigns WHERE id=$1', [id])).length)
+      throw new NotFoundException('Campaign missing');
+    if (b.saved)
+      await this.db.query(
+        'INSERT INTO placement_favorites(user_id,campaign_id) VALUES($1,$2) ON CONFLICT DO NOTHING',
+        [user.id, id]
+      );
+    else
+      await this.db.query('DELETE FROM placement_favorites WHERE user_id=$1 AND campaign_id=$2', [
+        user.id,
+        id,
+      ]);
+    return { saved: b.saved };
+  }
+  async campaignStatus(user: any, id: string, b: any) {
+    this.enabled();
+    requireUuid(id);
+    exact(b, ['status']);
+    if (!['active', 'paused'].includes(b.status))
+      throw new BadRequestException('Invalid campaign status');
+    const rows = await this.db.query(
+      'WITH updated AS (UPDATE placement_campaigns SET status=$3 WHERE id=$1 AND sponsor_id=$2 RETURNING id,status) SELECT * FROM updated',
+      [id, user.id, b.status]
+    );
+    if (!rows.length) throw new NotFoundException('Campaign missing');
+    return rows[0];
+  }
   async stop(user: any, id: string) {
     this.enabled();
     requireUuid(id);
@@ -332,7 +458,7 @@ export class PlacementsService implements OnModuleInit, OnModuleDestroy {
       'SELECT p.*,c.sponsor_id FROM placements p JOIN placement_campaigns c ON c.id=p.campaign_id WHERE p.id=$1',
       [id]
     );
-    if (!p || ![p.user_id, p.sponsor_id].includes(user.id))
+    if (!p || (user.userRole !== 'admin' && ![p.user_id, p.sponsor_id].includes(user.id)))
       throw new NotFoundException('Placement missing');
     return {
       placement: p,
@@ -403,24 +529,29 @@ export class PlacementsService implements OnModuleInit, OnModuleDestroy {
   private async publicState(username: string) {
     return this.remote('/api/users/by-username/' + encodeURIComponent(username) + '/placement');
   }
-  private async verifyImage(visible: any) {
+  private async verifyImage(visible: any, expectedHash?: string) {
     const hashes = {
       blue: 'f48d0daf2cd83a1eabf0baf0a59af8f3c7f1551871b06e92e453f99e9d0d7706',
       green: 'aa403a155df82e5deb669e44fca78852d2dc3530dd0275315e110b573c5425d1',
     };
     const key = visible.placement.assetKey;
-    if (!hashes[key]) throw Error('Unapproved image');
-    const response = await fetch(this.origin + '/profilepays/' + key + '.png', {
-      redirect: 'error',
-      signal: AbortSignal.timeout(4000),
-      headers: { 'Cache-Control': 'no-cache' },
-    });
+    const custom = /^sha256-[a-f0-9]{64}$/.test(key);
+    const expected = custom ? expectedHash : hashes[key];
+    if (!expected || (custom && key !== 'sha256-' + expected)) throw Error('Unapproved image');
+    const response = await fetch(
+      this.origin + (custom ? '/api/profilepays/assets/' + key : '/profilepays/' + key + '.png'),
+      {
+        redirect: 'error',
+        signal: AbortSignal.timeout(4000),
+        headers: { 'Cache-Control': 'no-cache' },
+      }
+    );
     if (!response.ok || !response.headers.get('content-type')?.startsWith('image/png'))
       throw Error('Approved image unavailable');
     const digest = createHash('sha256')
       .update(Buffer.from(await response.arrayBuffer()))
       .digest('hex');
-    if (digest !== hashes[key]) throw Error('Approved image bytes changed');
+    if (digest !== expected) throw Error('Approved image bytes changed');
     visible.imageSha256 = digest;
   }
   private async advance(m: EntityManager, p: any) {
@@ -436,10 +567,20 @@ export class PlacementsService implements OnModuleInit, OnModuleDestroy {
         r.stopReason = 'activation_failed';
         p.state = 'restoring';
       } else {
+        let png;
+        if (t.imageSha256) {
+          const [creative] = await m.query(
+            'SELECT png_base64 FROM placement_creatives WHERE asset_key=$1 LIMIT 1',
+            [t.assetKey]
+          );
+          if (!creative) throw Error('Creative unavailable');
+          png = creative.png_base64;
+        }
         const result: any = await this.remote(path, g, 'PUT', {
           assetKey: t.assetKey,
           durationSeconds: t.durationSeconds,
           originalKey: r.original.key,
+          ...(png ? { png } : {}),
         });
         if (result.state === 'ended') {
           r.stopReason = 'activation_failed';
@@ -448,7 +589,7 @@ export class PlacementsService implements OnModuleInit, OnModuleDestroy {
           const visible: any = await this.publicState(p.username);
           if (visible.placement?.id !== p.id || visible.placement?.assetKey !== t.assetKey)
             throw Error('Destination readback did not confirm assignment');
-          await this.verifyImage(visible);
+          await this.verifyImage(visible, t.imageSha256);
           const confirmed: any = await this.remote(path + '/renew', g, 'POST');
           r.startsAt = confirmed.startsAt;
           r.endsAt = confirmed.endsAt;
@@ -472,9 +613,10 @@ export class PlacementsService implements OnModuleInit, OnModuleDestroy {
         r.stoppedAt = Date.now();
         p.state = 'restoring';
       } else {
-        await this.verifyImage(visible);
+        await this.verifyImage(visible, t.imageSha256);
         await this.remote(path + '/renew', g, 'POST');
         await this.observe(m, p, 'valid', visible);
+        r.coveredMs = (await this.coverage(m, p)).covered;
         p.state = 'active';
         r.nextCheck = Math.min(Date.now() + t.sampleMs, r.endsAt);
         return;
@@ -511,27 +653,7 @@ export class PlacementsService implements OnModuleInit, OnModuleDestroy {
         outcome: r.restoration,
         readback: visible,
       });
-      const obs = await m.query(
-        'SELECT at_ms,kind FROM placement_observations WHERE placement_id=$1 ORDER BY at_ms,id',
-        [p.id]
-      );
-      let covered = 0,
-        previous: number | null = null,
-        mismatch = false,
-        maxGap = 0;
-      for (const o of obs) {
-        const at = Number(o.at_ms);
-        if (o.kind === 'mismatch') mismatch = true;
-        if (o.kind === 'valid' || o.kind === 'valid_expiry') {
-          if (previous !== null) {
-            const gap = at - previous;
-            maxGap = Math.max(maxGap, gap);
-            if (gap <= t.maxGapMs)
-              covered += Math.max(0, Math.min(at, r.endsAt) - Math.max(previous, r.startsAt));
-          }
-          previous = at;
-        } else previous = null;
-      }
+      const { covered, mismatch, maxGap } = await this.coverage(m, p);
       const duration = t.durationSeconds * 1000;
       let award = 0;
       r.assessment = 'ineligible';
@@ -568,6 +690,31 @@ export class PlacementsService implements OnModuleInit, OnModuleDestroy {
       });
     }
   }
+  private async coverage(m: EntityManager, p: any) {
+    const obs = await m.query(
+      'SELECT at_ms,kind FROM placement_observations WHERE placement_id=$1 ORDER BY at_ms,id',
+      [p.id]
+    );
+    const r = p.record;
+    let covered = 0,
+      previous: number | null = null,
+      mismatch = false,
+      maxGap = 0;
+    for (const o of obs) {
+      const at = Number(o.at_ms);
+      if (o.kind === 'mismatch') mismatch = true;
+      if (o.kind === 'valid' || o.kind === 'valid_expiry') {
+        if (previous !== null) {
+          const gap = at - previous;
+          maxGap = Math.max(maxGap, gap);
+          if (gap <= r.terms.maxGapMs)
+            covered += Math.max(0, Math.min(at, r.endsAt) - Math.max(previous, r.startsAt));
+        }
+        previous = at;
+      } else previous = null;
+    }
+    return { covered, mismatch, maxGap };
+  }
   private async settle(m: EntityManager, p: any, award: number) {
     const [{ count }] = await m.query(
       'SELECT count(*)::integer AS count FROM test_credit_ledger WHERE placement_id=$1',
@@ -592,9 +739,14 @@ export class PlacementsService implements OnModuleInit, OnModuleDestroy {
     if (user.userRole !== 'admin')
       throw new ForbiddenException('Independent operator review required');
     return this.db.transaction(async m => {
-      const [p] = await m.query('SELECT * FROM placements WHERE id=$1 FOR UPDATE', [id]);
+      const [p] = await m.query(
+        'SELECT p.*,c.sponsor_id FROM placements p JOIN placement_campaigns c ON c.id=p.campaign_id WHERE p.id=$1 FOR UPDATE OF p',
+        [id]
+      );
       if (!p || p.record.settlement !== 'review_hold')
         throw new ConflictException('No pending review');
+      if ([p.user_id, p.sponsor_id].includes(user.id))
+        throw new ForbiddenException('A separate reviewer must resolve this placement');
       if (!Number.isInteger(b.award) || b.award < 0 || b.award > p.record.terms.reward)
         throw new BadRequestException('Invalid award');
       await this.settle(m, p, b.award);

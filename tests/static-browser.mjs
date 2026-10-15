@@ -30,7 +30,8 @@ async function login(page, who) {
   await page.getByLabel('Email address').fill(who.email);
   await page.getByLabel('Password', { exact: true }).fill(who.password);
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();
-  await page.getByText('A placement with a clear ending.').waitFor();
+  await page.locator('nav').getByRole('link', { name: 'Connections', exact: true }).waitFor();
+  await page.goto(pp + (who === sponsor ? '/advertisers' : '/marketplace'));
   await page.waitForFunction(() => !!localStorage.getItem('accessToken'));
   who.token = await page.evaluate(() => localStorage.getItem('accessToken'));
 }
@@ -55,9 +56,14 @@ try {
   await login(sponsorPage, sponsor);
   const title = 'Browser static pilot ' + Date.now();
   await sponsorPage.getByLabel('Campaign title').fill(title);
+  await sponsorPage.getByLabel('Brand name').fill('Browser test sponsor');
+  await sponsorPage
+    .getByLabel('Offer description')
+    .fill('Local acceptance fixture for the updated workspace.');
   await sponsorPage.getByLabel('Duration in seconds').fill('35');
   await sponsorPage.getByLabel('Test budget', { exact: true }).fill('100');
   await sponsorPage.getByLabel('Participant limit').fill('1');
+  await sponsorPage.getByRole('button', { name: 'Review campaign' }).click();
   await sponsorPage.getByRole('button', { name: 'Publish test campaign' }).click();
   const c = await waitFor(
     () => api(pp, '/placements', sponsor.token),
@@ -79,17 +85,28 @@ try {
   const participant = await browser.newPage({ viewport: { width: 1280, height: 1000 } });
   participant.on('pageerror', e => errors.push(e.message));
   await login(participant, member);
-  for(let round=0;round<2;round++){
-    const previousRefresh=await participant.evaluate(()=>localStorage.getItem('refreshToken'));
-    await participant.evaluate(()=>localStorage.setItem('accessToken','expired-local-test-token'));
-    await participant.waitForFunction(previous=>!!localStorage.getItem('refreshToken')&&localStorage.getItem('refreshToken')!==previous,previousRefresh);
-    assert.ok(await participant.getByText('A placement with a clear ending.').isVisible());
+  for (let round = 0; round < 2; round++) {
+    const previousRefresh = await participant.evaluate(() => localStorage.getItem('refreshToken'));
+    await participant.evaluate(() =>
+      localStorage.setItem('accessToken', 'expired-local-test-token')
+    );
+    await participant.waitForFunction(
+      previous =>
+        !!localStorage.getItem('refreshToken') && localStorage.getItem('refreshToken') !== previous,
+      previousRefresh
+    );
+    assert.ok(
+      await participant
+        .getByRole('heading', { name: 'Make room for something you like.' })
+        .isVisible()
+    );
   }
-  member.token=await participant.evaluate(()=>localStorage.getItem('accessToken'));
-  worked('Repeated session refresh preserves access through token rotation',{rotations:2});
+  member.token = await participant.evaluate(() => localStorage.getItem('accessToken'));
+  worked('Repeated session refresh preserves access through token rotation', { rotations: 2 });
+  await participant.goto(pp + '/connections');
   await participant.getByLabel('AIHangout connection code').fill(grant);
   await participant.getByRole('button', { name: 'Connect profile', exact: true }).click();
-  await participant.getByText('Connected: ' + member.ai.username).waitFor();
+  await participant.getByText('@' + member.ai.username, { exact: true }).waitFor();
   // Synthetic fixtures in the isolated local D1 database, created BEFORE enrollment.
   if (!accounts.fixturePostId) {
     const post = await api(ai, '/problems', member.ai.token, 'POST', {
@@ -124,10 +141,8 @@ try {
   });
   const phone = await phoneContext.newPage();
   await phone.goto(ai + '/profile/' + member.ai.username);
-  await participant.getByLabel('Campaign', { exact: true }).click();
-  await participant.getByRole('option', { name: title + ' — 100 test credits' }).click();
-  await participant.getByLabel('Destination profile').click();
-  await participant.getByRole('option', { name: member.ai.username, exact: true }).click();
+  await participant.goto(pp + '/confirmation?campaign=' + campaign.id);
+  await participant.getByLabel('Destination profile').selectOption({ label: member.ai.username });
   assert.equal(
     await participant.getByRole('button', { name: 'Reserve placement' }).isDisabled(),
     true

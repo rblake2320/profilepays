@@ -1,4 +1,5 @@
 import PlacementsPage from './pages/PlacementsPage';
+import PlacementReviewPage from './pages/PlacementReviewPage';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { store } from './store';
@@ -14,7 +15,38 @@ const App = () => {
     <Provider store={store}>
       <Routes>
         <Route path="/" element={<AppLayout />}>
-          <Route path="placements" element={<PlacementsPage />} />
+          <Route
+            path="reviews"
+            element={
+              <ProtectedRoute allowedRoles={['admin']}>
+                <PlacementReviewPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="placements"
+            element={
+              <ProtectedRoute>
+                <PlacementsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="connections"
+            element={
+              <ProtectedRoute>
+                <PlacementsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="earnings"
+            element={
+              <ProtectedRoute>
+                <PlacementsPage />
+              </ProtectedRoute>
+            }
+          />
           {/* Public routes */}
           <Route index element={<PlacementsPage />} />
           <Route path="login" element={<LoginPage />} />

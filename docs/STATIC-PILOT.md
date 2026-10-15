@@ -39,7 +39,9 @@ Inspect the placement receipt after it ends.
 
 Keep `.local/static-pilot/` private: it holds generated credentials, encrypted-connection
 configuration, local test accounts, process logs, receipts and screenshots. It is ignored by Git.
-Stop the runner before rebuilding; Wrangler can retain an old asset manifest during a rebuild.
+Avoid rebuilding during an acceptance measurement. Wrangler can retain an old asset manifest:
+coordinate any rebuild and required restart as one short operation, then reopen the browser.
+Do not leave the preview stopped while doing unrelated work.
 Ctrl+C stops its child processes. The isolated Docker container/volume retain receipts;
 `docker stop profilepays-static-pilot` stops only that container when finished.
 

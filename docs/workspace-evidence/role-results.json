@@ -1,0 +1,43 @@
+{
+  "finished": "2026-10-15T13:39:48.153Z",
+  "results": [
+    {
+      "outcome": "Worked",
+      "scenario": "Ordinary participant cannot open the operator review page",
+      "measurement": {}
+    },
+    {
+      "outcome": "Worked",
+      "scenario": "Already-open profile and both older post avatars update; fresh image loads",
+      "measurement": {
+        "updateMs": 3051.4785,
+        "firstImageLoadMs": 296.8247000000001,
+        "coveredMs": 5112,
+        "observations": 4
+      }
+    },
+    {
+      "outcome": "Worked",
+      "scenario": "Participant stops early: zero award, original profile and older posts restore without reload",
+      "measurement": {
+        "restoreMs": 3300.4970000000003,
+        "award": 0,
+        "ledgerEntries": 2
+      }
+    },
+    {
+      "outcome": "Worked",
+      "scenario": "Participant and campaign sponsor cannot review their own placement even with admin role",
+      "measurement": {}
+    },
+    {
+      "outcome": "Worked",
+      "scenario": "Independent operator inspects evidence and settles once; duplicate decision rejected",
+      "measurement": {
+        "award": 0,
+        "ledgerEntries": 2,
+        "duplicateStatus": 409
+      }
+    }
+  ]
+}

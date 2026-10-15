@@ -1,278 +1,71 @@
-import { useState } from 'react';
-import { Outlet, Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
-import {
-  AppBar,
-  Avatar,
-  Box,
-  Button,
-  Container,
-  Divider,
-  Drawer,
-  IconButton,
-  Link,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemText,
-  Menu,
-  MenuItem,
-  Stack,
-  Toolbar,
-  Tooltip,
-  Typography,
-} from '@mui/material';
-import { MenuLinesIcon, MoneyBadgeIcon } from '../common/icons';
+import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../hooks/redux';
 import { logout } from '../../store/authSlice';
-
-const navigationLinks = [
-  { label: 'Placements', path: '/placements' },
-  { label: 'How It Works', path: '/how-it-works' },
-  { label: 'About', path: '/about' },
-];
-
-const AppLayout = () => {
-  const location = useLocation();
-  const navigate = useNavigate();
+import '../../workspace.css';
+export default function AppLayout() {
+  const { user } = useAppSelector(s => s.auth);
   const dispatch = useAppDispatch();
-  const { user } = useAppSelector((s) => s.auth);
-
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-
-  const handleDrawerToggle = () => setMobileOpen(!mobileOpen);
-  const handleMenuOpen = (e: React.MouseEvent<HTMLElement>) => setAnchorEl(e.currentTarget);
-  const handleMenuClose = () => setAnchorEl(null);
-
-  const handleLogout = () => {
-    handleMenuClose();
-    dispatch(logout());
-    navigate('/');
-  };
-
-  const userInitials = user
-    ? (user.firstName?.[0] || user.email[0]).toUpperCase()
-    : '';
-
-  const drawer = (
-    <Box onClick={handleDrawerToggle} sx={{ textAlign: 'center' }}>
-      <Typography variant="h6" fontWeight={700} sx={{ my: 2 }} color="success.main">
-        ProfilePays
-      </Typography>
-      <Divider />
-      <List>
-        {navigationLinks.map((link) => (
-          <ListItem key={link.path} disablePadding>
-            <ListItemButton component={RouterLink} to={link.path} selected={location.pathname === link.path}>
-              <ListItemText primary={link.label} />
-            </ListItemButton>
-          </ListItem>
-        ))}
-        {user?.userType === 'advertiser' && (
-          <ListItem disablePadding>
-            <ListItemButton component={RouterLink} to="/advertisers">
-              <ListItemText primary="Dashboard" />
-            </ListItemButton>
-          </ListItem>
-        )}
-        {user?.userType === 'member' && (
-          <ListItem disablePadding>
-            <ListItemButton component={RouterLink} to="/marketplace">
-              <ListItemText primary="Marketplace" />
-            </ListItemButton>
-          </ListItem>
-        )}
-        {!user && (
-          <>
-            <ListItem disablePadding>
-              <ListItemButton component={RouterLink} to="/login">
-                <ListItemText primary="Sign In" />
-              </ListItemButton>
-            </ListItem>
-            <ListItem disablePadding>
-              <ListItemButton component={RouterLink} to="/register">
-                <ListItemText primary="Sign Up" />
-              </ListItemButton>
-            </ListItem>
-          </>
-        )}
-      </List>
-    </Box>
-  );
-
+  const navigate = useNavigate();
   return (
-    <Box display="flex" flexDirection="column" minHeight="100vh" bgcolor="background.default">
-      <AppBar
-        position="static"
-        color="inherit"
-        elevation={0}
-        sx={{ borderBottom: '1px solid', borderColor: 'divider' }}
-      >
-        <Toolbar sx={{ gap: 2 }}>
-          <IconButton
-            edge="start"
-            color="inherit"
-            onClick={handleDrawerToggle}
-            sx={{ display: { xs: 'inline-flex', md: 'none' } }}
-            aria-label="Open navigation menu"
-          >
-            <MenuLinesIcon />
-          </IconButton>
-
-          <Stack
-            direction="row"
-            alignItems="center"
-            spacing={1}
-            component={RouterLink}
-            to="/"
-            sx={{ textDecoration: 'none', color: 'inherit', flexShrink: 0 }}
-          >
-            <MoneyBadgeIcon color="success" />
-            <Typography variant="h6" fontWeight={700} color="text.primary">
-              ProfilePays
-            </Typography>
-          </Stack>
-
-          <Stack
-            direction="row"
-            spacing={0.5}
-            alignItems="center"
-            sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}
-          >
-            {navigationLinks.map((link) => (
-              <Button
-                key={link.path}
-                component={RouterLink}
-                to={link.path}
-                color={location.pathname === link.path ? 'success' : 'inherit'}
-                variant={location.pathname === link.path ? 'contained' : 'text'}
-                size="small"
-              >
-                {link.label}
-              </Button>
-            ))}
-            {user?.userType === 'advertiser' && (
-              <Button
-                component={RouterLink}
-                to="/advertisers"
-                color={location.pathname === '/advertisers' ? 'success' : 'inherit'}
-                variant={location.pathname === '/advertisers' ? 'contained' : 'text'}
-                size="small"
-              >
-                Dashboard
-              </Button>
-            )}
-            {user?.userType === 'member' && (
-              <Button
-                component={RouterLink}
-                to="/marketplace"
-                color={location.pathname === '/marketplace' ? 'success' : 'inherit'}
-                variant={location.pathname === '/marketplace' ? 'contained' : 'text'}
-                size="small"
-              >
-                Marketplace
-              </Button>
-            )}
-          </Stack>
-
-          <Stack direction="row" spacing={1} sx={{ ml: 'auto' }}>
-            {user ? (
-              <>
-                <Tooltip title={user.email}>
-                  <IconButton onClick={handleMenuOpen} size="small">
-                    <Avatar sx={{ width: 32, height: 32, bgcolor: 'success.main', fontSize: 14 }}>
-                      {userInitials}
-                    </Avatar>
-                  </IconButton>
-                </Tooltip>
-                <Menu
-                  anchorEl={anchorEl}
-                  open={Boolean(anchorEl)}
-                  onClose={handleMenuClose}
-                  transformOrigin={{ horizontal: 'right', vertical: 'top' }}
-                  anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+    <div className="pp-shell">
+      <header className="pp-header">
+        <Link className="pp-logo" to="/">
+          profile<span>pays</span>
+          <i>●</i>
+        </Link>
+        <nav aria-label="Main navigation">
+          {user ? (
+            <>
+              <NavLink to={user.userType === 'advertiser' ? '/advertisers' : '/marketplace'}>
+                {user.userType === 'advertiser' ? 'Campaign studio' : 'Discover'}
+              </NavLink>
+              <NavLink to="/placements">Placements</NavLink>
+              <NavLink to="/earnings">Activity & credits</NavLink>
+              <NavLink to="/connections">Connections</NavLink>
+              {user.userType === 'admin' && <NavLink to="/reviews">Review queue</NavLink>}
+            </>
+          ) : (
+            <>
+              <NavLink to="/how-it-works">How it works</NavLink>
+              <NavLink to="/about">Our story</NavLink>
+            </>
+          )}
+        </nav>
+        <div className="pp-account">
+          <span className="pp-tag">TEST CREDIT EDITION</span>
+          {user ? (
+            <details>
+              <summary>{user.firstName || 'Account'} ⌄</summary>
+              <div>
+                <small>{user.email}</small>
+                <button
+                  onClick={() => {
+                    dispatch(logout());
+                    navigate('/');
+                  }}
                 >
-                  <MenuItem disabled>
-                    <Typography variant="body2" color="text.secondary">
-                      {user.email}
-                    </Typography>
-                  </MenuItem>
-                  <Divider />
-                  {user.userType === 'member' && (
-                    <MenuItem>
-                      <Typography variant="body2">
-                        Test-credit pilot · no cash value
-                      </Typography>
-                    </MenuItem>
-                  )}
-                  <MenuItem onClick={handleLogout}>Sign out</MenuItem>
-                </Menu>
-              </>
-            ) : (
-              <>
-                <Button
-                  component={RouterLink}
-                  to="/login"
-                  variant="outlined"
-                  size="small"
-                  sx={{ display: { xs: 'none', sm: 'inline-flex' } }}
-                >
-                  Sign in
-                </Button>
-                <Button
-                  component={RouterLink}
-                  to="/register"
-                  variant="contained"
-                  color="success"
-                  size="small"
-                >
-                  Get started
-                </Button>
-              </>
-            )}
-          </Stack>
-        </Toolbar>
-      </AppBar>
-
-      <Drawer
-        variant="temporary"
-        open={mobileOpen}
-        onClose={handleDrawerToggle}
-        ModalProps={{ keepMounted: true }}
-        sx={{
-          display: { xs: 'block', md: 'none' },
-          '& .MuiDrawer-paper': { boxSizing: 'border-box', width: 240 },
-        }}
-      >
-        {drawer}
-      </Drawer>
-
-      <Container component="main" maxWidth="lg" sx={{ flexGrow: 1, py: { xs: 4, md: 6 } }}>
+                  Sign out
+                </button>
+              </div>
+            </details>
+          ) : (
+            <Link className="pp-button" to="/login">
+              Sign in ↗
+            </Link>
+          )}
+        </div>
+      </header>
+      <main className="pp-main">
         <Outlet />
-      </Container>
-
-      <Divider />
-      <Box component="footer" py={3} bgcolor="background.paper">
-        <Container maxWidth="lg">
-          <Stack
-            direction={{ xs: 'column', md: 'row' }}
-            justifyContent="space-between"
-            alignItems={{ xs: 'flex-start', md: 'center' }}
-            spacing={2}
-          >
-            <Typography variant="body2" color="text.secondary">
-              © {new Date().getFullYear()} ProfilePays. Test-credit pilot · no cash value.
-            </Typography>
-            <Stack direction="row" spacing={2}>
-              <Link component={RouterLink} to="/how-it-works" variant="body2" color="text.secondary" underline="hover">
-                How the test works
-              </Link>
-            </Stack>
-          </Stack>
-        </Container>
-      </Box>
-    </Box>
+      </main>
+      <footer className="pp-footer">
+        <div className="pp-logo">
+          profile<span>pays</span>
+        </div>
+        <p>Your profile. Your choice. Your time.</p>
+        <Link to="/how-it-works">How it works</Link>
+        <small>Test credits have no cash value.</small>
+      </footer>
+    </div>
   );
-};
-
-export default AppLayout;
+}

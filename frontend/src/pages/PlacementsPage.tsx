@@ -1,57 +1,95 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Link as RouterLink } from 'react-router-dom';
-import {
-  Alert,
-  Box,
-  Button,
-  Card,
-  CardContent,
-  Checkbox,
-  Chip,
-  FormControlLabel,
-  MenuItem,
-  Stack,
-  TextField,
-  Typography,
-} from '@mui/material';
+import { useEffect, useMemo, useRef, useState, ReactNode } from 'react';
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material';
 import api from '../api/client';
 import { useAppSelector } from '../hooks/redux';
-
+const ended = (p: any) => ['ended', 'failed', 'cancelled'].includes(p.state);
+const duration = (n: number) =>
+  n < 60 ? `${n}s` : n < 3600 ? `${Math.round(n / 60)} min` : `${+(n / 3600).toFixed(1)} hr`;
+const date = (n: any) => (n ? new Date(n).toLocaleString() : 'Awaiting confirmation');
+const Field = ({ label, children }: { label: string; children: ReactNode }) => (
+  <label className="pp-field">
+    <span>{label}</span>
+    {children}
+  </label>
+);
+const Metric = ({ label, value }: { label: string; value: any }) => (
+  <div className="pp-metric">
+    <small>{label}</small>
+    <strong>{value}</strong>
+  </div>
+);
+function download(name: string, content: string) {
+  const u = URL.createObjectURL(new Blob([content], { type: 'application/json' }));
+  const a = document.createElement('a');
+  a.href = u;
+  a.download = name;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(u), 1000);
+}
 export default function PlacementsPage() {
   const { user } = useAppSelector(s => s.auth);
+  const location = useLocation(),
+    navigate = useNavigate();
+  const [params] = useSearchParams();
   const [data, setData] = useState<any>(),
     [error, setError] = useState(''),
-    [busy, setBusy] = useState(false),
-    [code, setCode] = useState('');
-  const [title, setTitle] = useState('Static placement test'),
-    [asset, setAsset] = useState('blue'),
-    [duration, setDuration] = useState(3600);
-  const [reward, setReward] = useState(100),
-    [budget, setBudget] = useState(200),
-    [capacity, setCapacity] = useState(2);
-  const [selected, setSelected] = useState(''),
-    [destination, setDestination] = useState(''),
+    [notice, setNotice] = useState(''),
+    [busy, setBusy] = useState(false);
+  const [query, setQuery] = useState(''),
+    [category, setCategory] = useState('All'),
+    [sort, setSort] = useState('new'),
+    [saved, setSaved] = useState(false),
+    [filter, setFilter] = useState('all');
+  const [destination, setDestination] = useState(''),
     [consent, setConsent] = useState(false),
-    [receipt, setReceipt] = useState<any>();
-  const campaignCommand = useMemo(
-    () => crypto.randomUUID(),
-    [title, asset, duration, reward, budget, capacity]
-  );
-  const joinCommand = useMemo(() => crypto.randomUUID(), [selected, destination]);
+    [code, setCode] = useState(''),
+    [receipt, setReceipt] = useState<any>(),
+    [stop, setStop] = useState<any>();
+  const [review, setReview] = useState(false),
+    [form, setForm] = useState({
+      title: '',
+      brand: '',
+      description: '',
+      category: 'Community',
+      assetKey: 'green',
+      durationSeconds: 3600,
+      reward: 100,
+      budget: 1000,
+      capacity: 10,
+    });
+  const clock = useRef({ server: Date.now(), mono: performance.now() });
+  const [now, setNow] = useState(Date.now());
+  const selected = params.get('campaign') || '';
+  const campaignKey = useMemo(() => crypto.randomUUID(), [form]);
+  const joinKey = useMemo(() => crypto.randomUUID(), [selected, destination]);
   async function load() {
     try {
       const r = await api.get('/placements');
       setData(r.data);
+      clock.current = { server: r.data.serverNow || Date.now(), mono: performance.now() };
     } catch (e: any) {
-      setError(e.response?.data?.message || 'Could not load placements');
+      setError(e.response?.data?.message || 'Could not load your workspace.');
     }
   }
   useEffect(() => {
     if (!user) return;
     void load();
-    const t = setInterval(load, 2000);
+    const t = setInterval(load, 3000);
     return () => clearInterval(t);
   }, [user?.id]);
+  useEffect(() => {
+    const t = setInterval(
+      () => setNow(clock.current.server + performance.now() - clock.current.mono),
+      500
+    );
+    return () => clearInterval(t);
+  }, []);
+  useEffect(() => {
+    setConsent(false);
+    setNotice('');
+    setError('');
+  }, [location.pathname, selected]);
   async function action(fn: () => Promise<any>) {
     setBusy(true);
     setError('');
@@ -64,341 +102,820 @@ export default function PlacementsPage() {
       setBusy(false);
     }
   }
-  const campaign = data?.campaigns?.find((c: any) => c.id === selected);
+  const source = (c: any) =>
+    c?.png_base64
+      ? `data:image/png;base64,${c.png_base64}`
+      : `${data?.origin}/profilepays/${c?.terms?.assetKey || c?.asset_key}.png`;
+  const change = (key: string, value: any) => {
+    setReview(false);
+    setForm(f => ({ ...f, [key]: value }));
+  };
+  async function upload(file?: File) {
+    if (!file) return;
+    await action(async () => {
+      if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type) || file.size > 5000000)
+        throw Error('Choose a PNG, JPEG or WebP smaller than 5 MB.');
+      const image = await createImageBitmap(file);
+      try {
+        if (image.width > 12000 || image.height > 12000)
+          throw Error('Image dimensions are too large.');
+        const canvas = document.createElement('canvas');
+        canvas.width = canvas.height = 128;
+        const ctx = canvas.getContext('2d')!;
+        const size = Math.min(image.width, image.height);
+        ctx.drawImage(
+          image,
+          (image.width - size) / 2,
+          (image.height - size) / 2,
+          size,
+          size,
+          0,
+          0,
+          128,
+          128
+        );
+        const r = await api.post('/placements/creatives', {
+          name: file.name.slice(0, 80),
+          png: canvas.toDataURL('image/png').split(',')[1],
+        });
+        change('assetKey', r.data.asset_key);
+        setNotice('Creative saved. Check the square crop before publishing.');
+      } finally {
+        image.close();
+      }
+    });
+  }
+  const campaigns = data?.campaigns || [],
+    placements = data?.placements || [];
+  const active = placements.filter((p: any) => !ended(p));
+  const chosen = campaigns.find((c: any) => c.id === selected);
+  const available = (c: any) =>
+    c.status === 'active' &&
+    c.participants < c.terms.capacity &&
+    c.budget - c.reserved - c.spent >= c.terms.reward &&
+    (!c.terms.windowEnd || c.terms.windowEnd > now + c.terms.durationSeconds * 1000);
+  const offers = campaigns.filter(
+    (c: any) =>
+      c.sponsor_id !== user?.id &&
+      available(c) &&
+      !placements.some((p: any) => p.campaign_id === c.id && p.user_id === user?.id)
+  );
+  const filtered = offers
+    .filter(
+      (c: any) =>
+        (category === 'All' || c.terms.category === category) &&
+        (!saved || data.favorites.includes(c.id)) &&
+        `${c.terms.title} ${c.terms.brand || ''} ${c.terms.description || ''}`
+          .toLowerCase()
+          .includes(query.toLowerCase())
+    )
+    .sort((a: any, b: any) =>
+      sort === 'reward'
+        ? b.terms.reward - a.terms.reward
+        : sort === 'duration'
+          ? a.terms.durationSeconds - b.terms.durationSeconds
+          : 0
+    );
+  const own = campaigns.filter((c: any) => c.sponsor_id === user?.id);
+  const preview =
+    form.assetKey === 'blue' || form.assetKey === 'green'
+      ? { terms: form }
+      : data?.creatives.find((c: any) => c.asset_key === form.assetKey);
+  const balance = <span data-testid="test-balance">{data?.balance}</span>;
   if (!user)
     return (
-      <Stack spacing={3}>
-        <Typography variant="h3" fontWeight={800}>
-          Your profile. Your choice.
-        </Typography>
-        <Typography>
-          Try a timed sponsored image on AIHangout, follow the placement checks, and see your normal
-          profile return.
-        </Typography>
-        <Alert severity="info">
-          ProfilePays pilot — test credits only. No deposits, withdrawals, or cash value.
-        </Alert>
-        <Stack direction="row" spacing={2}>
-          <Button variant="contained" component={RouterLink} to="/login">
-            Sign in
-          </Button>
-          <Button component={RouterLink} to="/register">
-            Create a test account
-          </Button>
-        </Stack>
-      </Stack>
+      <>
+        <section className="pp-hero">
+          <div>
+            <p className="pp-eyebrow">A LITTLE SPACE. A CLEAR AGREEMENT.</p>
+            <h1>
+              Your profile.
+              <br />
+              On your terms.
+            </h1>
+            <p>
+              Choose a brand image, give it a little time, and earn test credits when your placement
+              is verified. Your normal profile returns at the end.
+            </p>
+            <div className="pp-actions">
+              <Link className="pp-button" to="/register">
+                Find your first offer ↗
+              </Link>
+              <Link to="/register?type=advertiser">I'm an advertiser →</Link>
+            </div>
+            <small>Starting with static images on AIHangout.</small>
+          </div>
+          <div className="pp-poster">
+            <span>PROFILEPAYS / THE ORIGINAL IDEA, REBUILT</span>
+            <strong>
+              YOUR
+              <br />
+              TIME HAS
+              <br />
+              <em>VALUE.</em>
+            </strong>
+            <span>OPT IN. HOST. RESTORE.</span>
+          </div>
+        </section>
+        <div className="pp-steps">
+          {['01 / Choose an offer', '02 / Preview and approve', '03 / Verify, restore, earn'].map(
+            s => (
+              <article key={s}>
+                <h3>{s}</h3>
+                <p>A defined duration, clear terms and a receipt you can inspect.</p>
+              </article>
+            )
+          )}
+        </div>
+      </>
     );
+  if (!data)
+    return (
+      <section className="pp-panel">
+        <h1>Your workspace</h1>
+        <p>{error || 'Loading your campaigns and placements…'}</p>
+        {error && <button onClick={load}>Try again</button>}
+      </section>
+    );
+  const path =
+    location.pathname === '/'
+      ? user.userType === 'advertiser'
+        ? '/advertisers'
+        : '/marketplace'
+      : location.pathname;
   return (
-    <Stack spacing={3} sx={{ maxWidth: 1000, mx: 'auto' }}>
-      <Box>
-        <Typography variant="overline" color="success.main">
-          PROFILEPAYS / STATIC PILOT
-        </Typography>
-        <Typography variant="h3" fontWeight={800}>
-          A placement with a clear ending.
-        </Typography>
-        <Typography color="text.secondary">
-          Choose a campaign, approve the temporary image, and keep your normal profile.
-        </Typography>
-      </Box>
-      <Alert severity="info">
-        Test credits have no cash value. Balance:{' '}
-        <strong data-testid="test-balance">{data?.balance || 0}</strong>. Enrollment alone earns
-        nothing.
-      </Alert>
+    <>
       {error && (
-        <Alert severity="error" role="alert">
+        <div role="alert" className="pp-alert">
           {error}
-        </Alert>
+        </div>
       )}
-      {['advertiser', 'admin'].includes(user.userType) && (
-        <Card>
-          <CardContent>
-            <Stack spacing={2}>
-              <Typography variant="h5">Create a test campaign</Typography>
-              <TextField
-                label="Campaign title"
-                value={title}
-                onChange={e => setTitle(e.target.value)}
-              />
-              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-                <TextField
-                  select
-                  label="Approved image"
-                  value={asset}
-                  onChange={e => setAsset(e.target.value)}
-                  sx={{ minWidth: 180 }}
+      {notice && (
+        <div role="status" className="pp-notice">
+          {notice}
+        </div>
+      )}
+      {path === '/marketplace' && (
+        <>
+          <section className="pp-discover">
+            <div>
+              <p className="pp-eyebrow">THE MARKETPLACE</p>
+              <h1>
+                Make room for
+                <br />
+                something you like.
+              </h1>
+              <p>
+                A small change to your profile. A clear beginning and end.
+                <br />
+                Choose an offer that feels right for you.
+              </p>
+              <span className="pp-tag">AIHANGOUT · STATIC PLACEMENTS</span>
+            </div>
+            <div className="pp-mini-poster">
+              <span>
+                YOUR PROFILE IS
+                <br />
+                YOURS TO CHOOSE.
+              </span>
+              <strong>
+                pp<span>↗</span>
+              </strong>
+              <small>Always opt-in. Always temporary.</small>
+            </div>
+          </section>
+          {active.length > 0 && (
+            <Link className="pp-active-banner" to="/placements">
+              {active.length} placement{active.length === 1 ? '' : 's'} in progress — see
+              verification & remaining time →
+            </Link>
+          )}
+          <div className="pp-section-heading">
+            <div>
+              <p className="pp-eyebrow">FIND YOUR FIT</p>
+              <h2>
+                Available offers <small>({filtered.length})</small>
+              </h2>
+            </div>
+            <span>{balance} test credits earned</span>
+          </div>
+          <div className="pp-filters">
+            <input
+              aria-label="Search offers"
+              placeholder="Search brands or offers…"
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+            />
+            <select
+              aria-label="Category"
+              value={category}
+              onChange={e => setCategory(e.target.value)}
+            >
+              {['All', 'Community', 'Courses', 'Events', 'Launches'].map(c => (
+                <option key={c}>{c}</option>
+              ))}
+            </select>
+            <select aria-label="Sort offers" value={sort} onChange={e => setSort(e.target.value)}>
+              <option value="new">Newest first</option>
+              <option value="reward">Highest reward</option>
+              <option value="duration">Shortest duration</option>
+            </select>
+            <button aria-pressed={saved} onClick={() => setSaved(!saved)}>
+              {saved ? '★ Saved offers' : '☆ Saved offers'}
+            </button>
+          </div>
+          <div className="pp-grid">
+            {filtered.map((c: any) => (
+              <article className="pp-offer" key={c.id}>
+                <div className="pp-offer-art">
+                  <img src={source(c)} alt={c.terms.title} />
+                  <span className="pp-tag">{c.terms.category || 'Community'}</span>
+                  <button
+                    className="pp-save"
+                    aria-label={`Save ${c.terms.title}`}
+                    aria-pressed={data.favorites.includes(c.id)}
+                    disabled={busy}
+                    onClick={() =>
+                      action(() =>
+                        api.post(`/placements/campaigns/${c.id}/favorite`, {
+                          saved: !data.favorites.includes(c.id),
+                        })
+                      )
+                    }
+                  >
+                    {data.favorites.includes(c.id) ? '★' : '☆'}
+                  </button>
+                </div>
+                <div className="pp-offer-body">
+                  <p className="pp-eyebrow">{c.terms.brand || 'TEST SPONSOR'}</p>
+                  <h3>{c.terms.title}</h3>
+                  <p>{c.terms.description || 'A temporary profile placement on AIHangout.'}</p>
+                  <div className="pp-offer-terms">
+                    <strong>
+                      {c.terms.reward}
+                      <small>test credits</small>
+                    </strong>
+                    <strong>
+                      {duration(c.terms.durationSeconds)}
+                      <small>on your profile</small>
+                    </strong>
+                  </div>
+                  <Link className="pp-button pp-outline" to={`/confirmation?campaign=${c.id}`}>
+                    Preview offer <span>↗</span>
+                  </Link>
+                </div>
+              </article>
+            ))}
+          </div>
+          {!filtered.length && (
+            <div className="pp-empty">
+              <h3>No matching offers right now.</h3>
+              <p>Try another filter, or return when an advertiser publishes a new campaign.</p>
+            </div>
+          )}
+        </>
+      )}
+      {path === '/connections' && (
+        <>
+          <p className="pp-eyebrow">YOUR DESTINATIONS</p>
+          <h1>Connect with control.</h1>
+          <div className="pp-columns">
+            <section className="pp-panel">
+              <h2>AIHangout</h2>
+              <p>
+                In{' '}
+                <a href={`${data.origin}/settings`} target="_blank" rel="noreferrer">
+                  AIHangout settings ↗
+                </a>
+                , create a private connection code and paste it here. You can revoke the connection
+                there at any time.
+              </p>
+              <Field label="AIHangout connection code">
+                <input
+                  type="password"
+                  autoComplete="off"
+                  value={code}
+                  onChange={e => setCode(e.target.value)}
+                />
+              </Field>
+              <button
+                className="pp-button"
+                disabled={busy || !code}
+                onClick={() =>
+                  action(async () => {
+                    await api.post('/placements/destinations', { code });
+                    setCode('');
+                    setNotice('Your profile is connected.');
+                  })
+                }
+              >
+                Connect profile
+              </button>
+            </section>
+            <section className="pp-panel">
+              <h2>Connected profiles</h2>
+              {data.destinations.length ? (
+                data.destinations.map((d: any) => (
+                  <div className="pp-row" key={d.id}>
+                    <strong>@{d.username}</strong>
+                    <a
+                      href={`${data.origin}/profile/${encodeURIComponent(d.username)}`}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      View profile ↗
+                    </a>
+                  </div>
+                ))
+              ) : (
+                <p>No profiles connected yet.</p>
+              )}
+              <p className="pp-muted">
+                Linking a profile does not start an advertisement. You approve each placement
+                separately.
+              </p>
+            </section>
+          </div>
+        </>
+      )}
+      {path === '/confirmation' &&
+        (!chosen ? (
+          <div className="pp-empty">
+            <h1>Offer not found</h1>
+            <Link to="/marketplace">Return to marketplace</Link>
+          </div>
+        ) : (
+          <>
+            <Link to="/marketplace">← Back to offers</Link>
+            <p className="pp-eyebrow">PREVIEW BEFORE YOU COMMIT</p>
+            <h1>A little time. Your choice.</h1>
+            <div className="pp-columns">
+              <section className="pp-profile-preview">
+                <span className="pp-tag">PROFILE PREVIEW</span>
+                <img src={source(chosen)} alt="Approved sponsored test image" />
+                <span className="pp-tag">Ad · test</span>
+                <h2>
+                  {data.destinations.find((d: any) => d.id === destination)?.username ||
+                    'Your AIHangout profile'}
+                </h2>
+                <p>
+                  Your name stays yours. This image appears on your profile and earlier posts for
+                  the agreed time.
+                </p>
+                <div className="pp-row">
+                  <img
+                    className="pp-small-avatar"
+                    src={source(chosen)}
+                    alt="Earlier post preview"
+                  />
+                  <div>
+                    <strong>Your earlier post</strong>
+                    <p>Same post. Temporary sponsored image.</p>
+                  </div>
+                </div>
+              </section>
+              <section className="pp-panel">
+                <p className="pp-eyebrow">{chosen.terms.brand || 'TEST SPONSOR'}</p>
+                <h2>{chosen.terms.title}</h2>
+                <p>{chosen.terms.description}</p>
+                <div className="pp-metrics">
+                  <Metric label="Test credits" value={chosen.terms.reward} />
+                  <Metric label="Duration" value={duration(chosen.terms.durationSeconds)} />
+                </div>
+                <Field label="Destination profile">
+                  <select
+                    value={destination}
+                    onChange={e => {
+                      setDestination(e.target.value);
+                      setConsent(false);
+                    }}
+                  >
+                    <option value="">Choose your profile</option>
+                    {data.destinations.map((d: any) => (
+                      <option value={d.id} key={d.id}>
+                        {d.username}
+                      </option>
+                    ))}
+                  </select>
+                </Field>
+                {!data.destinations.length && (
+                  <Link to="/connections">Connect an AIHangout profile first →</Link>
+                )}
+                <div className="pp-terms">
+                  <p>
+                    The clock starts after placement is confirmed. Checks run every{' '}
+                    {chosen.terms.sampleMs / 1000} seconds; at least 98% sampled coverage is
+                    required. Checks measure placement availability, not audience views.
+                  </p>
+                  <p>
+                    Stopping early earns zero. Sponsor cancellation is prorated. Evidence gaps go to
+                    review. Your normal profile setting is preserved and restored at the end.
+                  </p>
+                </div>
+                <label className="pp-consent">
+                  <input
+                    type="checkbox"
+                    checked={consent}
+                    onChange={e => setConsent(e.target.checked)}
+                  />
+                  <span>I approve this temporary image and accept the test-credit terms.</span>
+                </label>
+                <button
+                  className="pp-button"
+                  disabled={busy || !consent || !destination || !available(chosen)}
+                  onClick={() =>
+                    action(async () => {
+                      await api.post(`/placements/campaigns/${selected}/join`, {
+                        commandKey: joinKey,
+                        destinationId: destination,
+                        termsVersion: 1,
+                        consent: 'static-test-v1',
+                      });
+                      navigate('/placements');
+                    })
+                  }
                 >
-                  <MenuItem value="blue">Blue test image</MenuItem>
-                  <MenuItem value="green">Green test image</MenuItem>
-                </TextField>
-                <TextField
-                  label="Duration in seconds"
-                  type="number"
-                  value={duration}
-                  onChange={e => setDuration(Number(e.target.value))}
-                  helperText={`Minimum ${data?.minDurationSeconds || 3600}; maximum 86400`}
+                  Reserve placement ↗
+                </button>
+                {!available(chosen) && <p role="status">This offer is no longer available.</p>}
+              </section>
+            </div>
+          </>
+        ))}
+      {path === '/advertisers' && (
+        <>
+          <p className="pp-eyebrow">ADVERTISER WORKSPACE</p>
+          <h1>
+            Your next campaign
+            <br />
+            starts with a picture.
+          </h1>
+          <div className="pp-metrics">
+            <Metric label="Campaigns" value={own.length} />
+            <Metric
+              label="Credits reserved"
+              value={own.reduce((n: number, c: any) => n + Number(c.reserved), 0)}
+            />
+            <Metric
+              label="Credits settled"
+              value={own.reduce((n: number, c: any) => n + Number(c.spent), 0)}
+            />
+          </div>
+          <div className="pp-columns">
+            <section className="pp-panel">
+              <h2>01 / Creative library</h2>
+              <p>
+                Upload an image to make it yours. We create a square 128 × 128 crop; check how it
+                looks before publishing.
+              </p>
+              <Field label="Upload creative">
+                <input
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp"
+                  disabled={busy}
+                  onChange={e => void upload(e.target.files?.[0])}
                 />
-              </Stack>
-              <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-                <TextField
-                  label="Reward in test credits"
-                  type="number"
-                  value={reward}
-                  onChange={e => setReward(Number(e.target.value))}
-                />
-                <TextField
-                  label="Test budget"
-                  type="number"
-                  value={budget}
-                  onChange={e => setBudget(Number(e.target.value))}
-                />
-                <TextField
-                  label="Participant limit"
-                  type="number"
-                  value={capacity}
-                  onChange={e => setCapacity(Number(e.target.value))}
-                />
-              </Stack>
-              <Button
-                variant="contained"
+              </Field>
+              <div className="pp-library">
+                {[
+                  { asset_key: 'blue', name: 'Blue test image' },
+                  { asset_key: 'green', name: 'Green test image' },
+                  ...data.creatives,
+                ].map((c: any) => (
+                  <button
+                    key={c.asset_key}
+                    aria-label={`Use ${c.name}`}
+                    aria-pressed={form.assetKey === c.asset_key}
+                    onClick={() => change('assetKey', c.asset_key)}
+                  >
+                    <img src={source(c)} alt={c.name} />
+                    <small>{c.name}</small>
+                  </button>
+                ))}
+              </div>
+            </section>
+            <section className="pp-panel">
+              <h2>{review ? '03 / Review your offer' : '02 / Build your offer'}</h2>
+              {review ? (
+                <>
+                  <img
+                    className="pp-review-image"
+                    src={source(preview)}
+                    alt="Campaign image preview"
+                  />
+                  <h3>{form.title}</h3>
+                  <p>
+                    {form.brand} · {form.category}
+                  </p>
+                  <p>{form.description}</p>
+                  <div className="pp-metrics">
+                    <Metric label="Per participant" value={`${form.reward} credits`} />
+                    <Metric label="Duration" value={duration(form.durationSeconds)} />
+                    <Metric label="Maximum participants" value={form.capacity} />
+                  </div>
+                  <p>
+                    Total test budget: {form.budget}. Participants must explicitly approve the
+                    image. Published terms cannot be edited.
+                  </p>
+                  <div className="pp-actions">
+                    <button onClick={() => setReview(false)}>Back to edit</button>
+                    <button
+                      className="pp-button"
+                      disabled={busy}
+                      onClick={() =>
+                        action(async () => {
+                          await api.post('/placements/campaigns', {
+                            ...form,
+                            commandKey: campaignKey,
+                          });
+                          setReview(false);
+                          change('title', '');
+                          setNotice('Your campaign is published in the marketplace.');
+                        })
+                      }
+                    >
+                      Publish test campaign
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <form
+                  onSubmit={e => {
+                    e.preventDefault();
+                    setReview(true);
+                  }}
+                >
+                  {(['title', 'brand', 'description'] as const).map(k => (
+                    <Field
+                      label={
+                        k === 'title'
+                          ? 'Campaign title'
+                          : k === 'brand'
+                            ? 'Brand name'
+                            : 'Offer description'
+                      }
+                      key={k}
+                    >
+                      <input
+                        required
+                        maxLength={k === 'description' ? 300 : k === 'brand' ? 60 : 80}
+                        value={form[k]}
+                        onChange={e => change(k, e.target.value)}
+                      />
+                    </Field>
+                  ))}
+                  <Field label="Campaign category">
+                    <select
+                      value={form.category}
+                      onChange={e => change('category', e.target.value)}
+                    >
+                      {['Community', 'Courses', 'Events', 'Launches'].map(c => (
+                        <option key={c}>{c}</option>
+                      ))}
+                    </select>
+                  </Field>
+                  <div className="pp-form-grid">
+                    {(
+                      [
+                        ['durationSeconds', 'Duration in seconds'],
+                        ['reward', 'Reward in test credits'],
+                        ['budget', 'Test budget'],
+                        ['capacity', 'Participant limit'],
+                      ] as const
+                    ).map(([k, label]) => (
+                      <Field label={label} key={k}>
+                        <input
+                          required
+                          type="number"
+                          min={k === 'durationSeconds' ? data.minDurationSeconds : 1}
+                          max={k === 'durationSeconds' ? 86400 : undefined}
+                          step="1"
+                          value={form[k]}
+                          onChange={e => change(k, Number(e.target.value))}
+                        />
+                      </Field>
+                    ))}
+                  </div>
+                  <button className="pp-button" disabled={busy}>
+                    Review campaign →
+                  </button>
+                </form>
+              )}
+            </section>
+          </div>
+          <h2>Your campaigns</h2>
+          {own.map((c: any) => (
+            <article className="pp-row pp-panel" key={c.id}>
+              <div>
+                <strong>{c.terms.title}</strong>
+                <p>
+                  {c.status} · {c.participants}/{c.terms.capacity} participants · {c.spent} test
+                  credits settled
+                </p>
+              </div>
+              <button
                 disabled={busy}
                 onClick={() =>
                   action(() =>
-                    api.post('/placements/campaigns', {
-                      commandKey: campaignCommand,
-                      title,
-                      assetKey: asset,
-                      durationSeconds: duration,
-                      reward,
-                      budget,
-                      capacity,
+                    api.post(`/placements/campaigns/${c.id}/status`, {
+                      status: c.status === 'active' ? 'paused' : 'active',
                     })
                   )
                 }
               >
-                Publish test campaign
-              </Button>
-            </Stack>
-          </CardContent>
-        </Card>
+                {c.status === 'active' ? 'Pause enrollment' : 'Resume enrollment'}
+              </button>
+            </article>
+          ))}
+          <p className="pp-muted">
+            Pausing enrollment leaves existing placements running under their approved terms.
+          </p>
+        </>
       )}
-      <Card>
-        <CardContent>
-          <Stack spacing={2}>
-            <Typography variant="h5">Connect your AIHangout profile</Typography>
-            <Typography>
-              In{' '}
-              <a
-                href={`${data?.origin || 'https://aihangout.ai'}/settings`}
-                target="_blank"
-                rel="noreferrer"
+      {(path === '/placements' || path === '/earnings') && (
+        <>
+          <p className="pp-eyebrow">YOUR PLACEMENT RECORD</p>
+          <h1>{path === '/earnings' ? 'Every credit has a story.' : 'Know where things stand.'}</h1>
+          {path === '/earnings' && (
+            <div className="pp-metrics">
+              <Metric label="Test-credit balance" value={balance} />
+              <Metric label="Placements in progress" value={active.length} />
+              <Metric
+                label="Completed placements"
+                value={placements.filter((p: any) => p.state === 'ended').length}
+              />
+            </div>
+          )}
+          <div className="pp-section-heading">
+            <p>Test credits have no cash value. Joining alone earns nothing.</p>
+            <select
+              aria-label="Filter placement history"
+              value={filter}
+              onChange={e => setFilter(e.target.value)}
+            >
+              <option value="all">All placements</option>
+              <option value="active">In progress</option>
+              <option value="ended">Finished</option>
+              <option value="review">Needs review</option>
+            </select>
+          </div>
+          {placements
+            .filter(
+              (p: any) =>
+                filter === 'all' ||
+                (filter === 'active'
+                  ? !ended(p)
+                  : filter === 'ended'
+                    ? ended(p)
+                    : p.record.assessment === 'needs_review')
+            )
+            .map((p: any) => (
+              <article
+                className="pp-panel pp-placement"
+                key={p.id}
+                data-testid={`placement-${p.id}`}
               >
-                AIHangout settings
-              </a>
-              , select “Create connection code.” Paste the private code here. You can revoke it
-              there at any time.
-            </Typography>
-            <TextField
-              label="AIHangout connection code"
-              type="password"
-              value={code}
-              onChange={e => setCode(e.target.value)}
-              autoComplete="off"
-            />
-            <Button
-              variant="outlined"
-              disabled={busy || !code}
-              onClick={() =>
-                action(async () => {
-                  await api.post('/placements/destinations', { code });
-                  setCode('');
-                })
-              }
-            >
-              Connect profile
-            </Button>
-            {data?.destinations?.map((d: any) => (
-              <Chip key={d.id} label={`Connected: ${d.username}`} sx={{ alignSelf: 'start' }} />
-            ))}
-          </Stack>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardContent>
-          <Stack spacing={2}>
-            <Typography variant="h5">Choose and review</Typography>
-            <TextField
-              select
-              label="Campaign"
-              value={selected}
-              onChange={e => {
-                setSelected(e.target.value);
-                setConsent(false);
-              }}
-            >
-              <MenuItem value="">Choose a campaign</MenuItem>
-              {data?.campaigns
-                ?.filter((c: any) => c.sponsor_id !== user.id)
-                .map((c: any) => (
-                  <MenuItem key={c.id} value={c.id}>
-                    {c.terms.title} — {c.terms.reward} test credits
-                  </MenuItem>
-                ))}
-            </TextField>
-            <TextField
-              select
-              label="Destination profile"
-              value={destination}
-              onChange={e => {
-                setDestination(e.target.value);
-                setConsent(false);
-              }}
-            >
-              <MenuItem value="">Choose your profile</MenuItem>
-              {data?.destinations?.map((d: any) => (
-                <MenuItem key={d.id} value={d.id}>
-                  {d.username}
-                </MenuItem>
-              ))}
-            </TextField>
-            {campaign && (
-              <>
-                <Stack direction="row" spacing={2} alignItems="center">
-                  <img
-                    src={`${data.origin}/profilepays/${campaign.terms.assetKey}.png`}
-                    alt="Approved sponsored test image"
-                    width="96"
-                    height="96"
-                    style={{ borderRadius: '50%' }}
-                  />
-                  <Typography>
-                    {campaign.terms.durationSeconds} seconds after confirmed placement. Reward:{' '}
-                    {campaign.terms.reward} test credits. Available budget:{' '}
-                    {campaign.budget - campaign.reserved - campaign.spent}.
-                  </Typography>
-                </Stack>
-                <Typography variant="body2">
-                  Your selected profile and earlier posts show this image with an Ad · test label.
-                  Your normal setting is preserved. Checks run every{' '}
-                  {campaign.terms.sampleMs / 1000} seconds; at least 98% sampled coverage is
-                  required. This measures placement availability, not views. Stopping early earns
-                  zero; sponsor cancellation is prorated. Evidence gaps go to review.
-                </Typography>
-                <FormControlLabel
-                  control={
-                    <Checkbox checked={consent} onChange={e => setConsent(e.target.checked)} />
-                  }
-                  label="I approve this temporary image and accept the test-credit terms."
-                />
-              </>
-            )}
-            <Button
-              variant="contained"
-              disabled={busy || !consent || !selected || !destination}
-              onClick={() =>
-                action(async () => {
-                  await api.post(`/placements/campaigns/${selected}/join`, {
-                    commandKey: joinCommand,
-                    destinationId: destination,
-                    termsVersion: 1,
-                    consent: 'static-test-v1',
-                  });
-                  setConsent(false);
-                })
-              }
-            >
-              Reserve placement
-            </Button>
-          </Stack>
-        </CardContent>
-      </Card>
-      <Typography variant="h5">Placement history</Typography>
-      {data?.placements?.length === 0 && (
-        <Typography color="text.secondary">
-          Your placements and receipts will appear here.
-        </Typography>
-      )}
-      {data?.placements?.map((p: any) => (
-        <Card key={p.id} data-testid={`placement-${p.id}`}>
-          <CardContent>
-            <Stack spacing={1}>
-              <Stack direction="row" justifyContent="space-between">
-                <Typography fontWeight={700}>
-                  {p.record.terms.title} · {p.username}
-                </Typography>
-                <Chip label={p.state} />
-              </Stack>
-              <Typography>
-                Start:{' '}
-                {p.record.startsAt
-                  ? new Date(p.record.startsAt).toLocaleString()
-                  : 'Awaiting destination confirmation'}{' '}
-                · End:{' '}
-                {p.record.endsAt ? new Date(p.record.endsAt).toLocaleString() : 'Not started'}
-              </Typography>
-              <Typography>
-                Verification: {p.record.assessment} · Restoration: {p.record.restoration} · Test
-                award: {p.record.award} · {p.record.settlement || 'Reserved, not earned'}
-              </Typography>
-              {p.record.lastError && (
-                <Alert severity="warning">{p.record.lastError}. Reconciliation will retry.</Alert>
-              )}
-              <Stack direction="row" spacing={2}>
-                <Button
-                  href={`${data.origin}/profile/${encodeURIComponent(p.username)}`}
-                  target="_blank"
-                >
-                  View profile
-                </Button>
-                <Button
-                  onClick={() =>
-                    action(async () =>
-                      setReceipt((await api.get(`/placements/${p.id}/receipt`)).data)
-                    )
-                  }
-                >
-                  View receipt
-                </Button>
-                {!['ended', 'failed', 'cancelled'].includes(p.state) && (
-                  <Button
-                    color="error"
-                    onClick={() => action(() => api.post(`/placements/${p.id}/stop`))}
-                  >
-                    Stop and restore
-                  </Button>
+                <div className="pp-section-heading">
+                  <div>
+                    <p className="pp-eyebrow">@{p.username}</p>
+                    <h3>{p.record.terms.title}</h3>
+                  </div>
+                  <span className="pp-tag">{p.state}</span>
+                </div>
+                {!ended(p) && p.record.endsAt && (
+                  <div className="pp-countdown">
+                    <strong>
+                      {duration(Math.max(0, Math.ceil((p.record.endsAt - now) / 1000)))}
+                    </strong>
+                    <span> remaining · time zone changes do not change the duration</span>
+                    <progress
+                      max={p.record.terms.durationSeconds * 1000}
+                      value={Math.max(0, now - p.record.startsAt)}
+                    />
+                  </div>
                 )}
-              </Stack>
-            </Stack>
-          </CardContent>
-        </Card>
-      ))}
-      {receipt && (
-        <Card>
-          <CardContent>
-            <Stack spacing={2}>
-              <Typography variant="h5">Placement receipt</Typography>
-              <Typography>
+                <p>
+                  Start: {date(p.record.startsAt)} · End: {date(p.record.endsAt)}
+                </p>
+                <div className="pp-metrics">
+                  <Metric label="Verification" value={p.record.assessment} />
+                  <Metric
+                    label="Verified time"
+                    value={duration(Math.floor((p.record.coveredMs || 0) / 1000))}
+                  />
+                  <Metric label="Restoration" value={p.record.restoration} />
+                  <Metric label="Test award" value={p.record.award} />
+                </div>
+                <p>{p.record.settlement || 'Reserved, not earned'}</p>
+                {p.record.lastError && (
+                  <p role="alert">{p.record.lastError}. Reconciliation will retry.</p>
+                )}
+                <div className="pp-actions">
+                  <a
+                    href={`${data.origin}/profile/${encodeURIComponent(p.username)}`}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    View profile ↗
+                  </a>
+                  <button
+                    onClick={() =>
+                      action(async () =>
+                        setReceipt((await api.get(`/placements/${p.id}/receipt`)).data)
+                      )
+                    }
+                  >
+                    View receipt
+                  </button>
+                  {!ended(p) && (
+                    <button disabled={busy} onClick={() => setStop(p)}>
+                      Stop and restore
+                    </button>
+                  )}
+                </div>
+              </article>
+            ))}
+          {!placements.length && (
+            <div className="pp-empty">
+              <h2>Your first placement starts here.</h2>
+              <Link className="pp-button" to="/marketplace">
+                Explore offers ↗
+              </Link>
+            </div>
+          )}
+        </>
+      )}
+      <Dialog open={!!stop} onClose={() => !busy && setStop(null)}>
+        <DialogTitle>Stop this placement?</DialogTitle>
+        <DialogContent>
+          <p>
+            Your normal profile will be restored.{' '}
+            {stop?.user_id === user.id
+              ? 'Stopping early earns zero test credits.'
+              : 'Sponsor cancellation uses prorated test credits under the campaign terms.'}
+          </p>
+        </DialogContent>
+        <DialogActions>
+          <Button disabled={busy} onClick={() => setStop(null)}>
+            Keep running
+          </Button>
+          <Button
+            disabled={busy}
+            onClick={() =>
+              action(async () => {
+                await api.post(`/placements/${stop.id}/stop`);
+                setStop(null);
+              })
+            }
+          >
+            Confirm stop and restore
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog open={!!receipt} onClose={() => setReceipt(null)} fullWidth maxWidth="sm">
+        <DialogTitle>Placement receipt</DialogTitle>
+        <DialogContent>
+          {receipt && (
+            <>
+              <p>
                 {receipt.observations.length} observations · {receipt.events.length} lifecycle
                 events · {receipt.ledger.length} test ledger entries
-              </Typography>
-              <Box
-                component="pre"
-                sx={{
-                  whiteSpace: 'pre-wrap',
-                  overflowWrap: 'anywhere',
-                  fontSize: 12,
-                  maxHeight: 450,
-                  overflow: 'auto',
-                }}
+              </p>
+              <p>
+                Observations check the assigned image and placement. They are not audience
+                impressions.
+              </p>
+              <ol className="pp-timeline">
+                {receipt.events.map((e: any, i: number) => (
+                  <li key={i}>
+                    <strong>
+                      {String(e.kind || e.type || e.event_type || 'Recorded event').replace(
+                        /_/g,
+                        ' '
+                      )}
+                    </strong>
+                    <small>{date(Number(e.at_ms) || e.at || e.created_at)}</small>
+                  </li>
+                ))}
+              </ol>
+              <details>
+                <summary>Technical evidence</summary>
+                <pre className="pp-json">{JSON.stringify(receipt, null, 2)}</pre>
+              </details>
+              <button
+                onClick={() =>
+                  download('profilepays-receipt.json', JSON.stringify(receipt, null, 2))
+                }
               >
-                {JSON.stringify(receipt, null, 2)}
-              </Box>
-              <Button onClick={() => setReceipt(null)}>Close receipt</Button>
-            </Stack>
-          </CardContent>
-        </Card>
-      )}
-    </Stack>
+                Download receipt JSON
+              </button>
+            </>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setReceipt(null)}>Close receipt</Button>
+        </DialogActions>
+      </Dialog>
+    </>
   );
 }

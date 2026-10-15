@@ -13,6 +13,23 @@ class PlacementsController {
   @Post('campaigns') create(@CurrentUser() user: any, @Body() body: any) {
     return this.service.create(user, body);
   }
+  @Post('creatives') creative(@CurrentUser() user: any, @Body() body: any) {
+    return this.service.uploadCreative(user, body);
+  }
+  @Post('campaigns/:id/favorite') favorite(
+    @CurrentUser() user: any,
+    @Param('id') id: string,
+    @Body() body: any
+  ) {
+    return this.service.favorite(user, id, body);
+  }
+  @Post('campaigns/:id/status') status(
+    @CurrentUser() user: any,
+    @Param('id') id: string,
+    @Body() body: any
+  ) {
+    return this.service.campaignStatus(user, id, body);
+  }
   @Post('campaigns/:id/join') join(
     @CurrentUser() user: any,
     @Param('id') id: string,
