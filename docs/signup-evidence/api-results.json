@@ -1,0 +1,83 @@
+{
+  "at": "2026-10-15T23:44:12.916Z",
+  "origin": "https://profilepays.ultrarag.app",
+  "checks": [
+    {
+      "outcome": "Worked",
+      "scenario": "Invalid email names its field",
+      "measurement": {
+        "status": 400,
+        "field": "email",
+        "message": "Please provide a valid email address"
+      }
+    },
+    {
+      "outcome": "Worked",
+      "scenario": "Incomplete password names its requirements",
+      "measurement": {
+        "status": 400,
+        "field": "password",
+        "message": "Use 8–128 characters, including an uppercase letter (A–Z), a lowercase letter (a–z), a number and a symbol (for example !, # or -)."
+      }
+    },
+    {
+      "outcome": "Worked",
+      "scenario": "Blank name names its field",
+      "measurement": {
+        "status": 400,
+        "field": "firstName",
+        "message": "First name: Use letters, spaces, periods, hyphens or apostrophes. First name is required"
+      }
+    },
+    {
+      "outcome": "Worked",
+      "scenario": "Invalid name has a useful explanation",
+      "measurement": {
+        "status": 400,
+        "field": "lastName",
+        "message": "Last name: Use letters, spaces, periods, hyphens or apostrophes."
+      }
+    },
+    {
+      "outcome": "Worked",
+      "scenario": "Administrator signup remains forbidden",
+      "measurement": {
+        "status": 400,
+        "field": "userRole",
+        "message": "Invalid signup role"
+      }
+    },
+    {
+      "outcome": "Worked",
+      "scenario": "Unknown privileges remain forbidden",
+      "measurement": {
+        "status": 400,
+        "field": "isAdmin",
+        "message": "property isAdmin should not exist"
+      }
+    },
+    {
+      "outcome": "Worked",
+      "scenario": "Valid participant signup accepts email whitespace, Unicode names and a # symbol",
+      "measurement": {
+        "status": 201
+      }
+    },
+    {
+      "outcome": "Worked",
+      "scenario": "Duplicate email explains the conflict",
+      "measurement": {
+        "status": 409,
+        "message": "An account with this email already exists"
+      }
+    },
+    {
+      "outcome": "Worked",
+      "scenario": "New participant signs in and loads the real marketplace",
+      "measurement": {
+        "status": 200,
+        "balance": 0
+      }
+    }
+  ]
+}

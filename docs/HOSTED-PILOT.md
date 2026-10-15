@@ -6,9 +6,9 @@ Deployed 2026-10-15 on existing Spark-1 infrastructure. No new paid service was 
 
 ## Running release
 
-- App source: `4ac2a99`, built from a Git archive using `docker/Dockerfile.pilot`.
+- App source: `78950f9`, built from a Git archive using `docker/Dockerfile.pilot`. See [signup repair](SIGNUP-REPAIR.md) for the subsequent owner-reported signup correction.
 - Compose project: `profilepays-pilot`; app port `127.0.0.1:8941`; database has no host-published port.
-- Deployment root: `/home/rblake2320/profilepays-pilot`; release checkout: `releases/4ac2a99`.
+- Deployment root: `/home/rblake2320/profilepays-pilot`; release checkout: `releases/78950f9`.
 - Private `pilot.env` resides outside release directories, mode 0600. Never commit it or print resolved Compose configuration.
 - Dedicated Cloudflare Tunnel `profilepays-pilot`, with systemd unit `profilepays-tunnel.service`, enabled at boot. Existing tunnels were not modified.
 - Docker restart policies preserve service operation; persistent PostgreSQL volume preserves campaigns, accounts, placements and receipts.

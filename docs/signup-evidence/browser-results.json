@@ -1,0 +1,32 @@
+{
+  "at": "2026-10-15T23:43:01.778Z",
+  "origin": "https://profilepays.ultrarag.app",
+  "release": "e309e29",
+  "physicalIPhone": false,
+  "checks": [
+    {
+      "outcome": "Failed",
+      "scenario": "Before repair: José O’Neil with valid password receives generic Bad Request"
+    },
+    {
+      "outcome": "Worked",
+      "scenario": "Password requirements visible before first submission at 390px"
+    },
+    {
+      "outcome": "Worked",
+      "scenario": "Weak password focused and marked aria-invalid=true with requirements beside input"
+    },
+    {
+      "outcome": "Worked",
+      "scenario": "Duplicate email shows An account with this email already exists and retains entered values"
+    },
+    {
+      "outcome": "Worked",
+      "scenario": "Corrected form creates Unicode-name participant and navigates to marketplace"
+    }
+  ],
+  "layout": {
+    "documentWidth": 390,
+    "viewport": 390
+  }
+}
