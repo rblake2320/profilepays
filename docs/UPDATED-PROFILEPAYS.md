@@ -65,4 +65,4 @@ The AIHangout static connector was deployed with explicit owner approval on 2026
 
 Live acceptance **Worked**: 45,000 ms verified coverage and 100 test credits on completion; early participant removal after 5,531 ms verified coverage awarded zero and restored the original countdown within 3,858 ms; direct AIHangout revocation restored within 2,614 ms, held settlement, and an independent operator released the reservation with zero award. Duplicate review returned 409 and participant self-review returned 403. All original profile settings were preserved, all pilot campaigns paused, and the temporary grant revoked.
 
-See [production pilot evidence and reproduction](PRODUCTION-PILOT.md). PP-6 is being updated with the final live receipts. The normal local preview remains available on port 8930; the production-destination pilot dashboard is on port 8940. No real money changed hands.
+See [production pilot evidence and reproduction](PRODUCTION-PILOT.md). PP-6 is Done with the final live receipts and source links. The normal local preview remains available on port 8930; the production-destination pilot dashboard is on port 8940. No real money changed hands.
