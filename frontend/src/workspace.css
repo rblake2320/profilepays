@@ -132,7 +132,7 @@ button {
   border-radius: 5px;
   font-size: 13px;
 }
-.pp-main button:not(.pp-button) {
+.pp-main button:not(.pp-button):not(.MuiButtonBase-root) {
   padding: 10px 15px;
   border: 1px solid var(--line);
   border-radius: 5px;
@@ -257,7 +257,7 @@ button:disabled {
   flex: 1;
   min-width: 80px;
 }
-.pp-main input:not([type='checkbox']),
+.pp-main input:not([type='checkbox']):not(.MuiInputBase-input):not(.MuiSwitchBase-input),
 .pp-main select {
   border: 1px solid var(--line);
   background: #fffef9;
@@ -268,7 +268,7 @@ button:disabled {
   min-width: 0;
   box-sizing: border-box;
 }
-.pp-main input:focus,
+.pp-main input:not(.MuiInputBase-input):not(.MuiSwitchBase-input):focus,
 .pp-main select:focus {
   outline: 2px solid #799052;
   outline-offset: 2px;
