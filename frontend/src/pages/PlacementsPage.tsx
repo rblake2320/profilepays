@@ -105,7 +105,7 @@ export default function PlacementsPage() {
   const source = (c: any) =>
     c?.png_base64
       ? `data:image/png;base64,${c.png_base64}`
-      : `${data?.origin}/profilepays/${c?.terms?.assetKey || c?.asset_key}.png`;
+      : `/profilepays/${c?.terms?.assetKey || c?.asset_key}.png`;
   const change = (key: string, value: any) => {
     setReview(false);
     setForm(f => ({ ...f, [key]: value }));

@@ -16,10 +16,15 @@ async function login(who) {
 function pass(scenario) { checks.push({outcome:'Worked', scenario}); console.log('Worked:', scenario); }
 for (const path of ['/marketplace', '/connections', '/placements']) {
   const r = await request(path); assert.equal(r.status, 200); assert.match(r.headers.get('content-type'), /text\/html/);
-  const imagePolicy = r.headers.get('content-security-policy')?.split(';').find(v=>v.trim().startsWith('img-src '));
-  assert.ok(imagePolicy?.split(/\s+/).includes('https://aihangout.ai'), 'Hosted CSP must permit the configured AIHangout campaign preview origin');
 }
 pass('HTTPS dashboard deep links load');
+for (const asset of ['blue','green']) {
+  const r=await request(`/profilepays/${asset}.png`);
+  assert.equal(r.status,200,'Built-in campaign previews must be served from the dashboard origin');
+  assert.equal(r.headers.get('content-type'),'image/png');
+  assert.deepEqual(Buffer.from(await r.arrayBuffer()),readFileSync(`frontend/public/profilepays/${asset}.png`));
+}
+pass('Both built-in campaign previews are served byte-for-byte from the dashboard origin');
 assert.equal((await request('/api/placements')).status, 401);
 assert.equal((await request('/.env')).status, 404);
 assert.equal((await request('/api/not-a-route')).status, 404);
