@@ -13,7 +13,7 @@ node_modules
 npm-debug.log*
 yarn-error.log*
 package-lock.json # Often included in repo, but can be rebuilt by Dockerfile's npm ci/install
-*/package-lock.json
+# Lockfile is required by the reproducible pilot image.
 
 # Frontend specific build artifacts (if not copied from a build stage)
 # frontend/build # Covered by Dockerfile multi-stage copy
@@ -31,3 +31,10 @@ package-lock.json # Often included in repo, but can be rebuilt by Dockerfile's n
 # OS specific
 .DS_Store
 Thumbs.db
+.local
+**/.local
+**/.env*
+**/dist
+**/coverage
+docs
+tests

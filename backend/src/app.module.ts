@@ -7,6 +7,7 @@ import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { CampaignsModule } from './campaigns/campaigns.module';
 import { PlacementsModule } from './placements/placements.module';
+import { HealthController } from './health.controller';
 
 import { User } from './users/entities/user.entity';
 import { RefreshToken } from './auth/entities/refresh-token.entity';
@@ -52,7 +53,7 @@ import { CampaignParticipation } from './campaigns/entities/campaign-participati
     UsersModule,
     // Legacy campaign endpoints are superseded by the guarded placement lifecycle.
   ],
-  controllers: [],
+  controllers: [HealthController],
   providers: [],
 })
 export class AppModule {}

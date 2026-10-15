@@ -1,0 +1,57 @@
+name: profilepays-pilot
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: profilepays
+      POSTGRES_DB: profilepays
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Private database password required}
+    volumes:
+      - pilot-db:/var/lib/postgresql/data
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U profilepays -d profilepays']
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    mem_limit: 512m
+    cpus: 1
+    logging:
+      driver: json-file
+      options: {max-size: 10m, max-file: '3'}
+  app:
+    image: profilepays-pilot:${RELEASE_ID:?Release identifier required}
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.pilot
+    restart: unless-stopped
+    depends_on:
+      db: {condition: service_healthy}
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: 3000
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USERNAME: profilepays
+      DB_NAME: profilepays
+      DB_PASSWORD: ${DB_PASSWORD:?Private database password required}
+      JWT_SECRET: ${JWT_SECRET:?Private signing secret required}
+      PLACEMENT_KEY: ${PLACEMENT_KEY:?Private encryption key required}
+      PLACEMENT_MIGRATE: 'true'
+      PROFILEPAYS_TEST_ENABLED: 'true'
+      PROFILEPAYS_SHORT_TESTS: 'true'
+      AIHANGOUT_ORIGIN: https://aihangout.ai
+      FRONTEND_URL: ${PUBLIC_ORIGIN:?Public HTTPS origin required}
+      FRONTEND_DIST: /app/public
+      TRUST_CLOUDFLARE_TUNNEL: 'true'
+      RELEASE_ID: ${RELEASE_ID}
+    ports:
+      - 127.0.0.1:8941:3000
+    mem_limit: 768m
+    cpus: 1
+    logging:
+      driver: json-file
+      options: {max-size: 10m, max-file: '3'}
+volumes:
+  pilot-db:

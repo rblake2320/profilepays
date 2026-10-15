@@ -4,6 +4,9 @@ import { ConfigService } from '@nestjs/config';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
+import { static as serveStatic } from 'express';
+import { existsSync } from 'fs';
+import { resolve } from 'path';
 
 import { AppModule } from './app.module';
 
@@ -14,6 +17,19 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
   const port = configService.get('PORT', 3000);
   const nodeEnv = configService.get('NODE_ENV', 'development');
+  if (nodeEnv === 'production' && (!configService.get<string>('JWT_SECRET') || configService.get<string>('JWT_SECRET').length < 32)) {
+    throw new Error('Production requires a private JWT_SECRET of at least 32 characters');
+  }
+
+  // Only enable behind the dedicated loopback-only Cloudflare Tunnel deployment.
+  // CF-Connecting-IP is set by Cloudflare; discard arbitrary client X-Forwarded-For values.
+  if (configService.get('TRUST_CLOUDFLARE_TUNNEL') === 'true') {
+    app.getHttpAdapter().getInstance().set('trust proxy', 1);
+    app.use((req, _res, next) => {
+      req.headers['x-forwarded-for'] = req.headers['cf-connecting-ip'] || req.socket.remoteAddress;
+      next();
+    });
+  }
 
   // Security middleware
   app.use(helmet());
@@ -39,6 +55,19 @@ async function bootstrap() {
 
   // Global prefix
   app.setGlobalPrefix('api');
+
+  // Serve the compiled dashboard and API from one HTTPS origin in the shipped container.
+  const frontendDist = configService.get<string>('FRONTEND_DIST');
+  if (frontendDist) {
+    const directory = resolve(frontendDist), index = resolve(directory, 'index.html');
+    if (!existsSync(index)) throw new Error('Compiled dashboard index.html is missing');
+    app.use(serveStatic(directory, { index: false, dotfiles: 'deny' }));
+    app.use((req, res, next) => {
+      if (req.method !== 'GET' || /^\/api(?:\/|$)/.test(req.path) || /\.[a-z0-9]+$/i.test(req.path)) return next();
+      res.setHeader('Cache-Control', 'no-store');
+      res.sendFile(index);
+    });
+  }
 
   // Swagger documentation
   if (nodeEnv !== 'production') {
