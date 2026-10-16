@@ -68,3 +68,21 @@ component test now runs in CI alongside the 26 service checks.
 Physical iPhone capture, Safari approval, app switching and time-zone behavior
 await the owner's explicit Share-screen action. Remote native control is not
 implemented. PP-7 remains In Progress for that phone walkthrough.
+
+## Owner app-switch result
+
+The owner reported disconnection when switching screens on the iPhone. The viewer
+observed an invalid session. Continuous sharing across apps failed that scenario;
+the precise OS capture-ending reason was not recorded. Source inspection found
+that a track ending also revoked the link. Capture ending now pauses locally and
+allows a fresh owner-approved capture using the same unexpired link. Explicit Stop
+still revokes it. The React regression covers pause, consent on resume and Stop.
+This recovery change does not provide continuous background capture.
+
+Apple's iOS 27 ScreenCaptureKit sample documents native full-display capture with
+a screen-capture background mode. The owner has Microsoft Teams installed. The
+next phone test will use its native screen broadcast and a browser meeting viewer,
+once the owner provides a private meeting link and starts the broadcast.
+
+- [Apple native capture](https://developer.apple.com/documentation/screencapturekit/capturing-screen-content-on-ios)
+- [Teams screen sharing](https://support.microsoft.com/en-gb/teams/meetings/present-content-in-microsoft-teams)

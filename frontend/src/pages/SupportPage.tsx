@@ -87,7 +87,11 @@ export default function SupportPage({ mode = 'setup' }: { mode?: 'setup' | 'shar
       // Called directly from the tap: Safari requires transient user activation.
       const captured = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
       stream.current = captured; running.current = true;
-      for (const track of captured.getVideoTracks()) track.onended = () => { void stop(); };
+      for (const track of captured.getVideoTracks()) track.onended = () => {
+        // Capture ending (for example on app switching) is not an explicit grant revocation.
+        haltCapture(); setStatus('Capture paused');
+        setError('Safari ended screen capture. Return to this page and tap Share screen to resume with this link. Continuous sharing across iPhone apps requires a native screen-sharing app.');
+      };
       if (!video.current) throw new Error('Screen preview is unavailable.');
       video.current.srcObject = captured;
       await video.current.play();
@@ -145,7 +149,7 @@ export default function SupportPage({ mode = 'setup' }: { mode?: 'setup' | 'shar
     {mode !== 'setup' && !usable && <p role="alert">This link is incomplete. Ask your helper for a new private connection link.</p>}
     {mode === 'share' && usable && <>
       {!supported && <p role="alert">This browser does not provide screen capture. Open this link directly in Safari. If Safari still shows this message, browser screen sharing is unavailable on this device.</p>}
-      <p>Tap Share screen, then approve Safari’s sharing prompt. Open ProfilePays or AIHangout to continue your test. If iOS pauses sharing when you switch apps, return here; the viewer will show that the picture is stale.</p>
+      <p>Tap Share screen, then approve Safari’s sharing prompt. Switching tabs or apps may stop this browser connection’s capture. To resume, return here and tap Share screen again. Continuous sharing across iPhone apps requires a native screen-sharing app.</p>
       <button disabled={!supported || busy || status === 'Sharing' || status === 'Stopped'} onClick={share}>Share screen</button>
       <button className="support-stop" disabled={busy || status === 'Stopped'} onClick={stop}>Stop sharing</button>
       <video ref={video} autoPlay muted playsInline hidden={status !== 'Sharing'} className="support-preview" aria-label="Your shared screen preview" />
