@@ -1,0 +1,52 @@
+{
+  "at": "2026-10-16T01:31:34.836Z",
+  "origin": "https://profilepays.ultrarag.app",
+  "fixture": "synthetic JPEG; no physical phone capture",
+  "checks": [
+    {
+      "outcome": "Worked",
+      "scenario": "Unauthenticated creation refused",
+      "measurement": 401
+    },
+    {
+      "outcome": "Worked",
+      "scenario": "Missing, forged and wrong-role capabilities refused",
+      "measurement": {
+        "cases": 4,
+        "status": 401
+      }
+    },
+    {
+      "outcome": "Worked",
+      "scenario": "Malformed and oversized frames rejected",
+      "measurement": {
+        "cases": 2,
+        "status": 400
+      }
+    },
+    {
+      "outcome": "Worked",
+      "scenario": "Exact image relayed through public HTTPS without caching",
+      "measurement": {
+        "bytes": 6086,
+        "status": "live"
+      }
+    },
+    {
+      "outcome": "Worked",
+      "scenario": "Stale image removed from read response",
+      "measurement": {
+        "waitMs": 6500,
+        "status": "paused"
+      }
+    },
+    {
+      "outcome": "Worked",
+      "scenario": "Stop revokes both roles and prevents further frames",
+      "measurement": {
+        "read": 401,
+        "write": 401
+      }
+    }
+  ]
+}
