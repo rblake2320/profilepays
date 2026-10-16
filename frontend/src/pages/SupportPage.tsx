@@ -1,13 +1,13 @@
-import { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import apiClient from '../api/client';
 import './support.css';
 
 type Pair = { id: string; publishToken: string; viewToken: string; expiresAt: number };
 type Frame = { frame: string | null; capturedAt: number | null; expiresAt: number; status: string };
 const message = (error: any) => error?.response?.data?.message || error?.message || 'Connection interrupted. Please try again.';
-function capability() {
-  const parts = new URLSearchParams(window.location.hash.slice(1));
+function capability(hash: string) {
+  const parts = new URLSearchParams(hash.slice(1));
   return { id: parts.get('session') || '', token: parts.get('key') || '' };
 }
 async function relay(id: string, token: string, method: string, frame?: string) {
@@ -24,7 +24,8 @@ async function relay(id: string, token: string, method: string, frame?: string) 
 
 export default function SupportPage({ mode = 'setup' }: { mode?: 'setup' | 'share' | 'view' }) {
   const [pair, setPair] = useState<Pair | null>(null);
-  const [key] = useState(capability);
+  const location = useLocation();
+  const key = useMemo(() => capability(location.hash), [location.hash]);
   const [error, setError] = useState('');
   const [status, setStatus] = useState('Ready');
   const [busy, setBusy] = useState(false);
@@ -59,6 +60,11 @@ export default function SupportPage({ mode = 'setup' }: { mode?: 'setup' | 'shar
     const clock = setInterval(() => setNow(Date.now()), 1_000);
     return () => { clearInterval(clock); haltCapture(); };
   }, []);
+
+  useEffect(() => {
+    // A different fragment is a different grant, even without a document reload.
+    haltCapture(); setFrame(null); setDeadline(null); setError(''); setStatus('Ready');
+  }, [key, mode]);
 
   useEffect(() => {
     if (mode !== 'view' || !usable || status === 'Stopped') return;
@@ -142,7 +148,7 @@ export default function SupportPage({ mode = 'setup' }: { mode?: 'setup' | 'shar
       <p>Tap Share screen, then approve Safari’s sharing prompt. Open ProfilePays or AIHangout to continue your test. If iOS pauses sharing when you switch apps, return here; the viewer will show that the picture is stale.</p>
       <button disabled={!supported || busy || status === 'Sharing' || status === 'Stopped'} onClick={share}>Share screen</button>
       <button className="support-stop" disabled={busy || status === 'Stopped'} onClick={stop}>Stop sharing</button>
-      <video ref={video} autoPlay muted playsInline className="support-preview" aria-label="Your shared screen preview" />
+      <video ref={video} autoPlay muted playsInline hidden={status !== 'Sharing'} className="support-preview" aria-label="Your shared screen preview" />
     </>}
     {mode === 'view' && usable && <>
       <button className="support-stop" onClick={stop} disabled={busy || status === 'Stopped'}>End connection</button>
