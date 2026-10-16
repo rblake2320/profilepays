@@ -55,3 +55,5 @@ Release 42494f0 live acceptance (2026-10-16 UTC):
 - Temporary exclusions removed, three new campaigns paused, connector grant revoked, original profile checked.
 - Ten additional scenarios ran against compiled modules inside the actual deployed container, using an isolated PostgreSQL schema that was verified before use and dropped after testing. Admin suspend/appeal/restore and unique provider subject checks passed there. No production account was granted administrator privileges.
 - CI for 42494f0 passed: https://github.com/rblake2320/profilepays/actions/runs/38840204413.
+
+Final UI release c9f52a4: latest notice plus expandable history; connection/confirmation pages are free of old alerts; analytics now render labeled metrics. Fresh 390px Chrome check measured client/scroll width 375/375 and textarea height 96px. Final backend behavior is unchanged from 42494f0. The final dashboard and mobile controls are in agreement-evidence/final-dashboard.png and mobile-exclusions.png.
