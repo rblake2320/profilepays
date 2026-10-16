@@ -44,6 +44,9 @@ export class User {
   })
   userRole: UserRole;
 
+  @Column({ name: 'company_name', type: 'varchar', length: 200, nullable: true })
+  companyName?: string;
+
   @Column({ name: 'profile_image', nullable: true })
   profileImage?: string;
 

@@ -55,6 +55,7 @@ else {
       firstName: 'Pilot',
       lastName: name,
       userRole: role,
+      ...(role === 'advertiser' ? {companyName: 'Test Sponsor'} : {}),
     });
     accounts[name] = { email, password, token: response.accessToken, id: response.user.id };
   }

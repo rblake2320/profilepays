@@ -16,7 +16,7 @@ export const signupSchema = yup.object({
   userType: yup.string().oneOf(['member', 'advertiser']).required('Please select account type'),
   firstName: yup.string().trim().required('First name is required').max(100, 'First name must not exceed 100 characters').matches(NAME_PATTERN, NAME_HELP),
   lastName: yup.string().trim().required('Last name is required').max(100, 'Last name must not exceed 100 characters').matches(NAME_PATTERN, NAME_HELP),
-  companyName: yup.string().when('userType', {
+  companyName: yup.string().trim().max(200, 'Company name must not exceed 200 characters').when('userType', {
     is: 'advertiser',
     then: (s) => s.required('Company name is required for advertisers'),
     otherwise: (s) => s.optional(),

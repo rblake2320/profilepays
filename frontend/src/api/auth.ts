@@ -33,7 +33,7 @@ function normalize(data:any):AuthResponse { return {...data,user:{...data.user,u
 
 export const authApi = {
   register: (payload: RegisterPayload) =>
-    apiClient.post('/auth/signup', {email:payload.email,password:payload.password,firstName:payload.firstName,lastName:payload.lastName,userRole:payload.userType}).then((r) => normalize(r.data)),
+    apiClient.post('/auth/signup', {email:payload.email,password:payload.password,firstName:payload.firstName,lastName:payload.lastName,userRole:payload.userType,...(payload.userType === 'advertiser' ? {companyName:payload.companyName} : {})}).then((r) => normalize(r.data)),
 
   login: (payload: LoginPayload) =>
     apiClient.post('/auth/login', payload).then((r) => normalize(r.data)),

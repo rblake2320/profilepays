@@ -28,6 +28,13 @@ async function rejects(body,field){
     let server=true;try{await validate(b);}catch{server=false;}
     assert.equal(client,server,'Browser/server password policy mismatch');checks++;
   }
+  for (const companyName of [undefined, '', '   ', 'x'.repeat(201), {name:'Bad'}]) {
+    await rejects({...base,userRole:'advertiser',companyName},'companyName');
+  }
+  const advertiser=await validate({...base,userRole:'advertiser',companyName:'  QA & Co.  '});
+  assert.equal(advertiser.companyName,'QA & Co.');checks++;
+  const clientAdvertiser=await signupSchema.validate({...base,userType:'advertiser',companyName:'  QA & Co.  ',confirmPassword:base.password});
+  assert.equal(clientAdvertiser.companyName,advertiser.companyName);checks++;
   await rejects({...base,password:'alllower123!'},'password');
   await rejects({...base,email:'not-an-email'},'email');
   await rejects({...base,firstName:'   '},'firstName');

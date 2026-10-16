@@ -26,6 +26,7 @@ export interface AuthResponse {
     lastName: string;
     userRole: UserRole;
     isVerified: boolean;
+    companyName?: string;
   };
   accessToken: string;
   refreshToken: string;
@@ -49,7 +50,7 @@ export class AuthService {
     ipAddress: string,
     userAgent: string,
   ): Promise<AuthResponse> {
-    const { email, password, firstName, lastName, userRole, phoneNumber, dateOfBirth } = signupDto;
+    const { email, password, firstName, lastName, userRole, phoneNumber, dateOfBirth, companyName } = signupDto;
 
     // Check if user already exists
     const existingUser = await this.userRepository.findOne({
@@ -76,6 +77,7 @@ export class AuthService {
       firstName: firstName.trim(),
       lastName: lastName.trim(),
       userRole: userRole || UserRole.MEMBER,
+      companyName: userRole === UserRole.ADVERTISER ? companyName?.trim() : undefined,
       phoneNumber: phoneNumber?.trim(),
       dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : undefined,
       emailVerificationToken,
@@ -106,6 +108,7 @@ export class AuthService {
         lastName: savedUser.lastName,
         userRole: savedUser.userRole,
         isVerified: savedUser.isVerified,
+        companyName: savedUser.companyName,
       },
       accessToken,
       refreshToken,
@@ -155,6 +158,7 @@ export class AuthService {
         lastName: user.lastName,
         userRole: user.userRole,
         isVerified: user.isVerified,
+        companyName: user.companyName,
       },
       accessToken,
       refreshToken,

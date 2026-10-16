@@ -15,7 +15,7 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
   }
 
   if (allowedRoles && !allowedRoles.includes(user.userType as any)) {
-    return <Navigate to="/" replace />;
+    return <Navigate to={user.userType === 'advertiser' ? '/advertisers' : '/marketplace'} replace />;
   }
 
   return <>{children}</>;

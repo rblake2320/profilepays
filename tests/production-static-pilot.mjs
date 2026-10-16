@@ -34,7 +34,7 @@ try{
   if(existsSync(accountFile))accounts=JSON.parse(readFileSync(accountFile));
   else{accounts={};for(const [name,role] of [['sponsor','advertiser'],['member','member']]){
     const who={email:`${name}.${Date.now()}@example.invalid`,password:'Pilot1!'+randomBytes(16).toString('hex')};
-    const signup=await api(pp,'/auth/signup',null,'POST',{...who,firstName:'Pilot',lastName:name==='sponsor'?'Sponsor':'Member',userRole:role});
+    const signup=await api(pp,'/auth/signup',null,'POST',{...who,firstName:'Pilot',lastName:name==='sponsor'?'Sponsor':'Member',userRole:role,...(role==='advertiser'?{companyName:'Pilot Sponsor'}:{})});
     accounts[name]={...who,id:signup.user.id};
   }writeFileSync(accountFile,JSON.stringify(accounts),{mode:0o600});}
   for(const who of Object.values(accounts))who.token=(await api(pp,'/auth/login',null,'POST',{email:who.email,password:who.password})).accessToken;

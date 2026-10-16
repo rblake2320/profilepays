@@ -26,7 +26,7 @@ const App = () => {
           <Route
             path="placements"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={['member', 'admin']}>
                 <PlacementsPage />
               </ProtectedRoute>
             }
@@ -34,7 +34,7 @@ const App = () => {
           <Route
             path="connections"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={['member', 'admin']}>
                 <PlacementsPage />
               </ProtectedRoute>
             }
@@ -42,7 +42,7 @@ const App = () => {
           <Route
             path="earnings"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={['member', 'admin']}>
                 <PlacementsPage />
               </ProtectedRoute>
             }
@@ -76,7 +76,7 @@ const App = () => {
           <Route
             path="confirmation"
             element={
-              <ProtectedRoute>
+              <ProtectedRoute allowedRoles={['member', 'admin']}>
                 <PlacementsPage />
               </ProtectedRoute>
             }

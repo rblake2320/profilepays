@@ -1,4 +1,5 @@
 import {
+  ValidateIf,
   IsEmail,
   IsString,
   IsEnum,
@@ -68,6 +69,14 @@ export class SignupDto {
   @MaxLength(20, { message: 'Phone number must not exceed 20 characters' })
   @Matches(/^[\+]?[\d\s\-\(\)]+$/, { message: 'Please provide a valid phone number' })
   phoneNumber?: string;
+
+  @ApiPropertyOptional({ description: 'Required for advertisers', maxLength: 200 })
+  @Transform(({ value }) => trimText(value))
+  @ValidateIf(o => o.userRole === UserRole.ADVERTISER || o.companyName !== undefined)
+  @IsString({ message: 'Company name is required for advertisers' })
+  @MinLength(1, { message: 'Company name is required for advertisers' })
+  @MaxLength(200, { message: 'Company name must not exceed 200 characters' })
+  companyName?: string;
 
   @ApiPropertyOptional({
     example: '1990-01-15',

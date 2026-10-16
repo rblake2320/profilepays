@@ -60,7 +60,8 @@ async function bootstrap() {
     app.use(serveStatic(directory, { index: false, dotfiles: 'deny' }));
     app.use((req, res, next) => {
       if (req.method !== 'GET' || /^\/api(?:\/|$)/.test(req.path) || /\.[a-z0-9]+$/i.test(req.path)) return next();
-      res.setHeader('Cache-Control', 'no-store');
+      // Prevent edge-injected scripts that conflict with our self-only CSP.
+      res.setHeader('Cache-Control', 'no-store, no-transform');
       res.sendFile(index);
     });
   }

@@ -69,7 +69,7 @@ const RegisterPage = () => {
     } catch (failure: any) {
       let focused = false;
       for (const [name, message] of Object.entries(failure?.fieldErrors || {})) {
-        if (['email', 'password', 'firstName', 'lastName'].includes(name) && typeof message === 'string') {
+        if (['email', 'password', 'firstName', 'lastName', 'companyName'].includes(name) && typeof message === 'string') {
           setError(name as keyof FormData, { type: 'server', message }, { shouldFocus: !focused });
           focused = true;
         }

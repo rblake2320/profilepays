@@ -220,11 +220,15 @@ export default function PlacementsPage() {
           </div>
         </section>
         <div className="pp-steps">
-          {['01 / Choose an offer', '02 / Preview and approve', '03 / Verify, restore, earn'].map(
-            s => (
+          {[
+            ['01 / Choose an offer', 'Compare campaigns, placement durations and test-credit rewards. Choose the terms that suit you.'],
+            ['02 / Preview and approve', 'Preview the image on your connected profile, then approve the temporary placement and its terms.'],
+            ['03 / Verify, restore, earn', 'We check the placement, restore your original profile and record eligible test credits in your receipt.'],
+          ].map(
+            ([s, description]) => (
               <article key={s}>
                 <h3>{s}</h3>
-                <p>A defined duration, clear terms and a receipt you can inspect.</p>
+                <p>{description}</p>
               </article>
             )
           )}
@@ -547,6 +551,7 @@ export default function PlacementsPage() {
       {path === '/advertisers' && (
         <>
           <p className="pp-eyebrow">ADVERTISER WORKSPACE</p>
+          {user.companyName && <p>Campaigns for <strong>{user.companyName}</strong></p>}
           <h1>
             Your next campaign
             <br />
