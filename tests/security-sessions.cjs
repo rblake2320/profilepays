@@ -205,6 +205,65 @@ const denied = (fn, status = 401) => assert.rejects(fn, e => e.getStatus?.() ===
       );
       sessionRequest({ headers: { 'x-profilepays-request': '1' } });
     });
+    await check(
+      'real HTTP controller accepts cookie refresh through production validation and revokes logout',
+      async () => {
+        const { Module } = require('@nestjs/common'),
+          { NestFactory } = require('@nestjs/core');
+        const { ThrottlerModule } = require('@nestjs/throttler');
+        const { AuthController } = require(source + '/auth/auth.controller');
+        const { inputValidationPipe } = require(source + '/common/input-validation');
+        class HttpFixture {}
+        Module({
+          imports: [ThrottlerModule.forRoot([{ ttl: 60000, limit: 100 }])],
+          controllers: [AuthController],
+          providers: [{ provide: AuthService, useValue: auth }],
+        })(HttpFixture);
+        const app = await NestFactory.create(HttpFixture, { logger: false });
+        app.use(require('cookie-parser')());
+        app.useGlobalPipes(inputValidationPipe());
+        app.setGlobalPrefix('api');
+        try {
+          await app.listen(0, '127.0.0.1');
+          const url = await app.getUrl();
+          const post = async (path, body, cookie) =>
+            fetch(url + '/api/auth/' + path, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-ProfilePays-Request': '1',
+                ...(cookie ? { Cookie: cookie } : {}),
+              },
+              body: JSON.stringify(body),
+            });
+          const start = await post('login', {
+            email: 'company@example.invalid',
+            password: base.password,
+          });
+          assert.equal(start.status, 200);
+          const response = await start.json();
+          assert.equal(response.refreshToken, undefined);
+          const cookie = r =>
+            r.headers
+              .getSetCookie()
+              .find(x => x.includes('Max-Age='))
+              ?.split(';')[0];
+          const refreshed = await post('refresh', {}, cookie(start));
+          assert.equal(refreshed.status, 200);
+          const tokens = await refreshed.json();
+          await valid(tokens.accessToken);
+          assert.equal(
+            (await post('refresh', { refreshToken: 'a'.repeat(80) }, cookie(refreshed))).status,
+            400
+          );
+          assert.equal((await post('logout', {}, cookie(refreshed))).status, 200);
+          await denied(() => valid(tokens.accessToken));
+          assert.equal((await post('refresh', {}, cookie(refreshed))).status, 401);
+        } finally {
+          await app.close();
+        }
+      }
+    );
     console.log(
       JSON.stringify({
         outcome: 'Worked',

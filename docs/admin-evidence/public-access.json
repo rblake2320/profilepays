@@ -1,7 +1,7 @@
 {
   "outcome": "Worked",
-  "checkedAt": "2026-10-16T02:46:46.133Z",
-  "release": "1ca7f52",
+  "checkedAt": "2026-10-16T03:10:15.956Z",
+  "release": "0cfb5bb",
   "checks": [
     "Hosted release healthy; administrator deep link loads; anonymous API denied 401",
     "member: admin overview denied 403; historical held credit unchanged, zero award, zero ledger entries, original restored",

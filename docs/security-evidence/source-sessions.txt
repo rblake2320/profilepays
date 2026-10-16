@@ -8,4 +8,5 @@ Worked: participation suspension preserves sign-in, refresh, receipts and appeal
 Worked: security deactivation revokes sessions and prevents login/refresh
 Worked: company completion updates only the advertiser account
 Worked: cookie endpoints reject missing request header and foreign origins
-{"outcome":"Worked","scenarios":10,"artifact":"source","database":"isolated PostgreSQL schema"}
+Worked: real HTTP controller accepts cookie refresh through production validation and revokes logout
+{"outcome":"Worked","scenarios":11,"artifact":"source","database":"isolated PostgreSQL schema"}

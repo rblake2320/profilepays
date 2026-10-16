@@ -1,0 +1,26 @@
+Worked: refresh credentials are hashed and access tokens bind a server session
+Worked: logout revokes refresh and existing access; another device stays signed in
+Worked: rotated-token reuse revokes descendants and access
+Worked: concurrent refresh cannot issue two usable token families
+Worked: logout races rotation without leaving a usable descendant
+Worked: password credential change invalidates access and refresh
+Worked: participation suspension preserves sign-in, refresh, receipts and appeal; blocks new offers
+Worked: security deactivation revokes sessions and prevents login/refresh
+Worked: company completion updates only the advertiser account
+Worked: cookie endpoints reject missing request header and foreign origins
+{"outcome":"Worked","scenarios":10,"artifact":"compiled modules","database":"isolated PostgreSQL schema"}
+Worked: advertiser cannot enter participant mutations before resource lookup
+Worked: 60-second hold reserves final slot under concurrent demand
+Worked: retry does not extend hold and another user cannot release it
+Worked: expired hold cannot confirm and creates no breach
+Worked: advertiser excludes a group only from its own offers, including an existing hold
+Worked: held offer confirms once, preserving idempotency
+Worked: confirmed breach threshold denies; appeal overturn removes mark without rewriting agreement
+Worked: platform ban requires admin; suspension remains appealable and reversible
+Worked: four notification modes persist; unauthorized and malformed updates rejected
+Worked: analytics packages enforce ownership and omit unselected data
+Worked: unconfigured identity rejects forged callbacks and real payouts stay disabled; payee subject unique
+Worked: administrator overview is private and searches literal names, profiles and IDs
+Worked: held credit requires independent review, settles once, balances ledger and notifies participant
+Worked: upheld appeal preserves suspension; stale appeal cannot erase a newer decision
+{"outcome":"Worked","scenarios":14,"storage":"real PostgreSQL","artifact":"deployed compiled modules","remote":"stubbed connection readback for join only"}

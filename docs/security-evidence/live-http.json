@@ -1,0 +1,38 @@
+{
+  "origin": "https://profilepays.ultrarag.app",
+  "at": "2026-10-16T03:10:14.292Z",
+  "results": [
+    {
+      "scenario": "sign-in sets HttpOnly Strict scoped cookie; JSON has no refresh credential",
+      "result": "Worked"
+    },
+    {
+      "scenario": "empty-body cookie refresh works, body credentials rejected, replay revokes family",
+      "result": "Worked"
+    },
+    {
+      "scenario": "logout revokes both copied refresh cookie and already-issued access token",
+      "result": "Worked"
+    },
+    {
+      "scenario": "session endpoints reject missing request header and foreign origins",
+      "result": "Worked"
+    },
+    {
+      "scenario": "advertiser denied participant connect/favorite/hold/join/release APIs and administrator API",
+      "result": "Worked"
+    },
+    {
+      "scenario": "legacy missing-company advertiser must complete own name; null name rejected",
+      "result": "Worked"
+    },
+    {
+      "scenario": "suspended participant signs in, reads standing and submits an appeal",
+      "result": "Worked"
+    },
+    {
+      "scenario": "suspended participant cannot reserve an offer or create a hold",
+      "result": "Worked"
+    }
+  ]
+}

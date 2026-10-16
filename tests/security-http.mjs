@@ -228,6 +228,16 @@ await check('suspended participant signs in, reads standing and submits an appea
   assert.ok(read.data.standing.appeals.some(x => x.status === 'pending'));
   status(await request('/placements/admin', { token: member.data.accessToken }), 403);
 });
+await check('suspended participant cannot reserve an offer or create a hold', async () => {
+  assert.ok(privateData.campaign, 'Provide a paused test campaign fixture');
+  const refused = await request(`/placements/campaigns/${privateData.campaign}/hold`, {
+    method: 'POST',
+    body: { destinationId: randomUUID(), commandKey: randomUUID() },
+    token: member.data.accessToken,
+  });
+  status(refused, 403);
+  assert.match(refused.data.message, /suspended/);
+});
 for (const session of [member, advertiser])
   status(await request('/auth/logout', { method: 'POST', body: {}, cookie: session.cookie }), 200);
 const out = process.env.SECURITY_RESULTS || '.local/security-http-results.json';
