@@ -44,3 +44,5 @@ The sweep covered signup/login/profile responses, the active and legacy user def
 Local backend/frontend builds and clean Docker build passed. Release CI: https://github.com/rblake2320/profilepays/actions/runs/38828329917 . No unrelated dependency upgrades were included.
 
 The physical iPhone walkthrough remains tracked separately under PP-7; these findings and hosted scenarios are completed.
+
+The follow-up regression CI also passed, including the new role layout/guard gate: https://github.com/rblake2320/profilepays/actions/runs/38828752129 . Jira PP-7 has the five-finding and lifecycle results with evidence links.
