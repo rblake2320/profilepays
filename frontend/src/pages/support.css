@@ -1,0 +1,17 @@
+.pp-support { max-width: 760px; margin: 0 auto; padding: 30px 22px 60px; color: #193e34; font-family: system-ui, sans-serif; line-height: 1.55; }
+.pp-support * { box-sizing: border-box; }
+.pp-support h1 { font-size: clamp(30px, 6vw, 44px); line-height: 1.15; margin: 12px 0 20px; letter-spacing: -1px; }
+.support-brand { font-size: 26px; font-weight: 800; color: inherit; text-decoration: none; }
+.support-brand span { font-weight: 400; }
+.support-eyebrow { font-size: 11px; letter-spacing: 2px; margin-top: 40px; }
+.support-notice { border: 1px solid #c4d6ce; background: #f0f6f1; border-radius: 14px; padding: 16px; font-size: 14px; margin: 22px 0; }
+.pp-support button, .support-button { display: inline-block; border: 1px solid #214f41; border-radius: 8px; padding: 13px 18px; margin: 8px 10px 8px 0; background: #214f41; color: white; font: inherit; cursor: pointer; min-height: 48px; text-decoration: none; }
+.pp-support button:disabled { opacity: .5; cursor: default; }
+.pp-support .support-stop { background: white; color: #8a2525; border-color: #8a2525; }
+.pp-support label { display: block; margin: 20px 0 4px; font-weight: 600; }
+.pp-support input { display: block; width: 100%; height: 48px; padding: 10px; border: 1px solid #93aca1; border-radius: 6px; margin-top: 8px; font: 16px system-ui; }
+.support-error { background: #fff1ef; color: #872525; padding: 14px; border-radius: 8px; overflow-wrap: anywhere; }
+.support-screen { background: #e9efeb; border-radius: 14px; min-height: 200px; margin: 20px 0; padding: 12px; text-align: center; }
+.support-screen img { max-width: 100%; max-height: 75vh; display: block; margin: auto; }
+.support-preview { display: block; width: 100%; max-height: 40vh; background: #e9efeb; border-radius: 12px; margin-top: 20px; }
+.support-footnote { font-size: 13px; color: #526b61; }

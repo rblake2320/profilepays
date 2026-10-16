@@ -8,6 +8,7 @@ import { UsersModule } from './users/users.module';
 import { CampaignsModule } from './campaigns/campaigns.module';
 import { PlacementsModule } from './placements/placements.module';
 import { HealthController } from './health.controller';
+import { SupportModule } from './support/support.module';
 
 import { User } from './users/entities/user.entity';
 import { RefreshToken } from './auth/entities/refresh-token.entity';
@@ -49,6 +50,7 @@ import { CampaignParticipation } from './campaigns/entities/campaign-participati
 
     // Application modules
     PlacementsModule,
+    SupportModule,
     AuthModule,
     UsersModule,
     // Legacy campaign endpoints are superseded by the guarded placement lifecycle.

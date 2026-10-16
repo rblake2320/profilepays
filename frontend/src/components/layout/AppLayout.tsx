@@ -40,6 +40,7 @@ export default function AppLayout() {
               <summary>{user.firstName || 'Account'} ⌄</summary>
               <div>
                 <small>{user.email}</small>
+                <Link to="/support">Connect phone screen</Link>
                 <button
                   onClick={() => {
                     dispatch(logout());

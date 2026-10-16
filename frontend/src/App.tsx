@@ -9,11 +9,15 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import HowItWorksPage from './pages/HowItWorksPage';
 import AboutPage from './pages/AboutPage';
+import SupportPage from './pages/SupportPage';
 
 const App = () => {
   return (
     <Provider store={store}>
       <Routes>
+        <Route path="/support" element={<ProtectedRoute><SupportPage /></ProtectedRoute>} />
+        <Route path="/support/share" element={<SupportPage mode="share" />} />
+        <Route path="/support/view" element={<SupportPage mode="view" />} />
         <Route path="/" element={<AppLayout />}>
           <Route
             path="reviews"
