@@ -133,7 +133,7 @@ export class PlacementsService implements OnModuleInit, OnModuleDestroy {
       origin: this.origin,
       minDurationSeconds: process.env.PROFILEPAYS_SHORT_TESTS === 'true' ? 10 : 3600,
       campaigns: await this.db.query(
-        `SELECT c.id,c.sponsor_id,c.terms,c.budget,c.reserved,c.spent,c.status,
+        `SELECT c.id,c.sponsor_id,c.terms,c.budget,c.reserved,c.spent,c.status,c.notification_preferences,
         (SELECT png_base64 FROM placement_creatives a WHERE a.sponsor_id=c.sponsor_id AND a.asset_key=c.terms->>'assetKey') AS png_base64,
         (SELECT count(*)::integer FROM placements p WHERE p.campaign_id=c.id) AS participants
         FROM placement_campaigns c ORDER BY c.created_at DESC`
@@ -180,8 +180,11 @@ export class PlacementsService implements OnModuleInit, OnModuleDestroy {
       'brand',
       'description',
       'category',
+      'notifications',
     ]);
     requireUuid(b.commandKey);
+    const preferences = b.notifications ?? { broken: true, completed: true };
+    this.validateNotifications(preferences);
     const title = clean(b.title, 80),
       short = process.env.PROFILEPAYS_SHORT_TESTS === 'true';
     for (const k of ['durationSeconds', 'reward', 'budget', 'capacity'])
@@ -261,14 +264,30 @@ export class PlacementsService implements OnModuleInit, OnModuleDestroy {
     try {
       return (
         await this.db.query(
-          'INSERT INTO placement_campaigns(id,sponsor_id,command_key,terms,budget) VALUES($1,$2,$3,$4,$5) RETURNING *',
-          [randomUUID(), user.id, b.commandKey, terms, b.budget]
+          'INSERT INTO placement_campaigns(id,sponsor_id,command_key,terms,budget,notification_preferences) VALUES($1,$2,$3,$4,$5,$6) RETURNING *',
+          [randomUUID(), user.id, b.commandKey, terms, b.budget, preferences]
         )
       )[0];
     } catch (e) {
       if (e.code === '23505') return this.create(user, b);
       throw e;
     }
+  }
+  private validateNotifications(b: any) {
+    exact(b, ['broken', 'completed']);
+    if (typeof b.broken !== 'boolean' || typeof b.completed !== 'boolean')
+      throw new BadRequestException('Choose broken and completed notification preferences');
+  }
+  async notifications(user: any, id: string, b: any) {
+    this.enabled();
+    requireUuid(id);
+    this.validateNotifications(b);
+    const [c] = await this.db.query(
+      'UPDATE placement_campaigns SET notification_preferences=$3 WHERE id=$1 AND sponsor_id=$2 RETURNING id,notification_preferences',
+      [id, user.id, b]
+    );
+    if (!c) throw new NotFoundException('Campaign missing');
+    return c;
   }
   async join(user: any, id: string, b: any) {
     this.enabled();
@@ -554,6 +573,50 @@ export class PlacementsService implements OnModuleInit, OnModuleDestroy {
     if (digest !== expected) throw Error('Approved image bytes changed');
     visible.imageSha256 = digest;
   }
+  private async recordBreach(m: EntityManager, p: any, remote: any) {
+    const r = p.record;
+    if (
+      remote.id !== p.id ||
+      remote.startsAt !== r.startsAt ||
+      remote.endsAt !== r.endsAt ||
+      remote.stopped !== true ||
+      !Number.isFinite(remote.breachedAt) ||
+      remote.breachedAt < r.startsAt ||
+      remote.breachedAt >= r.endsAt ||
+      !['user_override', 'placement_removed'].includes(remote.breachReason)
+    )
+      return false;
+    r.breach = { at: remote.breachedAt, reason: remote.breachReason, source: 'AIHangout' };
+    r.stopReason = 'user_override';
+    r.stoppedAt = remote.breachedAt;
+    p.state = 'restoring';
+    await this.observe(m, p, 'breach', remote, remote.breachedAt);
+    return true;
+  }
+  private async confirmExpiry(m: EntityManager, p: any, g: string, path: string, receipt?: any) {
+    const r = p.record;
+    const remote = receipt ?? (await this.remote(path, g));
+    // The destination owns the deadline. Local clock skew and requests crossing expiry
+    // must not turn a normal disappearance or rejected renewal into early removal.
+    if (
+      remote.id !== p.id ||
+      remote.startsAt !== r.startsAt ||
+      remote.endsAt !== r.endsAt ||
+      !Number.isFinite(remote.observedAt) ||
+      remote.observedAt < r.endsAt ||
+      remote.stopped !== false ||
+      remote.breachedAt != null ||
+      remote.originalMatches !== true ||
+      remote.leaseUntil < r.endsAt ||
+      !Number.isFinite(remote.leaseUntil)
+    )
+      return false;
+    await this.observe(m, p, 'valid_expiry', remote, r.endsAt);
+    r.stopReason = 'deadline';
+    r.stoppedAt = r.endsAt;
+    p.state = 'restoring';
+    return true;
+  }
   private async advance(m: EntityManager, p: any) {
     const r = p.record,
       t = r.terms,
@@ -607,37 +670,65 @@ export class PlacementsService implements OnModuleInit, OnModuleDestroy {
     if (r.startsAt && !r.stopReason && Date.now() < r.endsAt) {
       const visible: any = await this.publicState(p.username);
       if (visible.placement?.id !== p.id || visible.placement?.assetKey !== t.assetKey) {
-        await this.observe(m, p, 'mismatch', visible);
-        r.stopReason =
-          visible.normal?.key !== r.original.key ? 'user_override' : 'delivery_failure';
-        r.stoppedAt = Date.now();
-        p.state = 'restoring';
+        const remote = await this.remote(path, g);
+        const breached = await this.recordBreach(m, p, remote);
+        const expired =
+          !breached &&
+          (visible.observedAt >= r.endsAt || Date.now() >= r.endsAt) &&
+          (await this.confirmExpiry(m, p, g, path, remote));
+        if (!expired && !breached) {
+          await this.observe(m, p, 'mismatch', visible);
+          r.stopReason =
+            visible.normal?.key !== r.original.key ? 'user_override' : 'delivery_failure';
+          r.stoppedAt = Date.now();
+          p.state = 'restoring';
+        }
       } else {
         await this.verifyImage(visible, t.imageSha256);
-        await this.remote(path + '/renew', g, 'POST');
-        await this.observe(m, p, 'valid', visible);
-        r.coveredMs = (await this.coverage(m, p)).covered;
-        p.state = 'active';
-        r.nextCheck = Math.min(Date.now() + t.sampleMs, r.endsAt);
-        return;
+        try {
+          await this.remote(path + '/renew', g, 'POST');
+        } catch (e) {
+          if (e.status !== 409) throw e;
+          const remote = await this.remote(path, g);
+          if (
+            !(await this.recordBreach(m, p, remote)) &&
+            !(await this.confirmExpiry(m, p, g, path, remote))
+          )
+            throw e;
+        }
+        if (!r.stopReason) {
+          await this.observe(m, p, 'valid', visible);
+          r.coveredMs = (await this.coverage(m, p)).covered;
+          p.state = 'active';
+          r.nextCheck = Math.min(Date.now() + t.sampleMs, r.endsAt);
+          return;
+        }
       }
     }
     if (r.endsAt && Date.now() >= r.endsAt && !r.stopReason) {
       const remote: any = await this.remote(path, g);
+      const breached = await this.recordBreach(m, p, remote);
+      if (!breached && Number.isFinite(remote.observedAt) && remote.observedAt < r.endsAt) {
+        r.nextCheck = Date.now() + t.sampleMs;
+        return;
+      }
       // A server expiry receipt closes the last sampled interval; it is not a viewer impression.
-      if (
-        !remote.stopped &&
-        remote.originalMatches &&
-        remote.endsAt === r.endsAt &&
-        remote.leaseUntil >= r.endsAt
-      )
-        await this.observe(m, p, 'valid_expiry', remote, r.endsAt);
-      else await this.observe(m, p, 'mismatch', remote);
-      r.stopReason = 'deadline';
-      r.stoppedAt = r.endsAt;
-      p.state = 'restoring';
+      if (!breached) {
+        if (!(await this.confirmExpiry(m, p, g, path, remote)))
+          await this.observe(m, p, 'mismatch', remote);
+        r.stopReason = 'deadline';
+        r.stoppedAt = r.endsAt;
+        p.state = 'restoring';
+      }
     }
     if (p.state === 'restoring' || r.stopReason) {
+      if (r.startsAt && !r.breach) {
+        try {
+          await this.recordBreach(m, p, await this.remote(path, g));
+        } catch (e) {
+          if (e.status !== 401) throw e;
+        }
+      }
       try {
         await this.remote(path, g, 'DELETE');
       } catch (e) {
@@ -675,11 +766,41 @@ export class PlacementsService implements OnModuleInit, OnModuleDestroy {
       r.requiredMs = duration;
       r.maxObservedGapMs = maxGap;
       r.award = award;
+      if (['participant', 'user_override'].includes(r.stopReason) && r.startsAt) {
+        r.notification = {
+          type: 'agreement_broken',
+          title: 'Agreement broken',
+          occurredAt: r.breach?.at ?? r.stoppedAt,
+          recordedAt: Date.now(),
+          source: r.breach?.source ?? 'ProfilePays',
+          campaign: t.title,
+          message:
+            'The placement was removed before the agreed end time. Replacing it does not restore this agreement. No payout will be released.',
+          withheld: t.reward,
+          currency: 'TEST_CREDIT',
+          placementId: p.id,
+        };
+        await this.event(m, p.id, 'agreement_broken', r.notification);
+      }
       if (r.assessment === 'needs_review') {
         // Keep liability reserved for operator review; never label ambiguous evidence as earned.
         r.settlement = 'review_hold';
       } else {
         await this.settle(m, p, award);
+      }
+      if (r.assessment === 'eligible') {
+        r.notification = {
+          type: 'agreement_completed',
+          title: 'Agreement completed',
+          occurredAt: r.endsAt,
+          recordedAt: Date.now(),
+          campaign: t.title,
+          message: 'The agreed placement period was completed and verified.',
+          award,
+          currency: 'TEST_CREDIT',
+          placementId: p.id,
+        };
+        await this.event(m, p.id, 'agreement_completed', r.notification);
       }
       p.state = 'ended';
       await this.event(m, p.id, 'assessment', {
@@ -716,6 +837,7 @@ export class PlacementsService implements OnModuleInit, OnModuleDestroy {
     return { covered, mismatch, maxGap };
   }
   private async settle(m: EntityManager, p: any, award: number) {
+    if (p.record.breach && award !== 0) throw Error('A breached placement cannot release a payout');
     const [{ count }] = await m.query(
       'SELECT count(*)::integer AS count FROM test_credit_ledger WHERE placement_id=$1',
       [p.id]

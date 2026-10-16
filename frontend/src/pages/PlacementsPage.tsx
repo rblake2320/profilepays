@@ -4,11 +4,13 @@ import { Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/
 import api from '../api/client';
 import bluePreview from '../assets/blue.png';
 import greenPreview from '../assets/green.png';
+import AgreementReport from '../components/AgreementReport';
 import { useAppSelector } from '../hooks/redux';
 const ended = (p: any) => ['ended', 'failed', 'cancelled'].includes(p.state);
 const duration = (n: number) =>
   n < 60 ? `${n}s` : n < 3600 ? `${Math.round(n / 60)} min` : `${+(n / 3600).toFixed(1)} hr`;
 const date = (n: any) => (n ? new Date(n).toLocaleString() : 'Awaiting confirmation');
+const stampedDate = (n: number) => new Date(n).toLocaleString(undefined, { timeZoneName: 'short' });
 const Field = ({ label, children }: { label: string; children: ReactNode }) => (
   <label className="pp-field">
     <span>{label}</span>
@@ -59,7 +61,9 @@ export default function PlacementsPage() {
       reward: 100,
       budget: 1000,
       capacity: 10,
+      notifications: { broken: true, completed: true },
     });
+  const [showReport, setShowReport] = useState(false);
   const clock = useRef({ server: Date.now(), mono: performance.now() });
   const [now, setNow] = useState(Date.now());
   const selected = params.get('campaign') || '';
@@ -107,7 +111,9 @@ export default function PlacementsPage() {
   const source = (c: any) =>
     c?.png_base64
       ? `data:image/png;base64,${c.png_base64}`
-      : (c?.terms?.assetKey || c?.asset_key) === 'blue' ? bluePreview : greenPreview;
+      : (c?.terms?.assetKey || c?.asset_key) === 'blue'
+        ? bluePreview
+        : greenPreview;
   const change = (key: string, value: any) => {
     setReview(false);
     setForm(f => ({ ...f, [key]: value }));
@@ -221,17 +227,24 @@ export default function PlacementsPage() {
         </section>
         <div className="pp-steps">
           {[
-            ['01 / Choose an offer', 'Compare campaigns, placement durations and test-credit rewards. Choose the terms that suit you.'],
-            ['02 / Preview and approve', 'Preview the image on your connected profile, then approve the temporary placement and its terms.'],
-            ['03 / Verify, restore, earn', 'We check the placement, restore your original profile and record eligible test credits in your receipt.'],
-          ].map(
-            ([s, description]) => (
-              <article key={s}>
-                <h3>{s}</h3>
-                <p>{description}</p>
-              </article>
-            )
-          )}
+            [
+              '01 / Choose an offer',
+              'Compare campaigns, placement durations and test-credit rewards. Choose the terms that suit you.',
+            ],
+            [
+              '02 / Preview and approve',
+              'Preview the image on your connected profile, then approve the temporary placement and its terms.',
+            ],
+            [
+              '03 / Verify, restore, earn',
+              'We check the placement, restore your original profile and record eligible test credits in your receipt.',
+            ],
+          ].map(([s, description]) => (
+            <article key={s}>
+              <h3>{s}</h3>
+              <p>{description}</p>
+            </article>
+          ))}
         </div>
       </>
     );
@@ -260,6 +273,49 @@ export default function PlacementsPage() {
         <div role="status" className="pp-notice">
           {notice}
         </div>
+      )}
+      {data.placements
+        .filter((p: any) => {
+          const n = p.record.notification;
+          if (!n) return false;
+          if (user.userType !== 'advertiser') return true;
+          const c = data.campaigns.find((c: any) => c.id === p.campaign_id);
+          return (
+            c?.notification_preferences?.[
+              n.type === 'agreement_broken' ? 'broken' : 'completed'
+            ] !== false
+          );
+        })
+        .map((p: any) => (
+          <section role="alert" className="pp-alert" key={p.id} data-testid={`breach-${p.id}`}>
+            <strong>
+              {p.record.notification.title} — {p.record.notification.campaign}
+            </strong>
+            <p>{p.record.notification.message}</p>
+            <p>
+              {p.record.notification.type === 'agreement_broken' ? 'Removed' : 'Completed'}:{' '}
+              <time dateTime={new Date(p.record.notification.occurredAt).toISOString()}>
+                {stampedDate(p.record.notification.occurredAt)}
+              </time>{' '}
+              · {new Date(p.record.notification.occurredAt).toISOString()} (UTC)
+            </p>
+            <p>
+              {p.record.notification.type === 'agreement_broken'
+                ? `${p.record.notification.withheld} test credits withheld`
+                : `${p.record.notification.award} test credits awarded`}{' '}
+              · Placement {p.id}
+            </p>
+          </section>
+        ))}
+      {user.userType === 'advertiser' && (
+        <section className="pp-panel">
+          <h2>Agreement reports and notifications</h2>
+          <p>
+            Choose alerts per campaign below. Turn both off for report only. Every outcome remains
+            in your report.
+          </p>
+          <button onClick={() => setShowReport(true)}>Preview and print all agreements</button>
+        </section>
       )}
       {path === '/marketplace' && (
         <>
@@ -509,9 +565,10 @@ export default function PlacementsPage() {
                 )}
                 <div className="pp-terms">
                   <p>
-                    The clock starts after placement is confirmed. Checks run every{' '}
-                    {chosen.terms.sampleMs / 1000} seconds; at least 98% sampled coverage is
-                    required. Checks measure placement availability, not audience views.
+                    Keep the image in place for the entire agreed duration. Removing it even briefly
+                    breaks this agreement permanently; putting it back does not restore eligibility.
+                    The clock starts after placement is confirmed. Checks measure placement
+                    availability, not audience views.
                   </p>
                   <p>
                     Stopping early earns zero. Sponsor cancellation is prorated. Evidence gaps go to
@@ -551,7 +608,11 @@ export default function PlacementsPage() {
       {path === '/advertisers' && (
         <>
           <p className="pp-eyebrow">ADVERTISER WORKSPACE</p>
-          {user.companyName && <p>Campaigns for <strong>{user.companyName}</strong></p>}
+          {user.companyName && (
+            <p>
+              Campaigns for <strong>{user.companyName}</strong>
+            </p>
+          )}
           <h1>
             Your next campaign
             <br />
@@ -624,6 +685,14 @@ export default function PlacementsPage() {
                     Total test budget: {form.budget}. Participants must explicitly approve the
                     image. Published terms cannot be edited.
                   </p>
+                  <p>
+                    Notify me: {form.notifications.broken ? 'broken agreements ' : ''}
+                    {form.notifications.completed ? 'completed agreements' : ''}
+                    {!form.notifications.broken && !form.notifications.completed
+                      ? 'report only'
+                      : ''}
+                    .
+                  </p>
                   <div className="pp-actions">
                     <button onClick={() => setReview(false)}>Back to edit</button>
                     <button
@@ -652,6 +721,25 @@ export default function PlacementsPage() {
                     setReview(true);
                   }}
                 >
+                  <fieldset>
+                    <legend>In-app notifications</legend>
+                    {(['broken', 'completed'] as const).map(k => (
+                      <label className="pp-consent" key={k}>
+                        <input
+                          type="checkbox"
+                          checked={form.notifications[k]}
+                          onChange={e =>
+                            change('notifications', {
+                              ...form.notifications,
+                              [k]: e.target.checked,
+                            })
+                          }
+                        />
+                        Notify me when an agreement is {k}
+                      </label>
+                    ))}
+                    <p>Turn both off for report only. Printable reports are always available.</p>
+                  </fieldset>
                   {(['title', 'brand', 'description'] as const).map(k => (
                     <Field
                       label={
@@ -719,6 +807,31 @@ export default function PlacementsPage() {
                   {c.status} · {c.participants}/{c.terms.capacity} participants · {c.spent} test
                   credits settled
                 </p>
+                <fieldset>
+                  <legend>Notify me for {c.terms.title}</legend>
+                  {(['broken', 'completed'] as const).map(k => (
+                    <label className="pp-consent" key={k}>
+                      <input
+                        type="checkbox"
+                        disabled={busy}
+                        checked={c.notification_preferences?.[k] !== false}
+                        onChange={e =>
+                          action(() =>
+                            api.post(`/placements/campaigns/${c.id}/notifications`, {
+                              ...c.notification_preferences,
+                              [k]: e.target.checked,
+                            })
+                          )
+                        }
+                      />
+                      {k === 'broken' ? 'Broken agreements' : 'Completed agreements'}
+                    </label>
+                  ))}
+                  {c.notification_preferences?.broken === false &&
+                    c.notification_preferences?.completed === false && (
+                      <p>Report only — notifications off.</p>
+                    )}
+                </fieldset>
               </div>
               <button
                 disabled={busy}
@@ -852,6 +965,17 @@ export default function PlacementsPage() {
           )}
         </>
       )}
+      <Dialog open={showReport} onClose={() => setShowReport(false)} maxWidth="lg" fullWidth>
+        <DialogTitle>Agreement report</DialogTitle>
+        <DialogContent>
+          <AgreementReport placements={data.placements} />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setShowReport(false)}>Close</Button>
+          <Button onClick={() => window.print()}>Print / Save as PDF</Button>
+        </DialogActions>
+        <style>{`@media print {body * {visibility:hidden} .pp-contract-report,.pp-contract-report * {visibility:visible} .MuiDialog-root {position:absolute!important;inset:0!important} .MuiDialog-container {display:block!important;height:auto!important} .MuiDialog-paper {max-width:none!important;max-height:none!important;margin:0!important;overflow:visible!important;box-shadow:none!important} .MuiDialogContent-root {overflow:visible!important} .pp-contract-report td {padding:8px;border-bottom:1px solid #ccc;overflow-wrap:anywhere} .pp-contract-report tr {break-inside:avoid}}`}</style>
+      </Dialog>
       <Dialog open={!!stop} onClose={() => !busy && setStop(null)}>
         <DialogTitle>Stop this placement?</DialogTitle>
         <DialogContent>

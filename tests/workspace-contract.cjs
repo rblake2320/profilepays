@@ -20,3 +20,11 @@ assert.ok(advertiser.includes('Campaign studio'));
 const member=render(React.createElement(Layout),'member');for(const path of ['/connections','/earnings','/placements'])assert.ok(member.includes(`href="${path}"`));
 for(const role of ['member','advertiser',null]){const markup=render(React.createElement(Guard,{allowedRoles:['member','admin']},React.createElement('span',null,'PARTICIPANT CONTENT')),role);assert.equal(markup.includes('PARTICIPANT CONTENT'),role==='member');}
 console.log('Worked: advertiser navigation omits member workflows; member navigation remains; role guard rejects advertiser and anonymous content');
+const Report=require('../frontend/src/components/AgreementReport').default;
+const report=render(React.createElement(Report,{placements:[{id:'test-contract',username:'participant',record:{terms:{title:'<script>invalid</script>',durationSeconds:300},notification:{title:'Agreement broken',type:'agreement_broken',occurredAt:1792116000000,withheld:100},startsAt:1792115856290,endsAt:1792116156290,coveredMs:150000,award:0,restoration:'restored',settlement:'released'}}]}),'advertiser');
+assert.ok(report.includes('2026-10-16T02:00:00.000Z'));
+assert.ok(report.includes('Agreement broken'));
+assert.ok(report.includes('100<!-- --> withheld') || report.includes('100 withheld'));
+assert.ok(!report.includes('<script>'));
+assert.ok(report.includes('Test credits have no cash value'));
+console.log('Worked: printable report retains UTC breach time, withheld credits and escapes campaign text');

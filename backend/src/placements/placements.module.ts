@@ -37,6 +37,13 @@ class PlacementsController {
   ) {
     return this.service.join(user, id, body);
   }
+  @Post('campaigns/:id/notifications') notifications(
+    @CurrentUser() user: any,
+    @Param('id') id: string,
+    @Body() body: any
+  ) {
+    return this.service.notifications(user, id, body);
+  }
   @Get(':id/receipt') receipt(@CurrentUser() user: any, @Param('id') id: string) {
     return this.service.receipt(user, id);
   }
