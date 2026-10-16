@@ -1,0 +1,14 @@
+{
+  "outcome": "Worked",
+  "identityStart": 503,
+  "realPayoutEndpoint": 404,
+  "nonAdminBan": 403,
+  "breachLimit": 403,
+  "excludedConfirmation": 403,
+  "foreignRelease": 404,
+  "preferences": 4,
+  "hold": "44176368-04b3-44bb-9631-35e401fb83d4",
+  "expiresAt": 1792117537864,
+  "campaign": "7259d2a6-6f6a-46a0-a343-ed4c7ea3199f",
+  "destination": "b91aa13d-96a3-47a0-a7ce-12515afb1172"
+}

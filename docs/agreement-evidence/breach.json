@@ -1,0 +1,80 @@
+{
+  "outcome": "Worked",
+  "placement": "a52acf0a-3061-41e7-9b38-22d5ea1cfe96",
+  "record": {
+    "award": 0,
+    "terms": {
+      "brand": "Test sponsor",
+      "title": "Fair marketplace breach 1792117475470",
+      "reward": 100,
+      "version": 1,
+      "assetKey": "blue",
+      "capacity": 1,
+      "category": "Community",
+      "currency": "TEST_CREDIT",
+      "maxGapMs": 12000,
+      "sampleMs": 2000,
+      "windowEnd": 1792722274822,
+      "description": "A temporary sponsored profile image.",
+      "cancelPolicy": "participant_zero_sponsor_prorated",
+      "consentVersion": "static-test-v1",
+      "durationSeconds": 120,
+      "coverageRequired": 0.98
+    },
+    "breach": {
+      "at": 1792117615763,
+      "reason": "user_override",
+      "source": "AIHangout"
+    },
+    "endsAt": 1792117719992,
+    "consent": "static-test-v1",
+    "original": {
+      "key": "d7d3e530-9b0b-4b54-a162-31dbc7445f3a",
+      "username": "live_countdown_test",
+      "profileId": "d7d3e530-9b0b-4b54-a162-31dbc7445f3a"
+    },
+    "startsAt": 1792117599992,
+    "coveredMs": 15413,
+    "lastError": null,
+    "nextCheck": 1792117617406,
+    "stoppedAt": 1792117615763,
+    "assessment": "ineligible",
+    "requiredMs": 120000,
+    "settlement": "released",
+    "stopReason": "user_override",
+    "consentedAt": 1792117599185,
+    "restoration": "restored",
+    "notification": {
+      "type": "agreement_broken",
+      "title": "Agreement broken",
+      "source": "AIHangout",
+      "message": "The placement was removed before the agreed end time. Replacing it does not restore this agreement. No payout will be released.",
+      "campaign": "Fair marketplace breach 1792117475470",
+      "currency": "TEST_CREDIT",
+      "withheld": 100,
+      "occurredAt": 1792117615763,
+      "recordedAt": 1792117617939,
+      "placementId": "a52acf0a-3061-41e7-9b38-22d5ea1cfe96"
+    },
+    "maxObservedGapMs": 2576
+  },
+  "ledger": [
+    {
+      "id": "19",
+      "placement_id": "a52acf0a-3061-41e7-9b38-22d5ea1cfe96",
+      "account": "campaign:e2a7f517-f0d5-46c0-92fb-1c6c66a44b54",
+      "amount": 0,
+      "currency": "TEST_CREDIT",
+      "created_at": "2026-10-16T02:26:57.541Z"
+    },
+    {
+      "id": "20",
+      "placement_id": "a52acf0a-3061-41e7-9b38-22d5ea1cfe96",
+      "account": "participant:d07d6911-e528-41e4-9bfa-65558c0faafb",
+      "amount": 0,
+      "currency": "TEST_CREDIT",
+      "created_at": "2026-10-16T02:26:57.541Z"
+    }
+  ],
+  "observations": 9
+}

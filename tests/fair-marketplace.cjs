@@ -1,19 +1,20 @@
 // Real PostgreSQL transactions in a disposable schema; no provider or social calls.
-require('ts-node').register({ project: 'backend/tsconfig.json', transpileOnly: true });
+const built = process.env.FAIR_BUILT === 'true';
+if (!built) require('ts-node').register({ project: 'backend/tsconfig.json', transpileOnly: true });
+const source = process.cwd() + (built ? '/backend/dist/src' : '/backend/src');
 require('reflect-metadata');
 const assert = require('node:assert/strict'),
   fs = require('node:fs'),
   { randomUUID } = require('node:crypto');
 const { DataSource } = require('typeorm');
-const fair = require('../backend/src/placements/fair-marketplace');
-const {
-  FairMarketplace1792400000000,
-} = require('../backend/src/database/migrations/1792400000000-FairMarketplace');
-const { PlacementsService } = require('../backend/src/placements/placements.service');
-const {
-  identityStatus,
-  UnconfiguredIdentityProvider,
-} = require('../backend/src/placements/identity-provider');
+const fair = require(source + '/placements/fair-marketplace');
+const { FairMarketplace1792400000000 } = require(
+  source + '/database/migrations/1792400000000-FairMarketplace'
+);
+const { PlacementsService } = require(source + '/placements/placements.service');
+const { identityStatus, UnconfiguredIdentityProvider } = require(
+  source + '/placements/identity-provider'
+);
 const e = process.env.DB_PASSWORD
   ? process.env
   : JSON.parse(fs.readFileSync('.local/static-pilot/backend-env.json'));
@@ -45,6 +46,11 @@ const reject = (fn, status) => assert.rejects(fn, x => x.getStatus?.() === statu
   await admin.initialize();
   await admin.query(`CREATE SCHEMA ${schema}`);
   await db.initialize();
+  assert.equal(
+    (await db.query('SELECT current_schema() AS name'))[0].name,
+    schema,
+    'Disposable schema isolation required'
+  );
   try {
     await db.query(`CREATE TABLE users(id uuid PRIMARY KEY);CREATE TABLE placement_destinations(id uuid PRIMARY KEY,user_id uuid,username text,encrypted_grant text);
 CREATE TABLE placement_campaigns(id uuid PRIMARY KEY,sponsor_id uuid,terms jsonb,budget int,reserved int DEFAULT 0,spent int DEFAULT 0,status text DEFAULT 'active',notification_preferences jsonb,created_at timestamptz DEFAULT now());
@@ -298,6 +304,7 @@ CREATE TABLE placement_events(placement_id uuid,at_ms bigint,type text,detail js
         outcome: 'Worked',
         scenarios: passed,
         storage: 'real PostgreSQL',
+        artifact: built ? 'deployed compiled modules' : 'source modules',
         remote: 'stubbed connection readback for join only',
       })
     );

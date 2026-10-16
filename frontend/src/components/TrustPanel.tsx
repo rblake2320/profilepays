@@ -9,7 +9,7 @@ export default function TrustPanel({ data, user, action }: any) {
   const advertiser = ['advertiser', 'admin'].includes(user.userRole);
   const time = (v: any) => new Date(Number(v)).toLocaleString(undefined, { timeZoneName: 'short' });
   return (
-    <section className="pp-panel">
+    <section className="pp-panel pp-trust">
       <h2>Identity and participation</h2>
       <p>{data.identity?.message}</p>
       <p>
@@ -197,7 +197,42 @@ export default function TrustPanel({ data, user, action }: any) {
             ))}
           {report && (
             <>
-              <pre className="pp-json">{JSON.stringify(report, null, 2)}</pre>
+              <section aria-label="Selected analytics">
+                <h3>{report.campaign}</h3>
+                <p>Free test preview · {report.package} package</p>
+                <dl>
+                  {report.demand &&
+                    Object.entries({
+                      Holds: report.demand.total,
+                      Confirmed: report.demand.confirmed,
+                      Cancelled: report.demand.cancelled,
+                      Expired: report.demand.expired,
+                      Participants: report.demand.participants,
+                      'Time to fill':
+                        report.demand.timeToFillMs === null
+                          ? 'Not filled'
+                          : `${(report.demand.timeToFillMs / 1000).toFixed(1)} seconds`,
+                    }).map(([label, value]) => (
+                      <div className="pp-row" key={label}>
+                        <dt>{label}</dt>
+                        <dd>{String(value)}</dd>
+                      </div>
+                    ))}
+                  {report.delivery &&
+                    Object.entries({
+                      Placements: report.delivery.placements,
+                      'Completed agreements': report.delivery.completed,
+                      'Broken agreements': report.delivery.broken,
+                      'Verified seconds': Number(report.delivery.verifiedms) / 1000,
+                      'Test credits awarded': report.delivery.testcredits,
+                    }).map(([label, value]) => (
+                      <div className="pp-row" key={label}>
+                        <dt>{label}</dt>
+                        <dd>{String(value)}</dd>
+                      </div>
+                    ))}
+                </dl>
+              </section>
               <button
                 onClick={() => {
                   const a = document.createElement('a'),

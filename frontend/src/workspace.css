@@ -670,3 +670,27 @@ button:disabled {
     font-size: 55px;
   }
 }
+
+.pp-trust textarea {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 96px;
+  resize: vertical;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  color: var(--ink);
+  background: white;
+  font: inherit;
+}
+.pp-trust .pp-field input,
+.pp-trust .pp-field textarea {
+  font-size: 16px;
+}
+.pp-trust .pp-row {
+  overflow-wrap: anywhere;
+}
+.pp-trust summary {
+  cursor: pointer;
+  padding: 10px 0;
+}

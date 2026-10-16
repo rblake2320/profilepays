@@ -1,0 +1,74 @@
+{
+  "outcome": "Worked",
+  "placement": "6a98e205-f14a-4a1d-839f-85b26e06931b",
+  "record": {
+    "award": 100,
+    "terms": {
+      "brand": "Test sponsor",
+      "title": "Fair marketplace complete 1792117475292",
+      "reward": 100,
+      "version": 1,
+      "assetKey": "blue",
+      "capacity": 1,
+      "category": "Community",
+      "currency": "TEST_CREDIT",
+      "maxGapMs": 12000,
+      "sampleMs": 2000,
+      "windowEnd": 1792722274714,
+      "description": "A temporary sponsored profile image.",
+      "cancelPolicy": "participant_zero_sponsor_prorated",
+      "consentVersion": "static-test-v1",
+      "durationSeconds": 30,
+      "coverageRequired": 0.98
+    },
+    "endsAt": 1792117586695,
+    "consent": "static-test-v1",
+    "original": {
+      "key": "d7d3e530-9b0b-4b54-a162-31dbc7445f3a",
+      "username": "live_countdown_test",
+      "profileId": "d7d3e530-9b0b-4b54-a162-31dbc7445f3a"
+    },
+    "startsAt": 1792117556695,
+    "coveredMs": 30000,
+    "lastError": null,
+    "nextCheck": 1792117586695,
+    "stoppedAt": 1792117586695,
+    "assessment": "eligible",
+    "requiredMs": 30000,
+    "settlement": "credited_test_only",
+    "stopReason": "deadline",
+    "consentedAt": 1792117555530,
+    "restoration": "restored",
+    "notification": {
+      "type": "agreement_completed",
+      "award": 100,
+      "title": "Agreement completed",
+      "message": "The agreed placement period was completed and verified.",
+      "campaign": "Fair marketplace complete 1792117475292",
+      "currency": "TEST_CREDIT",
+      "occurredAt": 1792117586695,
+      "recordedAt": 1792117587546,
+      "placementId": "6a98e205-f14a-4a1d-839f-85b26e06931b"
+    },
+    "maxObservedGapMs": 2793
+  },
+  "ledger": [
+    {
+      "id": "17",
+      "placement_id": "6a98e205-f14a-4a1d-839f-85b26e06931b",
+      "account": "campaign:7259d2a6-6f6a-46a0-a343-ed4c7ea3199f",
+      "amount": -100,
+      "currency": "TEST_CREDIT",
+      "created_at": "2026-10-16T02:26:27.023Z"
+    },
+    {
+      "id": "18",
+      "placement_id": "6a98e205-f14a-4a1d-839f-85b26e06931b",
+      "account": "participant:d07d6911-e528-41e4-9bfa-65558c0faafb",
+      "amount": 100,
+      "currency": "TEST_CREDIT",
+      "created_at": "2026-10-16T02:26:27.023Z"
+    }
+  ],
+  "observations": 14
+}

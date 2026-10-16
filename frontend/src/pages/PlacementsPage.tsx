@@ -66,6 +66,7 @@ export default function PlacementsPage() {
       notifications: { broken: true, completed: true },
     });
   const [showReport, setShowReport] = useState(false);
+  const [showNotices, setShowNotices] = useState(false);
   const clock = useRef({ server: Date.now(), mono: performance.now() });
   const [now, setNow] = useState(Date.now());
   const selected = params.get('campaign') || '';
@@ -284,6 +285,8 @@ export default function PlacementsPage() {
       )}
       {data.placements
         .filter((p: any) => {
+          if (!['/placements', '/earnings', '/advertisers'].includes(location.pathname))
+            return false;
           const n = p.record.notification;
           if (!n) return false;
           if (user.userType !== 'advertiser') return true;
@@ -294,6 +297,7 @@ export default function PlacementsPage() {
             ] !== false
           );
         })
+        .filter((_: any, index: number) => showNotices || index === 0)
         .map((p: any) => (
           <section role="alert" className="pp-alert" key={p.id} data-testid={`breach-${p.id}`}>
             <strong>
@@ -315,6 +319,12 @@ export default function PlacementsPage() {
             </p>
           </section>
         ))}
+      {['/placements', '/earnings', '/advertisers'].includes(location.pathname) &&
+        data.placements.filter((p: any) => p.record.notification).length > 1 && (
+          <button onClick={() => setShowNotices(!showNotices)}>
+            {showNotices ? 'Show latest notification' : 'Show notification history'}
+          </button>
+        )}
       {user.userType === 'advertiser' && (
         <section className="pp-panel">
           <h2>Agreement reports and notifications</h2>

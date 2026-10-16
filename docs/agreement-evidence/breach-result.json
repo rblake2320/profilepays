@@ -1,0 +1,80 @@
+{
+  "outcome": "Worked",
+  "id": "4e0e690a-9ebe-4945-bf2d-a16a7570191c",
+  "record": {
+    "award": 0,
+    "terms": {
+      "brand": "Test sponsor",
+      "title": "Live agreement breach 1792116816123",
+      "reward": 100,
+      "version": 1,
+      "assetKey": "blue",
+      "capacity": 1,
+      "category": "Community",
+      "currency": "TEST_CREDIT",
+      "maxGapMs": 12000,
+      "sampleMs": 2000,
+      "windowEnd": 1792721615349,
+      "description": "A temporary sponsored profile image.",
+      "cancelPolicy": "participant_zero_sponsor_prorated",
+      "consentVersion": "static-test-v1",
+      "durationSeconds": 120,
+      "coverageRequired": 0.98
+    },
+    "breach": {
+      "at": 1792116858138,
+      "reason": "user_override",
+      "source": "AIHangout"
+    },
+    "endsAt": 1792116970419,
+    "consent": "static-test-v1",
+    "original": {
+      "key": "d7d3e530-9b0b-4b54-a162-31dbc7445f3a",
+      "username": "live_countdown_test",
+      "profileId": "d7d3e530-9b0b-4b54-a162-31dbc7445f3a"
+    },
+    "startsAt": 1792116850419,
+    "coveredMs": 5297,
+    "lastError": null,
+    "nextCheck": 1792116857717,
+    "stoppedAt": 1792116858138,
+    "assessment": "ineligible",
+    "requiredMs": 120000,
+    "settlement": "released",
+    "stopReason": "user_override",
+    "consentedAt": 1792116849892,
+    "restoration": "restored",
+    "notification": {
+      "type": "agreement_broken",
+      "title": "Agreement broken",
+      "source": "AIHangout",
+      "message": "The placement was removed before the agreed end time. Replacing it does not restore this agreement. No payout will be released.",
+      "campaign": "Live agreement breach 1792116816123",
+      "currency": "TEST_CREDIT",
+      "withheld": 100,
+      "occurredAt": 1792116858138,
+      "recordedAt": 1792116858554,
+      "placementId": "4e0e690a-9ebe-4945-bf2d-a16a7570191c"
+    },
+    "maxObservedGapMs": 2628
+  },
+  "observations": 5,
+  "ledger": [
+    {
+      "id": "15",
+      "placement_id": "4e0e690a-9ebe-4945-bf2d-a16a7570191c",
+      "account": "campaign:bd612ee1-7a41-43ce-bf09-696fac28db0f",
+      "amount": 0,
+      "currency": "TEST_CREDIT",
+      "created_at": "2026-10-16T02:14:18.048Z"
+    },
+    {
+      "id": "16",
+      "placement_id": "4e0e690a-9ebe-4945-bf2d-a16a7570191c",
+      "account": "participant:d07d6911-e528-41e4-9bfa-65558c0faafb",
+      "amount": 0,
+      "currency": "TEST_CREDIT",
+      "created_at": "2026-10-16T02:14:18.048Z"
+    }
+  ]
+}

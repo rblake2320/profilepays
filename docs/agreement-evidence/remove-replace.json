@@ -1,0 +1,26 @@
+{
+  "outcome": "Worked",
+  "elapsedMs": 398,
+  "attemptedReapply": "ended",
+  "evidence": {
+    "id": "4e0e690a-9ebe-4945-bf2d-a16a7570191c",
+    "startsAt": 1792116850419,
+    "endsAt": 1792116970419,
+    "leaseUntil": 1792116970419,
+    "stopped": true,
+    "breachedAt": 1792116858138,
+    "breachReason": "user_override",
+    "originalMatches": true,
+    "normal": {
+      "username": "live_countdown_test",
+      "profileId": "d7d3e530-9b0b-4b54-a162-31dbc7445f3a",
+      "key": "d7d3e530-9b0b-4b54-a162-31dbc7445f3a"
+    },
+    "observedAt": 1792116858542
+  },
+  "normal": {
+    "username": "live_countdown_test",
+    "profileId": "d7d3e530-9b0b-4b54-a162-31dbc7445f3a",
+    "key": "d7d3e530-9b0b-4b54-a162-31dbc7445f3a"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "outcome": "Worked",
+  "grantRevoked": true,
+  "originalRestored": true,
+  "analytics": {
+    "campaign": "Fair marketplace complete 1792117475292",
+    "package": "all",
+    "mode": "free_test_preview",
+    "realChargesEnabled": false,
+    "generatedAt": 1792117631520,
+    "demand": {
+      "total": 3,
+      "confirmed": 1,
+      "cancelled": 1,
+      "expired": 1,
+      "participants": 1,
+      "capacity": 1,
+      "timeToFillMs": 80813
+    },
+    "delivery": {
+      "placements": 1,
+      "completed": 1,
+      "broken": 0,
+      "verifiedms": "30000",
+      "testcredits": 100
+    }
+  }
+}
