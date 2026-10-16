@@ -4,6 +4,7 @@ import { Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/
 import api from '../api/client';
 import bluePreview from '../assets/blue.png';
 import greenPreview from '../assets/green.png';
+import TrustPanel from '../components/TrustPanel';
 import AgreementReport from '../components/AgreementReport';
 import { useAppSelector } from '../hooks/redux';
 const ended = (p: any) => ['ended', 'failed', 'cancelled'].includes(p.state);
@@ -61,6 +62,7 @@ export default function PlacementsPage() {
       reward: 100,
       budget: 1000,
       capacity: 10,
+      maxBreaches: null as number | null,
       notifications: { broken: true, completed: true },
     });
   const [showReport, setShowReport] = useState(false);
@@ -156,6 +158,12 @@ export default function PlacementsPage() {
   const campaigns = data?.campaigns || [],
     placements = data?.placements || [];
   const active = placements.filter((p: any) => !ended(p));
+  const held = (data?.holds || []).find(
+    (h: any) =>
+      h.campaign_id === selected &&
+      h.destination_id === destination &&
+      Number(h.expires_at_ms) > now
+  );
   const chosen = campaigns.find((c: any) => c.id === selected);
   const available = (c: any) =>
     c.status === 'active' &&
@@ -317,6 +325,35 @@ export default function PlacementsPage() {
           <button onClick={() => setShowReport(true)}>Preview and print all agreements</button>
         </section>
       )}
+      {['/connections', '/advertisers', '/placements'].includes(path) && (
+        <TrustPanel data={data} user={user} action={action} />
+      )}
+      {(data.holds || [])
+        .filter((h: any) => Number(h.expires_at_ms) > now)
+        .map((h: any) => (
+          <section className="pp-panel" key={h.id}>
+            <strong>
+              Offer held for {Math.max(0, Math.ceil((Number(h.expires_at_ms) - now) / 1000))}{' '}
+              seconds
+            </strong>
+            <p>
+              No agreement starts until you confirm. Cancelling or letting the hold expire carries
+              no breach.
+            </p>
+            <Link
+              to={`/confirmation?campaign=${h.campaign_id}`}
+              onClick={() => setDestination(h.destination_id)}
+            >
+              Review held offer
+            </Link>{' '}
+            <button
+              disabled={busy}
+              onClick={() => action(() => api.post(`/placements/holds/${h.id}/release`))}
+            >
+              Release hold
+            </button>
+          </section>
+        ))}
       {path === '/marketplace' && (
         <>
           <section className="pp-discover">
@@ -585,10 +622,18 @@ export default function PlacementsPage() {
                 </label>
                 <button
                   className="pp-button"
-                  disabled={busy || !consent || !destination || !available(chosen)}
+                  disabled={busy || !destination || (held ? !consent : !available(chosen))}
                   onClick={() =>
                     action(async () => {
+                      if (!held) {
+                        await api.post(`/placements/campaigns/${selected}/hold`, {
+                          destinationId: destination,
+                          commandKey: crypto.randomUUID(),
+                        });
+                        return;
+                      }
                       await api.post(`/placements/campaigns/${selected}/join`, {
+                        holdId: held.id,
                         commandKey: joinKey,
                         destinationId: destination,
                         termsVersion: 1,
@@ -598,9 +643,14 @@ export default function PlacementsPage() {
                     })
                   }
                 >
-                  Reserve placement ↗
+                  {held ? 'Confirm and start placement ↗' : 'Hold offer for 60 seconds'}
                 </button>
-                {!available(chosen) && <p role="status">This offer is no longer available.</p>}
+                {chosen.max_breaches && (
+                  <p>Eligibility: fewer than {chosen.max_breaches} confirmed breaches.</p>
+                )}
+                {!available(chosen) && !held && (
+                  <p role="status">This offer is no longer available.</p>
+                )}
               </section>
             </div>
           </>
@@ -664,6 +714,19 @@ export default function PlacementsPage() {
             </section>
             <section className="pp-panel">
               <h2>{review ? '03 / Review your offer' : '02 / Build your offer'}</h2>
+              {!review && (
+                <Field label="Eligibility: fewer than this many confirmed breaches (blank = no limit)">
+                  <input
+                    type="number"
+                    min="1"
+                    max="1000"
+                    value={form.maxBreaches ?? ''}
+                    onChange={e =>
+                      change('maxBreaches', e.target.value ? Number(e.target.value) : null)
+                    }
+                  />
+                </Field>
+              )}
               {review ? (
                 <>
                   <img
@@ -682,6 +745,8 @@ export default function PlacementsPage() {
                     <Metric label="Maximum participants" value={form.capacity} />
                   </div>
                   <p>
+                    Breach limit:{' '}
+                    {form.maxBreaches === null ? 'No limit' : `Fewer than ${form.maxBreaches}`}.
                     Total test budget: {form.budget}. Participants must explicitly approve the
                     image. Published terms cannot be edited.
                   </p>

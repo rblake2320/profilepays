@@ -7,8 +7,44 @@ class PlacementsController {
   @Get() dashboard(@CurrentUser() user: any) {
     return this.service.dashboard(user);
   }
+  @Post('identity/start') identity(@CurrentUser() u: any, @Body() b: any) {
+    return this.service.identityStart(u, b);
+  }
+  @Post('exclusions') exclusions(@CurrentUser() u: any, @Body() b: any) {
+    return this.service.exclusions(u, b);
+  }
+  @Post('campaigns/:id/analytics') analytics(
+    @CurrentUser() u: any,
+    @Param('id') id: string,
+    @Body() b: any
+  ) {
+    return this.service.analytics(u, id, b);
+  }
   @Post('destinations') connect(@CurrentUser() user: any, @Body() body: any) {
     return this.service.connect(user, body);
+  }
+  @Post('campaigns/:id/hold') hold(@CurrentUser() u: any, @Param('id') id: string, @Body() b: any) {
+    return this.service.hold(u, id, b);
+  }
+  @Post('holds/:id/release') release(@CurrentUser() u: any, @Param('id') id: string) {
+    return this.service.releaseHold(u, id);
+  }
+  @Post('appeals') appeal(@CurrentUser() u: any, @Body() b: any) {
+    return this.service.appeal(u, b);
+  }
+  @Post('appeals/:id/review') reviewAppeal(
+    @CurrentUser() u: any,
+    @Param('id') id: string,
+    @Body() b: any
+  ) {
+    return this.service.reviewAppeal(u, id, b);
+  }
+  @Post('participants/:id/access') access(
+    @CurrentUser() u: any,
+    @Param('id') id: string,
+    @Body() b: any
+  ) {
+    return this.service.accessDecision(u, id, b);
   }
   @Post('campaigns') create(@CurrentUser() user: any, @Body() body: any) {
     return this.service.create(user, body);

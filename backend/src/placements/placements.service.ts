@@ -11,6 +11,8 @@ import {
 import { DataSource, EntityManager } from 'typeorm';
 import { randomUUID, randomBytes, createCipheriv, createDecipheriv, createHash } from 'crypto';
 const { PNG } = require('pngjs');
+import * as fair from './fair-marketplace';
+import { identityStatus, UnconfiguredIdentityProvider } from './identity-provider';
 
 const terminal = new Set(['ended', 'failed', 'cancelled']);
 const requireUuid = (v: any) => {
@@ -90,6 +92,18 @@ export class PlacementsService implements OnModuleInit, OnModuleDestroy {
     }
     return response.json();
   }
+  async identityStart(user: any, b: any) {
+    fair.strict(b, []);
+    return new UnconfiguredIdentityProvider().createHostedVerification(user.id);
+  }
+  async exclusions(user: any, b: any) {
+    this.enabled();
+    return this.db.transaction(m => fair.exclusions(m, user, b));
+  }
+  async analytics(user: any, id: string, b: any) {
+    this.enabled();
+    return this.db.transaction(m => fair.analytics(m, user, id, b));
+  }
   async connect(user: any, b: any) {
     this.enabled();
     exact(b, ['code']);
@@ -129,14 +143,20 @@ export class PlacementsService implements OnModuleInit, OnModuleDestroy {
     this.enabled();
     return {
       testCreditsOnly: true,
+      identity: identityStatus,
+      exclusions: await this.db.query(
+        'SELECT user_id,group_name,reason,created_at_ms FROM advertiser_exclusions WHERE sponsor_id=$1',
+        [user.id]
+      ),
       serverNow: Date.now(),
       origin: this.origin,
       minDurationSeconds: process.env.PROFILEPAYS_SHORT_TESTS === 'true' ? 10 : 3600,
       campaigns: await this.db.query(
-        `SELECT c.id,c.sponsor_id,c.terms,c.budget,c.reserved,c.spent,c.status,c.notification_preferences,
+        `SELECT c.id,c.sponsor_id,c.terms,c.budget,c.reserved,c.spent,c.status,c.notification_preferences,c.max_breaches,
         (SELECT png_base64 FROM placement_creatives a WHERE a.sponsor_id=c.sponsor_id AND a.asset_key=c.terms->>'assetKey') AS png_base64,
-        (SELECT count(*)::integer FROM placements p WHERE p.campaign_id=c.id) AS participants
-        FROM placement_campaigns c ORDER BY c.created_at DESC`
+        ((SELECT count(*) FROM placements p WHERE p.campaign_id=c.id)+(SELECT count(*) FROM placement_holds h WHERE h.campaign_id=c.id AND h.state='held' AND h.expires_at_ms>$1))::integer AS participants
+        FROM placement_campaigns c ORDER BY c.created_at DESC`,
+        [Date.now()]
       ),
       creatives: await this.db.query(
         'SELECT id,name,asset_key,png_base64 FROM placement_creatives WHERE sponsor_id=$1 ORDER BY created_at DESC',
@@ -151,6 +171,11 @@ export class PlacementsService implements OnModuleInit, OnModuleDestroy {
         'SELECT id,username FROM placement_destinations WHERE user_id=$1',
         [user.id]
       ),
+      holds: await this.db.query(
+        "SELECT * FROM placement_holds WHERE user_id=$1 AND state='held' AND expires_at_ms>$2",
+        [user.id, Date.now()]
+      ),
+      standing: await fair.standing(this.db.manager, user),
       placements: await this.db.query(
         'SELECT p.id,p.user_id,p.campaign_id,p.state,p.record,d.username FROM placements p JOIN placement_destinations d ON d.id=p.destination_id JOIN placement_campaigns c ON c.id=p.campaign_id WHERE p.user_id=$1 OR c.sponsor_id=$1 OR $2=true ORDER BY p.created_at DESC',
         [user.id, user.userRole === 'admin']
@@ -181,10 +206,17 @@ export class PlacementsService implements OnModuleInit, OnModuleDestroy {
       'description',
       'category',
       'notifications',
+      'maxBreaches',
     ]);
     requireUuid(b.commandKey);
     const preferences = b.notifications ?? { broken: true, completed: true };
     this.validateNotifications(preferences);
+    const maxBreaches = b.maxBreaches ?? null;
+    if (
+      maxBreaches !== null &&
+      (!Number.isInteger(maxBreaches) || maxBreaches < 1 || maxBreaches > 1000)
+    )
+      throw new BadRequestException('Breach limit must be 1–1000 or no limit');
     const title = clean(b.title, 80),
       short = process.env.PROFILEPAYS_SHORT_TESTS === 'true';
     for (const k of ['durationSeconds', 'reward', 'budget', 'capacity'])
@@ -264,8 +296,8 @@ export class PlacementsService implements OnModuleInit, OnModuleDestroy {
     try {
       return (
         await this.db.query(
-          'INSERT INTO placement_campaigns(id,sponsor_id,command_key,terms,budget,notification_preferences) VALUES($1,$2,$3,$4,$5,$6) RETURNING *',
-          [randomUUID(), user.id, b.commandKey, terms, b.budget, preferences]
+          'INSERT INTO placement_campaigns(id,sponsor_id,command_key,terms,budget,notification_preferences,max_breaches) VALUES($1,$2,$3,$4,$5,$6,$7) RETURNING *',
+          [randomUUID(), user.id, b.commandKey, terms, b.budget, preferences, maxBreaches]
         )
       )[0];
     } catch (e) {
@@ -283,7 +315,7 @@ export class PlacementsService implements OnModuleInit, OnModuleDestroy {
     requireUuid(id);
     this.validateNotifications(b);
     const [c] = await this.db.query(
-      'UPDATE placement_campaigns SET notification_preferences=$3 WHERE id=$1 AND sponsor_id=$2 RETURNING id,notification_preferences',
+      'WITH updated AS (UPDATE placement_campaigns SET notification_preferences=$3 WHERE id=$1 AND sponsor_id=$2 RETURNING id,notification_preferences) SELECT * FROM updated',
       [id, user.id, b]
     );
     if (!c) throw new NotFoundException('Campaign missing');
@@ -292,7 +324,8 @@ export class PlacementsService implements OnModuleInit, OnModuleDestroy {
   async join(user: any, id: string, b: any) {
     this.enabled();
     requireUuid(id);
-    exact(b, ['commandKey', 'destinationId', 'termsVersion', 'consent']);
+    exact(b, ['commandKey', 'destinationId', 'termsVersion', 'consent', 'holdId']);
+    requireUuid(b.holdId);
     requireUuid(b.commandKey);
     requireUuid(b.destinationId);
     if (b.termsVersion !== 1 || b.consent !== 'static-test-v1')
@@ -321,6 +354,16 @@ export class PlacementsService implements OnModuleInit, OnModuleDestroy {
         return prior;
       }
       if (c.sponsor_id === user.id) throw new ForbiddenException('Cannot join your own campaign');
+      await m.query('SELECT id FROM users WHERE id=$1 FOR UPDATE', [user.id]);
+      await fair.eligible(m, user.id, c);
+      const [held] = await m.query(
+        "SELECT * FROM placement_holds WHERE id=$1 AND campaign_id=$2 AND user_id=$3 AND destination_id=$4 AND state='held' AND expires_at_ms>$5 FOR UPDATE",
+        [b.holdId, id, user.id, dest.id, Date.now()]
+      );
+      if (!held)
+        throw new ConflictException(
+          'Your 60-second hold expired or was released. Hold the offer again.'
+        );
       const [{ count }] = await m.query(
         'SELECT count(*)::integer AS count FROM placements WHERE campaign_id=$1',
         [id]
@@ -355,6 +398,7 @@ export class PlacementsService implements OnModuleInit, OnModuleDestroy {
           id,
           c.terms.reward,
         ]);
+        await m.query("UPDATE placement_holds SET state='confirmed' WHERE id=$1", [held.id]);
         await this.event(m, p.id, 'reserved', {
           consent: 'static-test-v1',
           original: info.normal,
@@ -781,6 +825,10 @@ export class PlacementsService implements OnModuleInit, OnModuleDestroy {
           placementId: p.id,
         };
         await this.event(m, p.id, 'agreement_broken', r.notification);
+        await m.query(
+          'INSERT INTO placement_breaches(placement_id,user_id,occurred_at_ms,reason) VALUES($1,$2,$3,$4) ON CONFLICT(placement_id) DO NOTHING',
+          [p.id, p.user_id, r.notification.occurredAt, r.stopReason]
+        );
       }
       if (r.assessment === 'needs_review') {
         // Keep liability reserved for operator review; never label ambiguous evidence as earned.
@@ -852,6 +900,32 @@ export class PlacementsService implements OnModuleInit, OnModuleDestroy {
       [p.id, 'campaign:' + p.campaign_id, -award, 'participant:' + p.user_id, award]
     );
     p.record.settlement = award ? 'credited_test_only' : 'released';
+  }
+  async hold(user: any, id: string, b: any) {
+    this.enabled();
+    return this.db.transaction(m => fair.hold(m, user, id, b));
+  }
+  async releaseHold(user: any, id: string) {
+    this.enabled();
+    requireUuid(id);
+    const [h] = await this.db.query(
+      "WITH changed AS (UPDATE placement_holds SET state='cancelled' WHERE id=$1 AND user_id=$2 AND state='held' AND expires_at_ms>$3 RETURNING *) SELECT * FROM changed",
+      [id, user.id, Date.now()]
+    );
+    if (!h) throw new NotFoundException('Active hold missing');
+    return { released: true };
+  }
+  async appeal(user: any, b: any) {
+    this.enabled();
+    return this.db.transaction(m => fair.appeal(m, user, b));
+  }
+  async reviewAppeal(user: any, id: string, b: any) {
+    this.enabled();
+    return this.db.transaction(m => fair.reviewAppeal(m, user, id, b));
+  }
+  async accessDecision(user: any, id: string, b: any) {
+    this.enabled();
+    return this.db.transaction(m => fair.decideAccess(m, user, id, b));
   }
   async resolve(user: any, id: string, b: any) {
     this.enabled();

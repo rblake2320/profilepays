@@ -11,6 +11,8 @@ on:
         "tests/signup-validation.cjs",
         "tests/support-*.cjs",
         "tests/placement-expiry.cjs",
+        "tests/fair-marketplace.cjs",
+        "backend/src/database/migrations/**",
         "tests/workspace-contract.cjs",
         "package-lock.json",
       ]
@@ -18,6 +20,21 @@ on:
 jobs:
   signup:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: placement_test
+          POSTGRES_PASSWORD: ci_test_only
+          POSTGRES_DB: profilepays_static
+        ports: ["5432:5432"]
+        options: --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DB_HOST: 127.0.0.1
+      DB_PORT: 5432
+      DB_USERNAME: placement_test
+      DB_PASSWORD: ci_test_only
+      DB_NAME: profilepays_static
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -30,5 +47,6 @@ jobs:
       - run: node tests/support-session.cjs
       - run: node tests/support-navigation.cjs
       - run: node tests/placement-expiry.cjs
+      - run: node tests/fair-marketplace.cjs
       - run: npm run build --workspace backend
       - run: npm run build --workspace frontend
