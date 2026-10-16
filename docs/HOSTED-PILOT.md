@@ -6,9 +6,9 @@ Deployed 2026-10-15 on existing Spark-1 infrastructure. No new paid service was 
 
 ## Running release
 
-- App source: `cfecac2`, built from a Git archive using `docker/Dockerfile.pilot`. See [signup repair](SIGNUP-REPAIR.md) for the subsequent owner-reported signup correction.
+- App source: `56b0c63`, built from a Git archive using `docker/Dockerfile.pilot`. See [signup repair](SIGNUP-REPAIR.md) for the subsequent owner-reported signup correction.
 - Compose project: `profilepays-pilot`; app port `127.0.0.1:8941`; database has no host-published port.
-- Deployment root: `/home/rblake2320/profilepays-pilot`; release checkout: `releases/cfecac2`.
+- Deployment root: `/home/rblake2320/profilepays-pilot`; release checkout: `releases/56b0c63`.
 - Private `pilot.env` resides outside release directories, mode 0600. Never commit it or print resolved Compose configuration.
 - Dedicated Cloudflare Tunnel `profilepays-pilot`, with systemd unit `profilepays-tunnel.service`, enabled at boot. Existing tunnels were not modified.
 - Docker restart policies preserve service operation; persistent PostgreSQL volume preserves campaigns, accounts, placements and receipts.
@@ -36,10 +36,10 @@ The initial custom-image lifecycle test missed built-in preview delivery because
 
 1. In Safari open the public dashboard. Choose **Find your first offer**, then **Participant (test credits)** and create an account.
 2. In AIHangout settings, create a ProfilePays connection code for the profile you intend to use. In ProfilePays **Connections**, paste that code and connect. The automated test identity is linked to its separate test participant; do not attempt to move another participant's destination by bypassing ownership checks.
-3. Preview **iPhone live test — complete** (60 seconds), select the connected profile, read and accept the test-placement consent, then reserve it.
+3. Preview **iPhone live test â€” complete** (60 seconds), select the connected profile, read and accept the test-placement consent, then reserve it.
 4. Open the AIHangout profile in another Safari tab. Watch the image change. Return after expiry: expect **restored** and 100 test credits. View the receipt.
-5. Preview **iPhone live test — stop early** (120 seconds). Once active, choose **Stop and restore**, confirm, and verify the original image plus zero award.
-6. For the time-zone check, change iPhone Settings → General → Date & Time → Time Zone, if iOS permits it. The displayed local end time can change; the campaign's real remaining duration must stay tied to the same server deadline. Return to automatic time afterward. If the phone blocks the setting, report that rather than treating it as a test result.
+5. Preview **iPhone live test â€” stop early** (120 seconds). Once active, choose **Stop and restore**, confirm, and verify the original image plus zero award.
+6. For the time-zone check, change iPhone Settings â†’ General â†’ Date & Time â†’ Time Zone, if iOS permits it. The displayed local end time can change; the campaign's real remaining duration must stay tied to the same server deadline. Return to automatic time afterward. If the phone blocks the setting, report that rather than treating it as a test result.
 
 Physical iPhone testing requires the owner's interaction. Desktop mobile-size rendering and WebKit emulation are recorded separately. Jira PP-7 remains in progress for the physical-device walkthrough.
 
@@ -50,3 +50,7 @@ From an extracted release at `releases/<commit>`, build `docker build -f docker/
 To roll back the image, run the launcher from a retained earlier release with its release ID. Do not run `down -v`: it removes the database. The preview-image-only releases made no database schema change. Stop only `profilepays-tunnel` to withdraw this public hostname; never alter another product's tunnel.
 
 Host backup/recovery remains the existing infrastructure operator's responsibility. Container restart persistence was tested; a host-wide disaster recovery exercise was not part of this deployment request.
+
+## Exploratory QA follow-up
+
+Release `56b0c63` fixes all five findings. The company-name migration is additive and preserves existing accounts; rolling back application code leaves the nullable column intact. See [QA-REMEDIATION.md](QA-REMEDIATION.md) for the new 60-second completion, early-stop, restoration and ledger evidence.

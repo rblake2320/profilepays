@@ -1,0 +1,73 @@
+{
+  "checks": [
+    {
+      "at": "2026-10-16T00:15:24.548Z",
+      "outcome": "Worked",
+      "scenario": "Prepared two hosted test campaigns and captured original profile",
+      "measurement": {
+        "baseline": {
+          "username": "live_countdown_test",
+          "profileId": "d7d3e530-9b0b-4b54-a162-31dbc7445f3a",
+          "key": "d7d3e530-9b0b-4b54-a162-31dbc7445f3a"
+        },
+        "balance": 200,
+        "campaigns": {
+          "complete": "949a936d-14f2-4120-9f95-fdf044e4871f",
+          "early": "6042fc0c-5a37-4645-99fd-3f130bde3f6b"
+        }
+      }
+    },
+    {
+      "at": "2026-10-16T00:16:05.922Z",
+      "outcome": "Worked",
+      "scenario": "complete: active placement and hosted image bytes match approved creative",
+      "measurement": {
+        "placementId": "228fb863-583f-48c2-be36-83661635baf2",
+        "coveredMs": 264
+      }
+    },
+    {
+      "at": "2026-10-16T00:17:05.216Z",
+      "outcome": "Worked",
+      "scenario": "complete: settlement and exact original profile restored",
+      "measurement": {
+        "placementId": "228fb863-583f-48c2-be36-83661635baf2",
+        "coveredMs": 60000,
+        "requiredMs": 60000,
+        "award": 100,
+        "observations": 26,
+        "ledgerEntries": 2,
+        "balance": 300
+      }
+    },
+    {
+      "at": "2026-10-16T00:17:25.671Z",
+      "outcome": "Worked",
+      "scenario": "early: active placement and hosted image bytes match approved creative",
+      "measurement": {
+        "placementId": "79eeaf4a-1396-475e-a56b-120bcb74543a",
+        "coveredMs": 353
+      }
+    },
+    {
+      "at": "2026-10-16T00:17:34.755Z",
+      "outcome": "Worked",
+      "scenario": "early: settlement and exact original profile restored",
+      "measurement": {
+        "placementId": "79eeaf4a-1396-475e-a56b-120bcb74543a",
+        "coveredMs": 7796,
+        "requiredMs": 120000,
+        "award": 0,
+        "observations": 5,
+        "ledgerEntries": 2,
+        "balance": 300
+      }
+    },
+    {
+      "at": "2026-10-16T00:17:35.392Z",
+      "outcome": "Worked",
+      "scenario": "Temporary grant revoked and campaigns paused; original profile preserved",
+      "measurement": {}
+    }
+  ]
+}
