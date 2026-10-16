@@ -1,7 +1,7 @@
 name: Signup validation contract
 on:
   push:
-    paths: ['backend/src/auth/**', 'backend/src/support/**', 'backend/src/common/input-validation.ts', 'frontend/src/**', 'tests/signup-validation.cjs', 'tests/support-session.cjs', 'tests/workspace-contract.cjs', 'package-lock.json']
+    paths: ['backend/src/auth/**', 'backend/src/support/**', 'backend/src/common/input-validation.ts', 'frontend/src/**', 'tests/signup-validation.cjs', 'tests/support-*.cjs', 'tests/workspace-contract.cjs', 'package-lock.json']
   pull_request:
 jobs:
   signup:
@@ -16,5 +16,6 @@ jobs:
       - run: node tests/signup-validation.cjs
       - run: node tests/workspace-contract.cjs
       - run: node tests/support-session.cjs
+      - run: node tests/support-navigation.cjs
       - run: npm run build --workspace backend
       - run: npm run build --workspace frontend

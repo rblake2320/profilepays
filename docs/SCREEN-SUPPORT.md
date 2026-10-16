@@ -46,3 +46,25 @@ JPEG and saves redacted evidence under `.local/screen-support/`.
 Actual phone capture and iOS background behavior require the owner to approve
 Safari's picker on their phone. No endpoint permits arbitrary remote taps,
 password entry, or iPhone Settings changes.
+
+## Deployment evidence — 2026-10-15
+
+Release `1a07765` is deployed on the existing Spark-1 host. The deployed HTTPS
+checks passed anonymous/wrong-role/forged-key rejection, malformed and oversized
+frame rejection, byte-exact JPEG delivery, six-second staleness and Stop revoking
+both read and write access. The viewer decoded the synthetic image at 390 × 600.
+The phone page measured 375px content width in a 375px content viewport (390px
+outer viewport), with no horizontal overflow. These are desktop browser checks.
+
+Live testing found a same-tab reconnect defect: `useState` retained the first
+fragment's key when the URL changed. Reloading succeeded, confirming that cached
+component state was the cause. `useLocation` plus memoized fragment parsing now
+replaces the grant and clears capture/view state. The deployed viewer switched
+from a revoked session to a live session without reloading and decoded its image.
+`tests/support-navigation.cjs` exercises that transition as a React component
+regression. The first implementation's API tests missed router navigation; this
+component test now runs in CI alongside the 26 service checks.
+
+Physical iPhone capture, Safari approval, app switching and time-zone behavior
+await the owner's explicit Share-screen action. Remote native control is not
+implemented. PP-7 remains In Progress for that phone walkthrough.
