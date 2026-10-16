@@ -1,0 +1,46 @@
+{
+  "outcome": "Worked",
+  "environment": "isolated local PostgreSQL fixture; compiled application; browser actions",
+  "creditReview": {
+    "at": 1792118559933,
+    "actor": "bb401fe7-d6ab-410d-9df4-6371be79a053",
+    "award": 100,
+    "reason": "Isolated fixture evidence reviewed; award approved for test only."
+  },
+  "notification": {
+    "type": "agreement_reviewed",
+    "award": 100,
+    "title": "Agreement reviewed",
+    "message": "An administrator reviewed this agreement: Isolated fixture evidence reviewed; award approved for test only.",
+    "campaign": "LOCAL FIXTURE — held credit review",
+    "currency": "TEST_CREDIT",
+    "occurredAt": 1792118559933,
+    "recordedAt": 1792118559933,
+    "placementId": "75c3008a-ebfa-424a-bc47-15dfd8f3d25f"
+  },
+  "ledger": [
+    {
+      "account": "campaign:5b28b413-0507-4601-8a9e-c03341d0d60a",
+      "amount": -100,
+      "currency": "TEST_CREDIT"
+    },
+    {
+      "account": "participant:f1f28315-9333-4ee6-9916-23e564ab2a07",
+      "amount": 100,
+      "currency": "TEST_CREDIT"
+    }
+  ],
+  "access": {
+    "banned": false,
+    "reason": "Fixture appeal reviewed; restore participation after the test.",
+    "decided_at_ms": "1792118627714"
+  },
+  "appeals": [
+    {
+      "status": "overturned",
+      "reason": "This is an isolated suspension test. Please review and restore my access.",
+      "decision_reason": "Fixture appeal reviewed; restore participation after the test.",
+      "decided_at_ms": "1792118627716"
+    }
+  ]
+}

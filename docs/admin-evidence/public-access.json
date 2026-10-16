@@ -1,0 +1,12 @@
+{
+  "outcome": "Worked",
+  "checkedAt": "2026-10-16T02:46:46.133Z",
+  "release": "1ca7f52",
+  "checks": [
+    "Hosted release healthy; administrator deep link loads; anonymous API denied 401",
+    "member: admin overview denied 403; historical held credit unchanged, zero award, zero ledger entries, original restored",
+    "sponsor: admin overview denied 403; historical held credit unchanged, zero award, zero ledger entries, original restored"
+  ],
+  "productionAdminProvisioned": false,
+  "productionCreditDecisionMade": false
+}
