@@ -18,6 +18,9 @@ export class RefreshToken {
   @Index()
   token: string;
 
+  @Column({ name: 'session_id', type: 'uuid', nullable: true })
+  sessionId: string;
+
   @Column({ name: 'user_id' })
   userId: string;
 
@@ -40,7 +43,7 @@ export class RefreshToken {
   createdAt: Date;
 
   // Relationships
-  @ManyToOne(() => User, (user) => user.refreshTokens, { onDelete: 'CASCADE' })
+  @ManyToOne(() => User, user => user.refreshTokens, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
   user: User;
 

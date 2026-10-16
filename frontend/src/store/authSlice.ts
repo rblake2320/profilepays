@@ -1,9 +1,8 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { authApi, LoginPayload, RegisterPayload } from '../api/auth';
+import { clearSession, endSession, setAccessToken } from '../api/client';
 import { authError } from '../utils/authError';
-
 export type SubscriptionTier = 'basic' | 'standard' | 'premium' | 'elite';
-
 export interface AuthUser {
   id: string;
   email: string;
@@ -14,134 +13,102 @@ export interface AuthUser {
   subscriptionTier?: SubscriptionTier;
   walletBalance?: number;
 }
-
 export interface AuthState {
   user: AuthUser | null;
-  accessToken: string | null;
-  refreshToken: string | null;
   isLoading: boolean;
+  ready: boolean;
   error: string | null;
 }
-
-const initialState: AuthState = {
-  user: (() => {
-    try {
-      const stored = localStorage.getItem('user');
-      return stored ? JSON.parse(stored) : null;
-    } catch {
-      return null;
-    }
-  })(),
-  accessToken: localStorage.getItem('accessToken'),
-  refreshToken: localStorage.getItem('refreshToken'),
-  isLoading: false,
-  error: null,
-};
-
+const initialState: AuthState = { user: null, isLoading: false, ready: false, error: null };
 export const registerUser = createAsyncThunk(
   'auth/register',
   async (payload: RegisterPayload, { rejectWithValue }) => {
     try {
-      return await authApi.register(payload);
+      const result = await authApi.register(payload);
+      setAccessToken(result.accessToken);
+      return result;
     } catch (err: any) {
       return rejectWithValue(authError(err, 'We could not create your account. Please try again.'));
     }
-  },
+  }
 );
-
 export const loginUser = createAsyncThunk(
   'auth/login',
   async (payload: LoginPayload, { rejectWithValue }) => {
     try {
-      return await authApi.login(payload);
+      const result = await authApi.login(payload);
+      setAccessToken(result.accessToken);
+      return result;
     } catch (err: any) {
       return rejectWithValue(authError(err, 'We could not sign you in. Please try again.').message);
     }
-  },
+  }
 );
-
-export const fetchCurrentUser = createAsyncThunk(
-  'auth/fetchMe',
-  async (_, { rejectWithValue }) => {
-    try {
-      return await authApi.getMe();
-    } catch (err: any) {
-      return rejectWithValue(err.response?.data?.message || 'Failed to fetch user');
-    }
-  },
-);
-
-const authSlice = createSlice({
+export const fetchCurrentUser = createAsyncThunk('auth/fetchMe', async () => authApi.getMe());
+export const logout = createAsyncThunk('auth/logout', async (_, { rejectWithValue }) => {
+  try {
+    await endSession();
+  } catch {
+    return rejectWithValue(
+      'Sign-out could not be confirmed by the server. Check your connection and try again.'
+    );
+  }
+});
+const slice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-    logout(state) {
+    sessionEnded(state) {
+      clearSession();
       state.user = null;
-      state.accessToken = null;
-      state.refreshToken = null;
-      state.error = null;
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
-      localStorage.removeItem('user');
+      state.ready = true;
     },
     clearError(state) {
       state.error = null;
     },
     updateWalletBalance(state, action: PayloadAction<number>) {
-      if (state.user) {
-        state.user.walletBalance = action.payload;
-      }
+      if (state.user) state.user.walletBalance = action.payload;
     },
   },
-  extraReducers: (builder) => {
-    // Register
-    builder
-      .addCase(registerUser.pending, (state) => {
+  extraReducers: b => {
+    for (const action of [registerUser, loginUser]) {
+      b.addCase(action.pending, state => {
         state.isLoading = true;
         state.error = null;
-      })
-      .addCase(registerUser.fulfilled, (state, action) => {
+      });
+      b.addCase(action.fulfilled, (state, action) => {
         state.isLoading = false;
+        state.ready = true;
         state.user = action.payload.user as AuthUser;
-        state.accessToken = action.payload.accessToken;
-        state.refreshToken = action.payload.refreshToken;
-        localStorage.setItem('accessToken', action.payload.accessToken);
-        localStorage.setItem('refreshToken', action.payload.refreshToken);
-        localStorage.setItem('user', JSON.stringify(action.payload.user));
-      })
-      .addCase(registerUser.rejected, (state, action) => {
-        state.isLoading = false;
-        state.error = (action.payload as {message?:string})?.message || 'We could not create your account. Please try again.';
       });
-
-    // Login
-    builder
-      .addCase(loginUser.pending, (state) => {
-        state.isLoading = true;
-        state.error = null;
-      })
-      .addCase(loginUser.fulfilled, (state, action) => {
+      b.addCase(action.rejected, (state, action) => {
         state.isLoading = false;
-        state.user = action.payload.user as AuthUser;
-        state.accessToken = action.payload.accessToken;
-        state.refreshToken = action.payload.refreshToken;
-        localStorage.setItem('accessToken', action.payload.accessToken);
-        localStorage.setItem('refreshToken', action.payload.refreshToken);
-        localStorage.setItem('user', JSON.stringify(action.payload.user));
-      })
-      .addCase(loginUser.rejected, (state, action) => {
-        state.isLoading = false;
-        state.error = action.payload as string;
+        const p = action.payload as any;
+        state.error = typeof p === 'string' ? p : p?.message || 'Could not complete sign-in.';
       });
-
-    // Fetch current user
-    builder
-      .addCase(fetchCurrentUser.fulfilled, (state, action) => {
-        state.user = action.payload as AuthUser;
-        localStorage.setItem('user', JSON.stringify(action.payload));
-      });
+    }
+    b.addCase(fetchCurrentUser.fulfilled, (state, action) => {
+      state.user = action.payload as AuthUser;
+      state.ready = true;
+    });
+    b.addCase(fetchCurrentUser.rejected, state => {
+      state.user = null;
+      state.ready = true;
+    });
+    b.addCase(logout.pending, state => {
+      state.isLoading = true;
+      state.error = null;
+    });
+    b.addCase(logout.fulfilled, state => {
+      state.user = null;
+      state.isLoading = false;
+      state.ready = true;
+    });
+    b.addCase(logout.rejected, (state, action) => {
+      state.isLoading = false;
+      state.error = action.payload as string;
+    });
   },
 });
-
-export const { logout, clearError, updateWalletBalance } = authSlice.actions;
-export default authSlice.reducer;
+export const { sessionEnded, clearError, updateWalletBalance } = slice.actions;
+export default slice.reducer;

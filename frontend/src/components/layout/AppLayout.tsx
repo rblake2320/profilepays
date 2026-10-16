@@ -2,8 +2,9 @@ import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAppDispatch, useAppSelector } from '../../hooks/redux';
 import { logout } from '../../store/authSlice';
 import '../../workspace.css';
+import CompanyCompletion from '../CompanyCompletion';
 export default function AppLayout() {
-  const { user } = useAppSelector(s => s.auth);
+  const { user, error, isLoading } = useAppSelector(s => s.auth);
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   return (
@@ -44,9 +45,10 @@ export default function AppLayout() {
                 <small>{user.email}</small>
                 <Link to="/support">Connect phone screen</Link>
                 <button
-                  onClick={() => {
-                    dispatch(logout());
-                    navigate('/');
+                  disabled={isLoading}
+                  onClick={async () => {
+                    const result = await dispatch(logout());
+                    if (logout.fulfilled.match(result)) navigate('/');
                   }}
                 >
                   Sign out
@@ -61,6 +63,12 @@ export default function AppLayout() {
         </div>
       </header>
       <main className="pp-main">
+        {error && (
+          <p role="alert" className="pp-alert">
+            {error}
+          </p>
+        )}
+        {user?.userType === 'advertiser' && !user.companyName?.trim() && <CompanyCompletion />}
         <Outlet />
       </main>
       <footer className="pp-footer">

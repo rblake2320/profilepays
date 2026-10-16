@@ -1,39 +1,54 @@
+import { Transform } from 'class-transformer';
 import {
   IsString,
+  ValidateIf,
   IsOptional,
   MaxLength,
+  MinLength,
   Matches,
   IsDateString,
 } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 
 export class UpdateProfileDto {
+  @ValidateIf((_object, value) => value !== undefined)
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
+  @IsString()
+  @MinLength(1)
+  @MaxLength(200)
+  @Matches(/^[^<>\u0000-\u001f]+$/u)
+  companyName?: string;
+
   @ApiPropertyOptional({
     example: 'John',
     description: 'User first name',
-    maxLength: 100
+    maxLength: 100,
   })
   @IsOptional()
   @IsString()
   @MaxLength(100, { message: 'First name must not exceed 100 characters' })
-  @Matches(/^[a-zA-Z\s'-]+$/, { message: 'First name can only contain letters, spaces, hyphens and apostrophes' })
+  @Matches(/^[a-zA-Z\s'-]+$/, {
+    message: 'First name can only contain letters, spaces, hyphens and apostrophes',
+  })
   firstName?: string;
 
   @ApiPropertyOptional({
     example: 'Doe',
     description: 'User last name',
-    maxLength: 100
+    maxLength: 100,
   })
   @IsOptional()
   @IsString()
   @MaxLength(100, { message: 'Last name must not exceed 100 characters' })
-  @Matches(/^[a-zA-Z\s'-]+$/, { message: 'Last name can only contain letters, spaces, hyphens and apostrophes' })
+  @Matches(/^[a-zA-Z\s'-]+$/, {
+    message: 'Last name can only contain letters, spaces, hyphens and apostrophes',
+  })
   lastName?: string;
 
   @ApiPropertyOptional({
     example: '+1-555-0123',
     description: 'User phone number',
-    maxLength: 20
+    maxLength: 20,
   })
   @IsOptional()
   @IsString()
@@ -43,7 +58,7 @@ export class UpdateProfileDto {
 
   @ApiPropertyOptional({
     example: '1990-01-15',
-    description: 'User date of birth (YYYY-MM-DD)'
+    description: 'User date of birth (YYYY-MM-DD)',
   })
   @IsOptional()
   @IsDateString({}, { message: 'Please provide a valid date in YYYY-MM-DD format' })
@@ -51,7 +66,7 @@ export class UpdateProfileDto {
 
   @ApiPropertyOptional({
     example: 'https://example.com/profile.jpg',
-    description: 'Profile image URL'
+    description: 'Profile image URL',
   })
   @IsOptional()
   @IsString()

@@ -1,0 +1,15 @@
+Worked: advertiser cannot enter participant mutations before resource lookup
+Worked: 60-second hold reserves final slot under concurrent demand
+Worked: retry does not extend hold and another user cannot release it
+Worked: expired hold cannot confirm and creates no breach
+Worked: advertiser excludes a group only from its own offers, including an existing hold
+Worked: held offer confirms once, preserving idempotency
+Worked: confirmed breach threshold denies; appeal overturn removes mark without rewriting agreement
+Worked: platform ban requires admin; suspension remains appealable and reversible
+Worked: four notification modes persist; unauthorized and malformed updates rejected
+Worked: analytics packages enforce ownership and omit unselected data
+Worked: unconfigured identity rejects forged callbacks and real payouts stay disabled; payee subject unique
+Worked: administrator overview is private and searches literal names, profiles and IDs
+Worked: held credit requires independent review, settles once, balances ledger and notifies participant
+Worked: upheld appeal preserves suspension; stale appeal cannot erase a newer decision
+{"outcome":"Worked","scenarios":14,"storage":"real PostgreSQL","artifact":"source modules","remote":"stubbed connection readback for join only"}

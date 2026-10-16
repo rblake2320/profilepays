@@ -8,7 +8,7 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, DataSource, EntityManager } from 'typeorm';
 import * as bcrypt from 'bcryptjs';
 import * as crypto from 'crypto';
 
@@ -43,14 +43,20 @@ export class AuthService {
     private readonly refreshTokenRepository: Repository<RefreshToken>,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    private readonly db: DataSource
   ) {}
 
-  async signup(
-    signupDto: SignupDto,
-    ipAddress: string,
-    userAgent: string,
-  ): Promise<AuthResponse> {
-    const { email, password, firstName, lastName, userRole, phoneNumber, dateOfBirth, companyName } = signupDto;
+  async signup(signupDto: SignupDto, ipAddress: string, userAgent: string): Promise<AuthResponse> {
+    const {
+      email,
+      password,
+      firstName,
+      lastName,
+      userRole,
+      phoneNumber,
+      dateOfBirth,
+      companyName,
+    } = signupDto;
 
     // Check if user already exists
     const existingUser = await this.userRepository.findOne({
@@ -94,7 +100,7 @@ export class AuthService {
     const { accessToken, refreshToken } = await this.generateTokens(
       savedUser,
       ipAddress,
-      userAgent,
+      userAgent
     );
 
     // TODO: Send verification email
@@ -115,11 +121,7 @@ export class AuthService {
     };
   }
 
-  async login(
-    loginDto: LoginDto,
-    ipAddress: string,
-    userAgent: string,
-  ): Promise<AuthResponse> {
+  async login(loginDto: LoginDto, ipAddress: string, userAgent: string): Promise<AuthResponse> {
     const { email, password } = loginDto;
 
     // Find user by email
@@ -144,11 +146,7 @@ export class AuthService {
     this.logger.log(`User logged in: ${user.email}`);
 
     // Generate tokens
-    const { accessToken, refreshToken } = await this.generateTokens(
-      user,
-      ipAddress,
-      userAgent,
-    );
+    const { accessToken, refreshToken } = await this.generateTokens(user, ipAddress, userAgent);
 
     return {
       user: {
@@ -165,99 +163,106 @@ export class AuthService {
     };
   }
 
-  async refreshAccessToken(
-    refreshTokenString: string,
-    ipAddress: string,
-    userAgent: string,
-  ): Promise<{ accessToken: string; refreshToken: string }> {
-    const refreshTokenRecord = await this.refreshTokenRepository.findOne({
-      where: { token: refreshTokenString },
-      relations: ['user'],
-    });
-
-    if (!refreshTokenRecord || !refreshTokenRecord.isValid()) {
-      throw new UnauthorizedException('Invalid or expired refresh token');
-    }
-
-    // Revoke old refresh token
-    refreshTokenRecord.isRevoked = true;
-    refreshTokenRecord.revokedAt = new Date();
-    await this.refreshTokenRepository.save(refreshTokenRecord);
-
-    // Generate new tokens
-    const { accessToken, refreshToken } = await this.generateTokens(
-      refreshTokenRecord.user,
-      ipAddress,
-      userAgent,
-    );
-
-    this.logger.log(`Tokens refreshed for user: ${refreshTokenRecord.user.email}`);
-
-    return { accessToken, refreshToken };
+  private hash(value: string) {
+    return crypto.createHash('sha256').update(value).digest('hex');
   }
 
-  async logout(refreshTokenString: string): Promise<void> {
-    const refreshTokenRecord = await this.refreshTokenRepository.findOne({
-      where: { token: refreshTokenString },
+  async refreshAccessToken(token: string, ipAddress: string, userAgent: string) {
+    if (typeof token !== 'string' || !/^[a-f0-9]{80}$/.test(token))
+      throw new UnauthorizedException('Invalid or expired session');
+    const result = await this.db.transaction(async m => {
+      const [found] = await m.query('SELECT session_id FROM refresh_tokens WHERE token=$1', [
+        this.hash(token),
+      ]);
+      if (!found?.session_id) return null;
+      const [session] = await m.query('SELECT * FROM auth_sessions WHERE id=$1 FOR UPDATE', [
+        found.session_id,
+      ]);
+      const record = await m
+        .getRepository(RefreshToken)
+        .findOne({ where: { token: this.hash(token) } });
+      const user = await m.getRepository(User).findOne({ where: { id: session.user_id } });
+      if (session.revoked) return null;
+      if (
+        !record?.isValid() ||
+        !user?.isActive ||
+        new Date(session.expires_at) <= new Date() ||
+        session.credential_hash !== this.hash(user.passwordHash)
+      ) {
+        await m.query('UPDATE auth_sessions SET revoked=true WHERE id=$1', [session.id]);
+        return null; // Commit revocation before returning an authentication error.
+      }
+      record.isRevoked = true;
+      record.revokedAt = new Date();
+      await m.getRepository(RefreshToken).save(record);
+      return this.generateTokens(user, ipAddress, userAgent, m, session.id);
     });
+    if (!result) throw new UnauthorizedException('Invalid or expired session. Sign in again.');
+    return result;
+  }
 
-    if (refreshTokenRecord && !refreshTokenRecord.isRevoked) {
-      refreshTokenRecord.isRevoked = true;
-      refreshTokenRecord.revokedAt = new Date();
-      await this.refreshTokenRepository.save(refreshTokenRecord);
-
-      this.logger.log(`User logged out, refresh token revoked`);
-    }
+  async logout(token: string): Promise<void> {
+    if (typeof token !== 'string' || !/^[a-f0-9]{80}$/.test(token)) return;
+    await this.db.transaction(async m => {
+      const [r] = await m.query('SELECT session_id FROM refresh_tokens WHERE token=$1', [
+        this.hash(token),
+      ]);
+      if (r?.session_id) {
+        await m.query('SELECT id FROM auth_sessions WHERE id=$1 FOR UPDATE', [r.session_id]);
+        await m.query('UPDATE auth_sessions SET revoked=true WHERE id=$1', [r.session_id]);
+        await m.query(
+          'UPDATE refresh_tokens SET is_revoked=true,revoked_at=now() WHERE session_id=$1',
+          [r.session_id]
+        );
+      }
+    });
   }
 
   async logoutAll(userId: string): Promise<void> {
-    await this.refreshTokenRepository.update(
-      { userId, isRevoked: false },
-      { isRevoked: true, revokedAt: new Date() },
-    );
-
-    this.logger.log(`All sessions revoked for user: ${userId}`);
+    await this.db.transaction(async m => {
+      await m.query('UPDATE auth_sessions SET revoked=true WHERE user_id=$1', [userId]);
+      await m.query('UPDATE refresh_tokens SET is_revoked=true,revoked_at=now() WHERE user_id=$1', [
+        userId,
+      ]);
+    });
   }
 
   private async generateTokens(
     user: User,
     ipAddress: string,
     userAgent: string,
+    manager?: EntityManager,
+    sessionId?: string
   ): Promise<{ accessToken: string; refreshToken: string }> {
-    // JWT payload
-    const payload: Omit<JwtPayload, 'exp'> = {
-      sub: user.id,
-      email: user.email,
-      userRole: user.userRole,
-      iat: Math.floor(Date.now() / 1000),
-    };
-
-    // Generate access token
-    const accessToken = this.jwtService.sign(payload, {
-      secret: this.configService.get<string>('JWT_SECRET'),
-      expiresIn: '15m',
-    });
-
-    // Generate refresh token
-    const refreshTokenString = crypto.randomBytes(40).toString('hex');
-    const refreshTokenExpiry = new Date();
-    refreshTokenExpiry.setDate(refreshTokenExpiry.getDate() + 7); // 7 days
-
-    // Save refresh token to database
-    const refreshToken = this.refreshTokenRepository.create({
-      token: refreshTokenString,
-      userId: user.id,
-      expiresAt: refreshTokenExpiry,
-      userAgent,
-      ipAddress,
-    });
-
-    await this.refreshTokenRepository.save(refreshToken);
-
-    return {
-      accessToken,
-      refreshToken: refreshTokenString,
-    };
+    if (!manager)
+      return this.db.transaction(m => this.generateTokens(user, ipAddress, userAgent, m));
+    const id = sessionId || crypto.randomUUID();
+    if (!sessionId)
+      await manager.query(
+        "INSERT INTO auth_sessions(id,user_id,credential_hash,expires_at) VALUES($1,$2,$3,now()+interval '7 days')",
+        [id, user.id, this.hash(user.passwordHash)]
+      );
+    const [session] = await manager.query('SELECT expires_at FROM auth_sessions WHERE id=$1', [id]);
+    const accessToken = this.jwtService.sign(
+      { sub: user.id, email: user.email, userRole: user.userRole, sid: id },
+      { secret: this.configService.get<string>('JWT_SECRET'), expiresIn: '15m' }
+    );
+    const refreshToken = crypto.randomBytes(40).toString('hex');
+    await manager
+      .getRepository(RefreshToken)
+      .save(
+        manager
+          .getRepository(RefreshToken)
+          .create({
+            token: this.hash(refreshToken),
+            sessionId: id,
+            userId: user.id,
+            expiresAt: new Date(session.expires_at),
+            userAgent: userAgent.slice(0, 500),
+            ipAddress,
+          })
+      );
+    return { accessToken, refreshToken };
   }
 
   async validateUser(email: string, password: string): Promise<any> {
@@ -334,7 +339,7 @@ export class AuthService {
     const deletedCount = await this.refreshTokenRepository
       .createQueryBuilder()
       .delete()
-      .where('expires_at < :now OR is_revoked = true', { now: new Date() })
+      .where("expires_at < now() - interval '8 days'")
       .execute();
 
     this.logger.log(`Cleaned up ${deletedCount.affected} expired/revoked refresh tokens`);

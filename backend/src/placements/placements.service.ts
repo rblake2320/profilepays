@@ -105,6 +105,7 @@ export class PlacementsService implements OnModuleInit, OnModuleDestroy {
     return this.db.transaction(m => fair.analytics(m, user, id, b));
   }
   async connect(user: any, b: any) {
+    fair.participant(user);
     this.enabled();
     exact(b, ['code']);
     if (typeof b.code !== 'string' || !/^[a-f0-9]{64}$/.test(b.code))
@@ -224,6 +225,9 @@ export class PlacementsService implements OnModuleInit, OnModuleDestroy {
     this.enabled();
     if (!['advertiser', 'admin'].includes(user.userRole))
       throw new ForbiddenException('Sponsor account required');
+    const [sponsor] = await this.db.query('SELECT company_name FROM users WHERE id=$1', [user.id]);
+    if (!sponsor?.company_name?.trim())
+      throw new BadRequestException('Complete your company name before creating an offer');
     exact(b, [
       'commandKey',
       'title',
@@ -352,6 +356,7 @@ export class PlacementsService implements OnModuleInit, OnModuleDestroy {
     return c;
   }
   async join(user: any, id: string, b: any) {
+    fair.participant(user);
     this.enabled();
     requireUuid(id);
     exact(b, ['commandKey', 'destinationId', 'termsVersion', 'consent', 'holdId']);
@@ -445,6 +450,9 @@ export class PlacementsService implements OnModuleInit, OnModuleDestroy {
     this.enabled();
     if (!['advertiser', 'admin'].includes(user.userRole))
       throw new ForbiddenException('Sponsor account required');
+    const [sponsor] = await this.db.query('SELECT company_name FROM users WHERE id=$1', [user.id]);
+    if (!sponsor?.company_name?.trim())
+      throw new BadRequestException('Complete your company name before creating an offer');
     exact(b, ['name', 'png']);
     const name = clean(b.name, 80);
     if (typeof b.png !== 'string' || b.png.length > 95000 || !/^[A-Za-z0-9+/]+={0,2}$/.test(b.png))
@@ -487,6 +495,7 @@ export class PlacementsService implements OnModuleInit, OnModuleDestroy {
     });
   }
   async favorite(user: any, id: string, b: any) {
+    fair.participant(user);
     this.enabled();
     requireUuid(id);
     exact(b, ['saved']);
@@ -528,6 +537,7 @@ export class PlacementsService implements OnModuleInit, OnModuleDestroy {
       );
       if (!p || ![p.user_id, p.sponsor_id].includes(user.id))
         throw new NotFoundException('Placement missing');
+      if (user.id === p.user_id) fair.participant(user);
       if (!terminal.has(p.state) && !p.record.stopReason) {
         if (p.record.endsAt && Date.now() >= p.record.endsAt) {
           // A late cancellation cannot turn completed service into a prorated award.
@@ -932,10 +942,12 @@ export class PlacementsService implements OnModuleInit, OnModuleDestroy {
     p.record.settlement = award ? 'credited_test_only' : 'released';
   }
   async hold(user: any, id: string, b: any) {
+    fair.participant(user);
     this.enabled();
     return this.db.transaction(m => fair.hold(m, user, id, b));
   }
   async releaseHold(user: any, id: string) {
+    fair.participant(user);
     this.enabled();
     requireUuid(id);
     const [h] = await this.db.query(

@@ -1,0 +1,11 @@
+Worked: refresh credentials are hashed and access tokens bind a server session
+Worked: logout revokes refresh and existing access; another device stays signed in
+Worked: rotated-token reuse revokes descendants and access
+Worked: concurrent refresh cannot issue two usable token families
+Worked: logout races rotation without leaving a usable descendant
+Worked: password credential change invalidates access and refresh
+Worked: participation suspension preserves sign-in, refresh, receipts and appeal; blocks new offers
+Worked: security deactivation revokes sessions and prevents login/refresh
+Worked: company completion updates only the advertiser account
+Worked: cookie endpoints reject missing request header and foreign origins
+{"outcome":"Worked","scenarios":10,"artifact":"source","database":"isolated PostgreSQL schema"}

@@ -1,0 +1,34 @@
+{
+  "origin": "http://127.0.0.1:8937",
+  "at": "2026-10-16T03:06:15.033Z",
+  "results": [
+    {
+      "scenario": "sign-in sets HttpOnly Strict scoped cookie; JSON has no refresh credential",
+      "result": "Worked"
+    },
+    {
+      "scenario": "empty-body cookie refresh works, body credentials rejected, replay revokes family",
+      "result": "Worked"
+    },
+    {
+      "scenario": "logout revokes both copied refresh cookie and already-issued access token",
+      "result": "Worked"
+    },
+    {
+      "scenario": "session endpoints reject missing request header and foreign origins",
+      "result": "Worked"
+    },
+    {
+      "scenario": "advertiser denied participant connect/favorite/hold/join/release APIs and administrator API",
+      "result": "Worked"
+    },
+    {
+      "scenario": "legacy missing-company advertiser must complete own name; null name rejected",
+      "result": "Worked"
+    },
+    {
+      "scenario": "suspended participant signs in, reads standing and submits an appeal",
+      "result": "Worked"
+    }
+  ]
+}

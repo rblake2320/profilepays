@@ -91,6 +91,13 @@ CREATE TABLE test_credit_ledger(placement_id uuid,account text,amount int,curren
     service.decrypt = () => '';
     service.remote = async () => ({ normal: { key: 'original' } });
     let h;
+    await check('advertiser cannot enter participant mutations before resource lookup', async () => {
+      for (const fn of [
+        () => service.connect(sponsor,{}), () => service.favorite(sponsor,c,{saved:true}),
+        () => service.hold(sponsor,c,{destinationId:dest,commandKey:randomUUID()}),
+        () => service.join(sponsor,c,{}), () => service.releaseHold(sponsor,randomUUID()),
+      ]) await reject(fn,403);
+    });
     await check('60-second hold reserves final slot under concurrent demand', async () => {
       const r = await Promise.allSettled([hold(), hold(second, c, dest2)]);
       assert.equal(r.filter(x => x.status === 'fulfilled').length, 1);

@@ -3,6 +3,7 @@ import {
   NotFoundException,
   ConflictException,
   Logger,
+  ForbiddenException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -16,7 +17,7 @@ export class UsersService {
 
   constructor(
     @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
+    private readonly userRepository: Repository<User>
   ) {}
 
   async findById(id: string): Promise<User | null> {
@@ -41,10 +42,7 @@ export class UsersService {
     return user;
   }
 
-  async updateProfile(
-    userId: string,
-    updateProfileDto: UpdateProfileDto,
-  ): Promise<User> {
+  async updateProfile(userId: string, updateProfileDto: UpdateProfileDto): Promise<User> {
     const user = await this.findById(userId);
 
     if (!user) {
@@ -53,6 +51,11 @@ export class UsersService {
 
     const { firstName, lastName, phoneNumber, dateOfBirth, profileImage } = updateProfileDto;
 
+    if (updateProfileDto.companyName !== undefined) {
+      if (user.userRole !== UserRole.ADVERTISER)
+        throw new ForbiddenException('Advertiser account required');
+      user.companyName = updateProfileDto.companyName;
+    }
     // Update fields if provided
     if (firstName !== undefined) {
       user.firstName = firstName.trim();
@@ -88,8 +91,11 @@ export class UsersService {
       throw new NotFoundException('User not found');
     }
 
-    user.isActive = false;
-    await this.userRepository.save(user);
+    await this.userRepository.manager.transaction(async m => {
+      user.isActive = false;
+      await m.getRepository(User).save(user);
+      await m.query('UPDATE auth_sessions SET revoked=true WHERE user_id=$1', [user.id]);
+    });
 
     this.logger.log(`User deactivated: ${user.email}`);
   }
@@ -97,9 +103,10 @@ export class UsersService {
   async findUsers(
     page: number = 1,
     limit: number = 10,
-    search?: string,
+    search?: string
   ): Promise<{ users: User[]; total: number; page: number; totalPages: number }> {
-    const query = this.userRepository.createQueryBuilder('user')
+    const query = this.userRepository
+      .createQueryBuilder('user')
       .where('user.isActive = :isActive', { isActive: true });
 
     if (search) {
@@ -133,19 +140,15 @@ export class UsersService {
     advertiserUsers: number;
     adminUsers: number;
   }> {
-    const [
-      totalUsers,
-      verifiedUsers,
-      memberUsers,
-      advertiserUsers,
-      adminUsers,
-    ] = await Promise.all([
-      this.userRepository.count({ where: { isActive: true } }),
-      this.userRepository.count({ where: { isActive: true, isVerified: true } }),
-      this.userRepository.count({ where: { isActive: true, userRole: UserRole.MEMBER } }),
-      this.userRepository.count({ where: { isActive: true, userRole: UserRole.ADVERTISER } }),
-      this.userRepository.count({ where: { isActive: true, userRole: UserRole.ADMIN } }),
-    ]);
+    const [totalUsers, verifiedUsers, memberUsers, advertiserUsers, adminUsers] = await Promise.all(
+      [
+        this.userRepository.count({ where: { isActive: true } }),
+        this.userRepository.count({ where: { isActive: true, isVerified: true } }),
+        this.userRepository.count({ where: { isActive: true, userRole: UserRole.MEMBER } }),
+        this.userRepository.count({ where: { isActive: true, userRole: UserRole.ADVERTISER } }),
+        this.userRepository.count({ where: { isActive: true, userRole: UserRole.ADMIN } }),
+      ]
+    );
 
     return {
       totalUsers,

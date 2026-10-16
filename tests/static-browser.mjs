@@ -16,6 +16,7 @@ async function api(origin, path, token, method = 'GET', body) {
     method,
     headers: {
       'Content-Type': 'application/json',
+      'X-ProfilePays-Request': '1',
       ...(token ? { Authorization: 'Bearer ' + token } : {}),
     },
     ...(body ? { body: JSON.stringify(body) } : {}),
@@ -29,11 +30,15 @@ async function login(page, who) {
   await page.goto(pp + '/login');
   await page.getByLabel('Email address').fill(who.email);
   await page.getByLabel('Password', { exact: true }).fill(who.password);
+  const response = page.waitForResponse(
+    r => r.url().endsWith('/api/auth/login') && r.request().method() === 'POST'
+  );
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();
-  await page.locator('nav').getByRole('link', { name: 'Connections', exact: true }).waitFor();
-  await page.goto(pp + (who === sponsor ? '/advertisers' : '/marketplace'));
-  await page.waitForFunction(() => !!localStorage.getItem('accessToken'));
-  who.token = await page.evaluate(() => localStorage.getItem('accessToken'));
+  who.token = (await (await response).json()).accessToken;
+  await page
+    .locator('nav')
+    .getByRole('link', { name: who === sponsor ? 'Campaign studio' : 'Connections', exact: true })
+    .waitFor();
 }
 async function waitFor(fn, pred, timeout = 65000) {
   const deadline = Date.now() + timeout;
@@ -86,22 +91,16 @@ try {
   participant.on('pageerror', e => errors.push(e.message));
   await login(participant, member);
   for (let round = 0; round < 2; round++) {
-    const previousRefresh = await participant.evaluate(() => localStorage.getItem('refreshToken'));
-    await participant.evaluate(() =>
-      localStorage.setItem('accessToken', 'expired-local-test-token')
+    const response = participant.waitForResponse(
+      r => r.url().endsWith('/api/auth/refresh') && r.request().method() === 'POST'
     );
-    await participant.waitForFunction(
-      previous =>
-        !!localStorage.getItem('refreshToken') && localStorage.getItem('refreshToken') !== previous,
-      previousRefresh
-    );
-    assert.ok(
-      await participant
-        .getByRole('heading', { name: 'Make room for something you like.' })
-        .isVisible()
-    );
+    await participant.reload();
+    const rotated = await response;
+    assert.equal(rotated.status(), 200);
+    member.token = (await rotated.json()).accessToken;
+    await participant.getByRole('heading', { name: 'Make room for something you like.' }).waitFor();
+    assert.equal(await participant.evaluate(() => localStorage.getItem('refreshToken')), null);
   }
-  member.token = await participant.evaluate(() => localStorage.getItem('accessToken'));
   worked('Repeated session refresh preserves access through token rotation', { rotations: 2 });
   await participant.goto(pp + '/connections');
   await participant.getByLabel('AIHangout connection code').fill(grant);

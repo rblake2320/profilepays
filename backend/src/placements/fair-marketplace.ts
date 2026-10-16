@@ -33,6 +33,9 @@ const reason = (s: any) => {
     throw new BadRequestException('Give a reason of 5–1000 characters');
   return s.trim();
 };
+export function participant(user: any) {
+  if (user.userRole !== 'member') throw new ForbiddenException('Participant account required');
+}
 export async function eligible(m: EntityManager, userId: string, c: any) {
   await m.query('SELECT id FROM users WHERE id=$1 FOR UPDATE', [userId]);
   const [excluded] = await m.query(
@@ -56,6 +59,7 @@ export async function eligible(m: EntityManager, userId: string, c: any) {
     );
 }
 export async function hold(m: EntityManager, user: any, id: string, b: any) {
+  participant(user);
   uuid(id);
   strict(b, ['destinationId', 'commandKey']);
   uuid(b.destinationId);

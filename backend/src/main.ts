@@ -18,7 +18,11 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
   const port = configService.get('PORT', 3000);
   const nodeEnv = configService.get('NODE_ENV', 'development');
-  if (nodeEnv === 'production' && (!configService.get<string>('JWT_SECRET') || configService.get<string>('JWT_SECRET').length < 32)) {
+  if (
+    nodeEnv === 'production' &&
+    (!configService.get<string>('JWT_SECRET') ||
+      configService.get<string>('JWT_SECRET').length < 32)
+  ) {
     throw new Error('Production requires a private JWT_SECRET of at least 32 characters');
   }
 
@@ -41,13 +45,11 @@ async function bootstrap() {
     origin: configService.get('FRONTEND_URL', 'http://localhost:3000'),
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'X-ProfilePays-Request'],
   });
 
   // Global validation pipe
-  app.useGlobalPipes(
-    inputValidationPipe(),
-  );
+  app.useGlobalPipes(inputValidationPipe());
 
   // Global prefix
   app.setGlobalPrefix('api');
@@ -55,11 +57,13 @@ async function bootstrap() {
   // Serve the compiled dashboard and API from one HTTPS origin in the shipped container.
   const frontendDist = configService.get<string>('FRONTEND_DIST');
   if (frontendDist) {
-    const directory = resolve(frontendDist), index = resolve(directory, 'index.html');
+    const directory = resolve(frontendDist),
+      index = resolve(directory, 'index.html');
     if (!existsSync(index)) throw new Error('Compiled dashboard index.html is missing');
     app.use(serveStatic(directory, { index: false, dotfiles: 'deny' }));
     app.use((req, res, next) => {
-      if (req.method !== 'GET' || /^\/api(?:\/|$)/.test(req.path) || /\.[a-z0-9]+$/i.test(req.path)) return next();
+      if (req.method !== 'GET' || /^\/api(?:\/|$)/.test(req.path) || /\.[a-z0-9]+$/i.test(req.path))
+        return next();
       // Prevent edge-injected scripts that conflict with our self-only CSP.
       res.setHeader('Cache-Control', 'no-store, no-transform');
       res.sendFile(index);

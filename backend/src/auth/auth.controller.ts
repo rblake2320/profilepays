@@ -10,21 +10,17 @@ import {
   Get,
   Query,
   Logger,
+  UnauthorizedException,
+  BadRequestException,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { ThrottlerGuard } from '@nestjs/throttler';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiBearerAuth,
-  ApiBody,
-} from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiBody } from '@nestjs/swagger';
 
+import { sessionRequest, setSessionCookie, clearSessionCookie } from './session-http';
 import { AuthService, AuthResponse } from './auth.service';
 import { SignupDto } from './dto/signup.dto';
 import { LoginDto } from './dto/login.dto';
-import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { Public } from './decorators/public.decorator';
 import { CurrentUser, CurrentUserData } from './decorators/current-user.decorator';
 
@@ -58,7 +54,6 @@ export class AuthController {
           },
         },
         accessToken: { type: 'string' },
-        refreshToken: { type: 'string' },
       },
     },
   })
@@ -73,28 +68,20 @@ export class AuthController {
   async signup(
     @Body() signupDto: SignupDto,
     @Req() req: Request,
-    @Res({ passthrough: true }) res: Response,
-  ): Promise<AuthResponse> {
+    @Res({ passthrough: true }) res: Response
+  ): Promise<Omit<AuthResponse, 'refreshToken'>> {
+    sessionRequest(req);
     const ipAddress = req.ip || req.connection.remoteAddress || 'unknown';
     const userAgent = req.headers['user-agent'] || 'unknown';
 
-    const authResponse = await this.authService.signup(
-      signupDto,
-      ipAddress,
-      userAgent,
-    );
+    const authResponse = await this.authService.signup(signupDto, ipAddress, userAgent);
 
-    // Set refresh token as HTTP-only cookie
-    res.cookie('refreshToken', authResponse.refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    });
+    setSessionCookie(res, authResponse.refreshToken);
 
     this.logger.log(`User signup successful: ${signupDto.email}`);
 
-    return authResponse;
+    const { refreshToken: _private, ...publicResponse } = authResponse;
+    return publicResponse;
   }
 
   @Public()
@@ -119,7 +106,6 @@ export class AuthController {
           },
         },
         accessToken: { type: 'string' },
-        refreshToken: { type: 'string' },
       },
     },
   })
@@ -130,28 +116,20 @@ export class AuthController {
   async login(
     @Body() loginDto: LoginDto,
     @Req() req: Request,
-    @Res({ passthrough: true }) res: Response,
-  ): Promise<AuthResponse> {
+    @Res({ passthrough: true }) res: Response
+  ): Promise<Omit<AuthResponse, 'refreshToken'>> {
+    sessionRequest(req);
     const ipAddress = req.ip || req.connection.remoteAddress || 'unknown';
     const userAgent = req.headers['user-agent'] || 'unknown';
 
-    const authResponse = await this.authService.login(
-      loginDto,
-      ipAddress,
-      userAgent,
-    );
+    const authResponse = await this.authService.login(loginDto, ipAddress, userAgent);
 
-    // Set refresh token as HTTP-only cookie
-    res.cookie('refreshToken', authResponse.refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    });
+    setSessionCookie(res, authResponse.refreshToken);
 
     this.logger.log(`User login successful: ${loginDto.email}`);
 
-    return authResponse;
+    const { refreshToken: _private, ...publicResponse } = authResponse;
+    return publicResponse;
   }
 
   @Public()
@@ -159,8 +137,8 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Refresh access token using refresh token' })
   @ApiBody({
-    description: 'Refresh token (optional - can also use cookie)',
-    type: RefreshTokenDto,
+    description: 'Empty body; the HttpOnly cookie supplies the refresh credential',
+    schema: { type: 'object', additionalProperties: false },
     required: false,
   })
   @ApiResponse({
@@ -170,7 +148,6 @@ export class AuthController {
       type: 'object',
       properties: {
         accessToken: { type: 'string' },
-        refreshToken: { type: 'string' },
       },
     },
   })
@@ -179,41 +156,33 @@ export class AuthController {
     description: 'Invalid or expired refresh token',
   })
   async refreshToken(
-    @Body() refreshTokenDto: RefreshTokenDto | null,
+    @Body() refreshTokenDto: Record<string, unknown> | null,
     @Req() req: Request,
-    @Res({ passthrough: true }) res: Response,
-  ): Promise<{ accessToken: string; refreshToken: string }> {
+    @Res({ passthrough: true }) res: Response
+  ): Promise<{ accessToken: string }> {
+    sessionRequest(req);
+    if (refreshTokenDto && Object.keys(refreshTokenDto).length)
+      throw new BadRequestException('Refresh credentials must use the session cookie');
     const ipAddress = req.ip || req.connection.remoteAddress || 'unknown';
     const userAgent = req.headers['user-agent'] || 'unknown';
 
-    // Get refresh token from body or cookie
-    const refreshToken =
-      refreshTokenDto?.refreshToken ||
-      req.cookies?.refreshToken;
+    // Get refresh token from the HttpOnly session cookie
+    const refreshToken = req.cookies?.refreshToken;
 
     if (!refreshToken) {
-      throw new Error('Refresh token is required');
+      throw new UnauthorizedException('Sign in to start a session');
     }
 
-    const tokens = await this.authService.refreshAccessToken(
-      refreshToken,
-      ipAddress,
-      userAgent,
-    );
+    const tokens = await this.authService.refreshAccessToken(refreshToken, ipAddress, userAgent);
 
-    // Set new refresh token as HTTP-only cookie
-    res.cookie('refreshToken', tokens.refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    });
+    setSessionCookie(res, tokens.refreshToken);
 
     this.logger.log('Token refresh successful');
 
-    return tokens;
+    return { accessToken: tokens.accessToken };
   }
 
+  @Public()
   @Post('logout')
   @HttpCode(HttpStatus.OK)
   @ApiBearerAuth()
@@ -225,8 +194,9 @@ export class AuthController {
   async logout(
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
-    @CurrentUser() user: CurrentUserData,
+    @CurrentUser() user: CurrentUserData
   ): Promise<{ message: string }> {
+    sessionRequest(req);
     const refreshToken = req.cookies?.refreshToken;
 
     if (refreshToken) {
@@ -234,9 +204,9 @@ export class AuthController {
     }
 
     // Clear refresh token cookie
-    res.clearCookie('refreshToken');
+    clearSessionCookie(res);
 
-    this.logger.log(`User logout successful: ${user.email}`);
+    this.logger.log('Session logout completed');
 
     return { message: 'Logged out successfully' };
   }
@@ -251,12 +221,12 @@ export class AuthController {
   })
   async logoutAll(
     @CurrentUser() user: CurrentUserData,
-    @Res({ passthrough: true }) res: Response,
+    @Res({ passthrough: true }) res: Response
   ): Promise<{ message: string }> {
     await this.authService.logoutAll(user.id);
 
     // Clear refresh token cookie
-    res.clearCookie('refreshToken');
+    clearSessionCookie(res);
 
     this.logger.log(`User logout from all devices: ${user.email}`);
 
@@ -275,9 +245,7 @@ export class AuthController {
     status: HttpStatus.BAD_REQUEST,
     description: 'Invalid or expired verification token',
   })
-  async verifyEmail(
-    @Query('token') token: string,
-  ): Promise<{ message: string }> {
+  async verifyEmail(@Query('token') token: string): Promise<{ message: string }> {
     await this.authService.verifyEmail(token);
 
     this.logger.log('Email verification successful');
@@ -302,9 +270,7 @@ export class AuthController {
     status: HttpStatus.OK,
     description: 'Verification email sent if account exists',
   })
-  async resendEmailVerification(
-    @Body() body: { email: string },
-  ): Promise<{ message: string }> {
+  async resendEmailVerification(@Body() body: { email: string }): Promise<{ message: string }> {
     await this.authService.resendEmailVerification(body.email);
 
     this.logger.log(`Verification email resent for: ${body.email}`);

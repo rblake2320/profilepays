@@ -1,0 +1,6 @@
+Worked: forged cached administrator and legacy credentials discarded before session restoration
+Worked: server role controls identity; access credential stays in memory and no credentials enter storage
+Worked: simultaneous refreshes coalesce into one cookie-backed request
+Worked: failed server logout stays visibly signed in and supplies actionable error
+Worked: confirmed logout clears memory only after server acknowledgment
+Worked: refresh completing during logout cannot resurrect the session
