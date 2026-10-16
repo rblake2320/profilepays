@@ -305,7 +305,12 @@ export default function PlacementsPage() {
             </strong>
             <p>{p.record.notification.message}</p>
             <p>
-              {p.record.notification.type === 'agreement_broken' ? 'Removed' : 'Completed'}:{' '}
+              {p.record.notification.type === 'agreement_broken'
+                ? 'Removed'
+                : p.record.notification.type === 'agreement_reviewed'
+                  ? 'Reviewed'
+                  : 'Completed'}
+              :{' '}
               <time dateTime={new Date(p.record.notification.occurredAt).toISOString()}>
                 {stampedDate(p.record.notification.occurredAt)}
               </time>{' '}

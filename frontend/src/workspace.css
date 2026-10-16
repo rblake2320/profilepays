@@ -694,3 +694,8 @@ button:disabled {
   cursor: pointer;
   padding: 10px 0;
 }
+.pp-admin-record {
+  border-top: 1px solid var(--line);
+  padding: 18px 0;
+  overflow-wrap: anywhere;
+}

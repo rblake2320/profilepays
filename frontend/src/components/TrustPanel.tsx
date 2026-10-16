@@ -72,7 +72,15 @@ export default function TrustPanel({ data, user, action }: any) {
                 Offer access suspended: {a.reason} · {time(a.decided_at_ms)}
               </p>
               <button
-                disabled={reason.trim().length < 5}
+                disabled={
+                  reason.trim().length < 5 ||
+                  standing.appeals.some(
+                    (appeal: any) =>
+                      !appeal.placement_id &&
+                      appeal.status === 'pending' &&
+                      String(appeal.access_decision_ms) === String(a.decided_at_ms)
+                  )
+                }
                 onClick={() => action(() => api.post('/placements/appeals', { reason }))}
               >
                 Appeal suspension
@@ -252,54 +260,9 @@ export default function TrustPanel({ data, user, action }: any) {
         </details>
       )}
       {user.userRole === 'admin' && (
-        <details>
-          <summary>Administrator review</summary>
-          <p>
-            Review evidence before restricting access. A participant can appeal. Breach appeals do
-            not automatically change the payout ledger.
-          </p>
-          <label className="pp-field">
-            Participant ID
-            <input value={ids} onChange={e => setIds(e.target.value)} />
-          </label>
-          <label className="pp-field">
-            Decision reason
-            <input value={reason} onChange={e => setReason(e.target.value)} />
-          </label>
-          {[true, false].map(banned => (
-            <button
-              key={String(banned)}
-              disabled={reason.trim().length < 5 || !ids}
-              onClick={() =>
-                action(() => api.post(`/placements/participants/${ids}/access`, { banned, reason }))
-              }
-            >
-              {banned ? 'Suspend offer access' : 'Restore offer access'}
-            </button>
-          ))}
-          {standing.appeals
-            .filter((a: any) => a.status === 'pending')
-            .map((a: any) => (
-              <div key={a.id}>
-                <p>
-                  {a.user_id} · {a.reason} · {time(a.created_at_ms)}
-                </p>
-                {['upheld', 'overturned'].map(decision => (
-                  <button
-                    key={decision}
-                    disabled={reason.trim().length < 5}
-                    onClick={() =>
-                      action(() =>
-                        api.post(`/placements/appeals/${a.id}/review`, { decision, reason })
-                      )
-                    }
-                  >
-                    {decision === 'upheld' ? 'Uphold' : 'Overturn'}
-                  </button>
-                ))}
-              </div>
-            ))}
-        </details>
+        <p>
+          <a href="/reviews">Open administrator console</a>
+        </p>
       )}
     </section>
   );

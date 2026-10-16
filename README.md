@@ -4,9 +4,11 @@
 
 ProfilePays is a social-advertising platform concept that would pay users for temporarily swapping their profile pictures with brand-sponsored images while giving businesses self-service tooling to launch targeted campaigns.
 
-> **Status**: The first static-placement lifecycle is implemented for a local AIHangout integration
-> using test credits only. It includes consent, timed assignment, verification, restoration, and
-> a balanced test-credit ledger. See the [local runbook and acceptance evidence](docs/STATIC-PILOT.md).
+> **Status**: The AIHangout pilot is hosted at https://profilepays.ultrarag.app using test credits only.
+> It includes consent, timed placement, verification, restoration, credit review, suspensions and appeals.
+> Administrator account connection is deliberately deferred. Identity verification and real payouts remain disabled.
+> See the [open integrations and placeholders checklist](docs/OPEN-ITEMS.md),
+> [administrator walkthrough](docs/ADMINISTRATOR.md), and [original pilot evidence](docs/STATIC-PILOT.md).
 > The broader [workflow specification](docs/PROFILEPAYS-WORKFLOW-V1.md) remains the roadmap.
 
 ## Project Vision

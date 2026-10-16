@@ -1,9 +1,12 @@
-import { Module, Controller, Get, Post, Body, Param } from '@nestjs/common';
+import { Module, Controller, Get, Post, Body, Param, Query } from '@nestjs/common';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { PlacementsService } from './placements.service';
 @Controller('placements')
 class PlacementsController {
   constructor(private service: PlacementsService) {}
+  @Get('admin') admin(@CurrentUser() user: any, @Query('search') search = '') {
+    return this.service.adminOverview(user, search);
+  }
   @Get() dashboard(@CurrentUser() user: any) {
     return this.service.dashboard(user);
   }

@@ -21,7 +21,10 @@ import { loginUser, clearError } from '../store/authSlice';
 
 const schema = yup.object({
   email: yup.string().trim().email('Invalid email').required('Email is required'),
-  password: yup.string().min(8, 'Password must be at least 8 characters').required('Password is required'),
+  password: yup
+    .string()
+    .min(8, 'Password must be at least 8 characters')
+    .required('Password is required'),
 });
 
 type FormData = yup.InferType<typeof schema>;
@@ -30,7 +33,7 @@ const LoginPage = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const location = useLocation();
-  const { isLoading, error, user } = useAppSelector((s) => s.auth);
+  const { isLoading, error, user } = useAppSelector(s => s.auth);
 
   const from = (location.state as any)?.from?.pathname || '/';
 
@@ -42,7 +45,9 @@ const LoginPage = () => {
 
   useEffect(() => {
     if (user) {
-      if (user.userType === 'advertiser') {
+      if (user.userType === 'admin') {
+        navigate('/reviews', { replace: true });
+      } else if (user.userType === 'advertiser') {
         navigate('/advertisers', { replace: true });
       } else {
         navigate(from, { replace: true });
@@ -51,7 +56,9 @@ const LoginPage = () => {
   }, [user, navigate, from]);
 
   useEffect(() => {
-    return () => { dispatch(clearError()); };
+    return () => {
+      dispatch(clearError());
+    };
   }, [dispatch]);
 
   const onSubmit = (data: FormData) => {

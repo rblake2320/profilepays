@@ -19,12 +19,14 @@ export default function AppLayout() {
               <NavLink to={user.userType === 'advertiser' ? '/advertisers' : '/marketplace'}>
                 {user.userType === 'advertiser' ? 'Campaign studio' : 'Discover'}
               </NavLink>
-              {user.userType !== 'advertiser' && <>
-              <NavLink to="/placements">Placements</NavLink>
-              <NavLink to="/earnings">Activity & credits</NavLink>
-              <NavLink to="/connections">Connections</NavLink>
-              </>}
-              {user.userType === 'admin' && <NavLink to="/reviews">Review queue</NavLink>}
+              {user.userType !== 'advertiser' && (
+                <>
+                  <NavLink to="/placements">Placements</NavLink>
+                  <NavLink to="/earnings">Activity & credits</NavLink>
+                  <NavLink to="/connections">Connections</NavLink>
+                </>
+              )}
+              {user.userType === 'admin' && <NavLink to="/reviews">Administrator</NavLink>}
             </>
           ) : (
             <>

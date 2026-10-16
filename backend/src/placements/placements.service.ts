@@ -190,6 +190,36 @@ export class PlacementsService implements OnModuleInit, OnModuleDestroy {
       ),
     };
   }
+  async adminOverview(user: any, search: string) {
+    this.enabled();
+    if (user.userRole !== 'admin') throw new ForbiddenException('Administrator access required');
+    if (typeof search !== 'string' || search.length > 100)
+      throw new BadRequestException('Search must be at most 100 characters');
+    const query = '%' + search.trim().replace(/[\\%_]/g, '\\$&') + '%';
+    return {
+      testCreditsOnly: true,
+      serverNow: Date.now(),
+      held: await this.db
+        .query(`SELECT p.id,p.user_id,p.campaign_id,p.record,d.username,c.sponsor_id
+        FROM placements p JOIN placement_destinations d ON d.id=p.destination_id
+        JOIN placement_campaigns c ON c.id=p.campaign_id
+        WHERE p.record->>'settlement'='review_hold' ORDER BY p.created_at`),
+      participants: await this.db.query(
+        `SELECT u.id,u.first_name,u.last_name,
+        ARRAY(SELECT d.username FROM placement_destinations d WHERE d.user_id=u.id) AS profiles,
+        COALESCE(a.banned,false) AS banned,a.reason,a.decided_at_ms,
+        (SELECT count(*)::int FROM placement_breaches b WHERE b.user_id=u.id AND b.status='confirmed') AS breaches
+        FROM users u LEFT JOIN participant_access a ON a.user_id=u.id
+        WHERE u.user_role='member' AND (u.id::text ILIKE $1 OR (u.first_name||' '||u.last_name) ILIKE $1
+          OR EXISTS(SELECT 1 FROM placement_destinations d WHERE d.user_id=u.id AND d.username ILIKE $1))
+        ORDER BY u.first_name,u.id LIMIT 100`,
+        [query]
+      ),
+      standing: await fair.standing(this.db.manager, user),
+      audit: await this.db.query(`SELECT id,actor_id,user_id,kind,reason,at_ms FROM conduct_audit
+        ORDER BY at_ms DESC LIMIT 100`),
+    };
+  }
   async create(user: any, b: any) {
     this.enabled();
     if (!['advertiser', 'admin'].includes(user.userRole))
@@ -945,9 +975,24 @@ export class PlacementsService implements OnModuleInit, OnModuleDestroy {
         throw new ForbiddenException('A separate reviewer must resolve this placement');
       if (!Number.isInteger(b.award) || b.award < 0 || b.award > p.record.terms.reward)
         throw new BadRequestException('Invalid award');
+      if (p.record.breach && b.award !== 0)
+        throw new BadRequestException('A confirmed breach cannot receive an award');
       await this.settle(m, p, b.award);
       p.record.award = b.award;
       p.record.assessment = 'operator_reviewed';
+      const at = Date.now();
+      p.record.review = { actor: user.id, reason, award: b.award, at };
+      p.record.notification = {
+        type: 'agreement_reviewed',
+        title: 'Agreement reviewed',
+        occurredAt: at,
+        recordedAt: at,
+        campaign: p.record.terms.title,
+        message: `An administrator reviewed this agreement: ${reason}`,
+        award: b.award,
+        currency: 'TEST_CREDIT',
+        placementId: id,
+      };
       await this.event(m, id, 'review_resolved', { actor: user.id, reason, award: b.award });
       await this.save(m, p);
       return p;

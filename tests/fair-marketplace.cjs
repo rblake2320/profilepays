@@ -52,12 +52,14 @@ const reject = (fn, status) => assert.rejects(fn, x => x.getStatus?.() === statu
     'Disposable schema isolation required'
   );
   try {
-    await db.query(`CREATE TABLE users(id uuid PRIMARY KEY);CREATE TABLE placement_destinations(id uuid PRIMARY KEY,user_id uuid,username text,encrypted_grant text);
+    await db.query(`CREATE TABLE users(id uuid PRIMARY KEY,first_name text DEFAULT 'Fixture',last_name text DEFAULT 'Participant',user_role text DEFAULT 'member');CREATE TABLE placement_destinations(id uuid PRIMARY KEY,user_id uuid,username text,encrypted_grant text);
 CREATE TABLE placement_campaigns(id uuid PRIMARY KEY,sponsor_id uuid,terms jsonb,budget int,reserved int DEFAULT 0,spent int DEFAULT 0,status text DEFAULT 'active',notification_preferences jsonb,created_at timestamptz DEFAULT now());
 CREATE TABLE placements(id uuid PRIMARY KEY,user_id uuid,campaign_id uuid,destination_id uuid,command_key uuid,state text,record jsonb,created_at timestamptz DEFAULT now());
-CREATE TABLE placement_events(placement_id uuid,at_ms bigint,type text,detail jsonb);`);
+CREATE TABLE placement_events(placement_id uuid,at_ms bigint,type text,detail jsonb);
+CREATE TABLE test_credit_ledger(placement_id uuid,account text,amount int,currency text);`);
     await new FairMarketplace1792400000000().up({ query: (...a) => db.query(...a) });
-    for (const id of ids) await db.query('INSERT INTO users VALUES($1)', [id]);
+    for (const u of [member, second, sponsor, other, operator])
+      await db.query('INSERT INTO users(id,user_role) VALUES($1,$2)', [u.id, u.userRole]);
     const dest = randomUUID(),
       dest2 = randomUUID(),
       c = randomUUID(),
@@ -297,6 +299,104 @@ CREATE TABLE placement_events(placement_id uuid,at_ms bigint,type text,detail js
             ),
           x => x.code === '23505'
         );
+      }
+    );
+    await check(
+      'administrator overview is private and searches literal names, profiles and IDs',
+      async () => {
+        await reject(() => service.adminOverview(member, ''), 403);
+        await reject(() => service.adminOverview(sponsor, ''), 403);
+        await reject(() => service.adminOverview(operator, 'x'.repeat(101)), 400);
+        const overview = await service.adminOverview(operator, '');
+        assert.equal(overview.participants.length, 2);
+        assert.equal(overview.testCreditsOnly, true);
+        assert.ok(overview.audit.length > 0);
+        assert.equal(
+          (await service.adminOverview(operator, member.id)).participants[0].id,
+          member.id
+        );
+        for (const query of ['%', '_', "' OR true --", '\\'])
+          assert.equal((await service.adminOverview(operator, query)).participants.length, 0);
+      }
+    );
+    await check(
+      'held credit requires independent review, settles once, balances ledger and notifies participant',
+      async () => {
+        const [p] = await db.query('SELECT * FROM placements LIMIT 1');
+        p.record.settlement = 'review_hold';
+        p.record.terms.title = 'Isolated held-credit fixture';
+        p.record.breach = null;
+        await db.query('UPDATE placements SET record=$2 WHERE id=$1', [p.id, p.record]);
+        assert.equal((await service.adminOverview(operator, '')).held.length, 1);
+        const body = { award: 100, reason: 'Independent fixture evidence reviewed' };
+        await reject(() => service.resolve(member, p.id, body), 403);
+        await reject(() => service.resolve({ ...sponsor, userRole: 'admin' }, p.id, body), 403);
+        await reject(() => service.resolve({ ...member, userRole: 'admin' }, p.id, body), 403);
+        await reject(() => service.resolve(operator, p.id, { ...body, award: 101 }), 400);
+        p.record.breach = { at: Date.now() };
+        await db.query('UPDATE placements SET record=$2 WHERE id=$1', [p.id, p.record]);
+        await reject(() => service.resolve(operator, p.id, body), 400);
+        p.record.breach = null;
+        await db.query('UPDATE placements SET record=$2 WHERE id=$1', [p.id, p.record]);
+        const result = await service.resolve(operator, p.id, body);
+        assert.equal(result.record.settlement, 'credited_test_only');
+        assert.equal(result.record.notification.type, 'agreement_reviewed');
+        assert.equal(result.record.review.actor, operator.id);
+        assert.equal(result.record.notification.occurredAt, result.record.review.at);
+        await reject(() => service.resolve(operator, p.id, body), 409);
+        const ledger = await db.query('SELECT * FROM test_credit_ledger WHERE placement_id=$1', [
+          p.id,
+        ]);
+        assert.equal(ledger.length, 2);
+        assert.equal(
+          ledger.reduce((sum, x) => sum + x.amount, 0),
+          0
+        );
+        assert.equal((await service.adminOverview(operator, '')).held.length, 0);
+      }
+    );
+    await check(
+      'upheld appeal preserves suspension; stale appeal cannot erase a newer decision',
+      async () => {
+        await service.accessDecision(operator, second.id, {
+          banned: true,
+          reason: 'First fixture suspension',
+        });
+        const a = await service.appeal(second, { reason: 'Please review first suspension' });
+        await service.reviewAppeal(operator, a.id, {
+          decision: 'upheld',
+          reason: 'Fixture evidence supports suspension',
+        });
+        assert.equal(
+          (await db.query('SELECT banned FROM participant_access WHERE user_id=$1', [second.id]))[0]
+            .banned,
+          true
+        );
+        await reject(
+          () =>
+            service.reviewAppeal(operator, a.id, {
+              decision: 'overturned',
+              reason: 'Cannot replay resolved appeal',
+            }),
+          409
+        );
+        const next = await service.appeal(second, { reason: 'Further evidence for review' });
+        await db.query(
+          'UPDATE participant_access SET decided_at_ms=decided_at_ms+1 WHERE user_id=$1',
+          [second.id]
+        );
+        await reject(
+          () =>
+            service.reviewAppeal(operator, next.id, {
+              decision: 'overturned',
+              reason: 'Old appeal cannot clear new suspension',
+            }),
+          409
+        );
+        await service.accessDecision(operator, second.id, {
+          banned: false,
+          reason: 'Restore fixture after stale-decision test',
+        });
       }
     );
     console.log(
